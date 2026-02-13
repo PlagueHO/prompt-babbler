@@ -91,14 +91,12 @@ export function RecordPage() {
             isRecording={isRecording}
             onStart={() => void start()}
             onStop={stop}
-            disabled={!isConfigured}
           />
           <RecordingIndicator
             isRecording={isRecording}
             duration={duration}
             onStart={() => void start()}
             onStop={stop}
-            disabled={!isConfigured}
           />
         </div>
 

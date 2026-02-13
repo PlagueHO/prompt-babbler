@@ -15,14 +15,14 @@ export function SettingsRequiredBanner({
       <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-200">
         <Settings className="size-4 shrink-0" />
         <span>
-          LLM settings are not configured.{' '}
+          LLM settings are not configured. Recording will work, but transcription and prompt generation require{' '}
           <Link
             to="/settings"
             className="font-medium underline underline-offset-4 hover:text-yellow-900 dark:hover:text-yellow-100"
           >
-            Configure settings
-          </Link>{' '}
-          to enable transcription and prompt generation.
+            configured settings
+          </Link>
+          .
         </span>
       </div>
     </div>

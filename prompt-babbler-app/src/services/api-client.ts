@@ -5,14 +5,11 @@ import type {
   TestConnectionResponse,
 } from '@/types';
 
+// Injected by Vite from Aspire service discovery env vars at build/dev time
+declare const __API_BASE_URL__: string;
+
 function getApiBaseUrl(): string {
-  if (typeof window !== 'undefined') {
-    const win = window as unknown as Record<string, unknown>;
-    if (win.__ASPIRE_SERVICE_URL) {
-      return win.__ASPIRE_SERVICE_URL as string;
-    }
-  }
-  return '';
+  return typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : '';
 }
 
 async function fetchJson<T>(
