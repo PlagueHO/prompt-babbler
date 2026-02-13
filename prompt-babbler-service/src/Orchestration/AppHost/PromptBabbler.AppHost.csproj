@@ -1,0 +1,13 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.1">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PromptBabbler.AppHost</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Api\PromptBabbler.Api.csproj" />
+  </ItemGroup>
+</Project>

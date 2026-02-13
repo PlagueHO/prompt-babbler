@@ -1,0 +1,37 @@
+name: Build and Publish Backend Service
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prompt-babbler-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore PromptBabbler.slnx
+
+      - name: Build
+        run: dotnet build PromptBabbler.slnx --no-restore --configuration Release
+
+      - name: Format Check
+        run: dotnet format PromptBabbler.slnx --verify-no-changes --no-restore
+
+      - name: Test
+        run: |
+          dotnet test --project tests/unit/Api.UnitTests/PromptBabbler.Api.UnitTests.csproj --no-build --configuration Release
+          dotnet test --project tests/unit/Domain.UnitTests/PromptBabbler.Domain.UnitTests.csproj --no-build --configuration Release
+          dotnet test --project tests/unit/Infrastructure.UnitTests/PromptBabbler.Infrastructure.UnitTests.csproj --no-build --configuration Release

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PromptBabbler.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\PromptBabbler.Domain.csproj" />
+  </ItemGroup>
+</Project>

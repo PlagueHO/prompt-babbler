@@ -1,0 +1,14 @@
+<Project Sdk="MSTest.Sdk/4.1.0">
+  <PropertyGroup>
+    <RootNamespace>PromptBabbler.Api.IntegrationTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Api\PromptBabbler.Api.csproj" />
+  </ItemGroup>
+</Project>

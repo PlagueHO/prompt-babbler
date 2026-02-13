@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Api/PromptBabbler.Api.csproj" />
+    <Project Path="src/Domain/PromptBabbler.Domain.csproj" />
+    <Project Path="src/Infrastructure/PromptBabbler.Infrastructure.csproj" />
+    <Project Path="src/Orchestration/AppHost/PromptBabbler.AppHost.csproj" />
+    <Project Path="src/Orchestration/ServiceDefaults/PromptBabbler.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/">
+    <Project Path="tests/unit/Api.UnitTests/PromptBabbler.Api.UnitTests.csproj" />
+    <Project Path="tests/unit/Domain.UnitTests/PromptBabbler.Domain.UnitTests.csproj" />
+    <Project Path="tests/unit/Infrastructure.UnitTests/PromptBabbler.Infrastructure.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/integration/">
+    <Project Path="tests/integration/Api.IntegrationTests/PromptBabbler.Api.IntegrationTests.csproj" />
+    <Project Path="tests/integration/Infrastructure.IntegrationTests/PromptBabbler.Infrastructure.IntegrationTests.csproj" />
+    <Project Path="tests/integration/Orchestration.IntegrationTests/PromptBabbler.Orchestration.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

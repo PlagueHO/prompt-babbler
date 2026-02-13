@@ -1,0 +1,14 @@
+mode: ContinuousDelivery
+branches:
+  main:
+    regex: ^main$
+    tag: ''
+    increment: Patch
+  feature:
+    regex: ^(features?|feat)[/-]
+    tag: alpha
+    increment: Minor
+  develop:
+    regex: ^dev(elop)?(ment)?$
+    tag: beta
+    increment: Minor
