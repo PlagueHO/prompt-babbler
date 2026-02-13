@@ -16,7 +16,8 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
+        policy.SetIsOriginAllowed(origin =>
+               new Uri(origin).Host is "localhost" or "127.0.0.1")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -24,11 +25,6 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddProblemDetails();
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenLocalhost(5000);
-});
 
 var app = builder.Build();
 

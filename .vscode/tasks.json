@@ -146,10 +146,10 @@
     {
       "label": "aspire: run",
       "type": "shell",
-      "command": "dotnet",
-      "args": ["run", "--project", "src/Orchestration/AppHost/PromptBabbler.AppHost.csproj"],
+      "command": "aspire",
+      "args": ["run"],
       "options": {
-        "cwd": "${workspaceFolder}/prompt-babbler-service"
+        "cwd": "${workspaceFolder}/prompt-babbler-service/src/Orchestration/AppHost"
       },
       "problemMatcher": "$msCompile",
       "group": {

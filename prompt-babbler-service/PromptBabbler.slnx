@@ -1,4 +1,4 @@
-<Solution>
+<Solution defaultStartup="src/Orchestration/AppHost/PromptBabbler.AppHost.csproj">
   <Folder Name="/src/">
     <Project Path="src/Api/PromptBabbler.Api.csproj" />
     <Project Path="src/Domain/PromptBabbler.Domain.csproj" />
