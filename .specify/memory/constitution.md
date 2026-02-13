@@ -204,9 +204,9 @@
   conventions. In case of conflict, the constitution prevails.
 - **Amendments** require:
   1. A written proposal documenting the change and its rationale.
-  2. Review and approval by the project maintainer(s).
-  3. A migration plan for any existing code affected by the change.
-  4. Version increment of this document per semantic versioning.
+  1. Review and approval by the project maintainer(s).
+  1. A migration plan for any existing code affected by the change.
+  1. Version increment of this document per semantic versioning.
 - **Versioning policy**:
   - MAJOR: Backward-incompatible governance or principle changes
     (removals, redefinitions).

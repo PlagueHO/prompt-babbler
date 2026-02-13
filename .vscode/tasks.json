@@ -1,0 +1,469 @@
+{
+  // VS Code Tasks for Prompt Babbler
+  // Frontend: React 19 + TypeScript + Vite (prompt-babbler-app)
+  // Backend: .NET 10 + Aspire + Clean Architecture (prompt-babbler-service)
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "app: dev",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app"
+      },
+      "icon": {
+        "id": "play",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
+      "label": "app: install",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app"
+      },
+      "icon": {
+        "id": "cloud-download",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "app: test",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
+      },
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "app: test (watch)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test:watch"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
+      },
+      "isBackground": true,
+      "group": "test",
+      "icon": {
+        "id": "eye-watch",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "app: test (ui)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test:ui"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
+      },
+      "isBackground": true,
+      "group": "test",
+      "icon": {
+        "id": "browser",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "app: test (accessibility)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["test", "-t", "accessibility"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app",
+        "env": {
+          "NODE_OPTIONS": "--max-old-space-size=16384"
+        }
+      },
+      "group": "test",
+      "icon": {
+        "id": "accessibility",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
+      "label": "app: build",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app"
+      },
+      "icon": {
+        "id": "tools",
+        "color": "terminal.ansiYellow"
+      }
+    },
+    {
+      "label": "app: lint",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app"
+      },
+      "problemMatcher": ["$eslint-stylish"],
+      "group": "test",
+      "icon": {
+        "id": "checklist",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
+      "label": "app: lint (fix)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint", "--fix"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-app"
+      },
+      "problemMatcher": ["$eslint-stylish"],
+      "group": "test",
+      "icon": {
+        "id": "checklist",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
+      "label": "aspire: run",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["run", "--project", "src/Orchestration/AppHost/PromptBabbler.AppHost.csproj"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "icon": {
+        "id": "debug-start",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
+      "label": "service: build",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build", "PromptBabbler.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "icon": {
+        "id": "tools",
+        "color": "terminal.ansiYellow"
+      }
+    },
+    {
+      "label": "service: test",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["test", "--solution", "PromptBabbler.slnx", "--no-build"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "dependsOn": ["service: build"],
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "service: test (watch)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["watch", "test", "--solution", "PromptBabbler.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "isBackground": true,
+      "icon": {
+        "id": "eye-watch",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "service: clean",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["clean", "PromptBabbler.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "icon": {
+        "id": "trash",
+        "color": "terminal.ansiRed"
+      }
+    },
+    {
+      "label": "service: restore",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["restore", "PromptBabbler.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "icon": {
+        "id": "cloud-download",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: format",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["format", "PromptBabbler.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": [],
+      "icon": {
+        "id": "code",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
+      "label": "service: format (verify)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["format", "PromptBabbler.slnx", "--verify-no-changes"],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": [],
+      "group": "test",
+      "icon": {
+        "id": "verified",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
+      "label": "service: test (unit)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--solution",
+        "PromptBabbler.slnx",
+        "--filter",
+        "TestCategory=Unit",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults",
+        "--coverage",
+        "--coverage-output-format",
+        "cobertura",
+        "--report-trx"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiCyan"
+      }
+    },
+    {
+      "label": "service: test (integration)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--solution",
+        "PromptBabbler.slnx",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: test (integration - Api)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--project",
+        "tests/integration/Api.IntegrationTests/PromptBabbler.Api.IntegrationTests.csproj",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: test (integration - Infrastructure)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--project",
+        "tests/integration/Infrastructure.IntegrationTests/PromptBabbler.Infrastructure.IntegrationTests.csproj",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: test (integration - Orchestration)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--project",
+        "tests/integration/Orchestration.IntegrationTests/PromptBabbler.Orchestration.IntegrationTests.csproj",
+        "--filter",
+        "TestCategory=Integration",
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "--results-directory",
+        "./TestResults"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "icon": {
+        "id": "beaker",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "service: code coverage (report)",
+      "type": "shell",
+      "command": "reportgenerator",
+      "args": [
+        "-reports:TestResults/**/*.cobertura.xml",
+        "-targetdir:TestResults/CoverageReport",
+        "-reporttypes:'Html;MarkdownSummaryGithub;'",
+        "-assemblyfilters:+PromptBabbler.*"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/prompt-babbler-service"
+      },
+      "problemMatcher": [],
+      "icon": {
+        "id": "graph",
+        "color": "terminal.ansiMagenta"
+      }
+    },
+    {
+      "label": "markdown: lint",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint:md"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": "test",
+      "icon": {
+        "id": "checklist",
+        "color": "terminal.ansiMagenta"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "markdown: lint (fix)",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["lint:md:fix"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "icon": {
+        "id": "wrench",
+        "color": "terminal.ansiGreen"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

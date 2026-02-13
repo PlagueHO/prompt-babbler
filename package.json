@@ -1,0 +1,21 @@
+{
+  "name": "prompt-babbler",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#prompt-babbler-app\" \"#prompt-babbler-service\"",
+    "lint:md:fix": "markdownlint-cli2 --fix \"**/*.md\" \"#node_modules\" \"#prompt-babbler-app\" \"#prompt-babbler-service\"",
+    "lint:md:ci": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#prompt-babbler-app\" \"#prompt-babbler-service\""
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.20.0"
+  },
+  "description": "Prompt Babbler - Speech-to-prompt web application",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PlagueHO/prompt-babbler.git"
+  },
+  "author": "Daniel Scott-Raynsford",
+  "license": "MIT"
+}

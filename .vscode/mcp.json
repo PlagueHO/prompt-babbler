@@ -1,0 +1,81 @@
+{
+  "inputs": [],
+  "servers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ]
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "type": "http"
+    },
+    "microsoft-learn": {
+      "url": "https://learn.microsoft.com/api/mcp",
+      "type": "http"
+    },
+    "agent-framework-docs": {
+      "url": "https://gitmcp.io/microsoft/agent-framework",
+      "type": "sse"
+    },
+    "azure-verified-module-bicep-docs": {
+      "type": "sse",
+      "url": "https://gitmcp.io/Azure/bicep-registry-modules"
+    },
+    "react-docs": {
+      "url": "https://gitmcp.io/facebook/react",
+      "type": "sse"
+    },
+    "typescript-docs": {
+      "url": "https://gitmcp.io/microsoft/TypeScript",
+      "type": "sse"
+    },
+    "nodejs-docs": {
+      "url": "https://gitmcp.io/nodejs/node",
+      "type": "sse"
+    },
+    "shadcnui-docs": {
+      "url": "https://gitmcp.io/shadcn-ui/ui",
+      "type": "sse"
+    },
+    "playwright-test": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "playwright",
+        "run-test-mcp-server"
+      ]
+    },
+    "aspire": {
+      "type": "stdio",
+      "command": "aspire",
+      "args": [
+        "mcp",
+        "start"
+      ]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+      "microsoft-foundry": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": [
+          "--prerelease=allow",
+          "--from",
+          "git+https://github.com/azure-ai-foundry/mcp-foundry.git",
+          "run-azure-ai-foundry-mcp",
+          "--envFile",
+          "${workspaceFolder}/.env"
+        ]
+    }
+  }
+}
