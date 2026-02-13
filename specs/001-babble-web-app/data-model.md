@@ -11,6 +11,8 @@ V1 uses a split-storage model:
 
 All localStorage entities use JSON serialization. Entity IDs are UUID v4, generated client-side using `crypto.randomUUID()`. Audio is captured as `audio/webm;codecs=opus` (max 25 MB per chunk). Interim transcription data is persisted to localStorage after every successfully transcribed chunk (~5 seconds). The app warns when localStorage usage reaches 80% of quota.
 
+**STT model**: Azure OpenAI gpt-4o-transcribe is the recommended default (via `Azure.AI.OpenAI` AudioClient). The STT model is fully configurable via the `sttDeploymentName` settings field — users can switch to any Azure OpenAI audio transcription model (e.g., Whisper, future successors) by changing the deployment name. No code changes required.
+
 ## Entities
 
 ### Babble
@@ -104,21 +106,21 @@ The output of combining a babble with a template via the LLM.
 
 ### LlmSettings
 
-The user's Azure OpenAI configuration. Stored server-side only. Covers both LLM (prompt generation) and STT (Whisper transcription) since both use the same Azure OpenAI resource.
+The user's Azure OpenAI configuration. Stored server-side only. Covers both LLM (prompt generation) and STT (audio transcription) since both use the same Azure OpenAI resource. The STT model is configurable via `sttDeploymentName` — gpt-4o-transcribe is the recommended default but any compatible Azure OpenAI audio model can be used.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `endpoint` | `string` (URL) | Yes | Azure OpenAI or Azure AI Foundry endpoint URL |
 | `apiKey` | `string` | Yes | API key for authentication. Never sent to frontend in full. |
 | `deploymentName` | `string` | Yes | Model deployment name for LLM/prompt generation (e.g., "gpt-4o-mini") |
-| `whisperDeploymentName` | `string` | Yes | Model deployment name for Whisper STT (e.g., "whisper") |
+| `sttDeploymentName` | `string` | Yes | Model deployment name for speech-to-text (e.g., "gpt-4o-transcribe") |
 
 **Validation rules**:
 
 - `endpoint`: Valid HTTPS URL matching `https://*.openai.azure.com/*` or `https://*.services.ai.azure.com/*` or custom endpoint
 - `apiKey`: Non-empty string, 32+ characters
 - `deploymentName`: 1–64 characters, alphanumeric + hyphens
-- `whisperDeploymentName`: 1–64 characters, alphanumeric + hyphens
+- `sttDeploymentName`: 1–64 characters, alphanumeric + hyphens
 
 **Storage**: Backend config file at `~/.prompt-babbler/settings.json`
 
@@ -129,7 +131,7 @@ The user's Azure OpenAI configuration. Stored server-side only. Covers both LLM 
   "endpoint": "https://my-resource.openai.azure.com/",
   "apiKey": "sk-...",
   "deploymentName": "gpt-4o-mini",
-  "whisperDeploymentName": "whisper"
+  "sttDeploymentName": "gpt-4o-transcribe"
 }
 ```
 
@@ -140,7 +142,7 @@ The user's Azure OpenAI configuration. Stored server-side only. Covers both LLM 
   "endpoint": "https://my-resource.openai.azure.com/",
   "apiKeyHint": "...a1b2",
   "deploymentName": "gpt-4o-mini",
-  "whisperDeploymentName": "whisper",
+  "sttDeploymentName": "gpt-4o-transcribe",
   "isConfigured": true
 }
 ```
@@ -183,7 +185,7 @@ The `apiKeyHint` field shows only the last 4 characters. The full `apiKey` is ne
 │  endpoint                │
 │  apiKey                  │
 │  deploymentName          │
-│  whisperDeploymentName   │
+│  sttDeploymentName       │
 └──────────────────────────┘
 ```
 
@@ -201,7 +203,7 @@ The `apiKeyHint` field shows only the last 4 characters. The full `apiKey` is ne
 |-----|------|-------------|
 | `prompt-babbler:babbles` | `Babble[]` | All saved babbles |
 | `prompt-babbler:templates` | `PromptTemplate[]` | All templates (built-in + custom) |
-| `prompt-babbler:settings:speechLang` | `string` | Whisper transcription language code (ISO-639-1, e.g., "en"). Empty = auto-detect. |
+| `prompt-babbler:settings:speechLang` | `string` | STT transcription language code (ISO-639-1, e.g., "en"). Empty = auto-detect. |
 
 **Size management**: Estimated storage per babble ≈ 5-50 KB (mostly text). localStorage limit is typically 5-10 MB. At 50 KB average, ~100-200 babbles fit comfortably. The app warns when usage exceeds 80% of the quota (FR-029). At 100% capacity, the app refuses to create new babbles and displays guidance suggesting the user delete old babbles.
 
@@ -246,7 +248,7 @@ interface LlmSettingsView {
   endpoint: string;
   apiKeyHint: string;       // Last 4 chars only
   deploymentName: string;
-  whisperDeploymentName: string;
+  sttDeploymentName: string;
   isConfigured: boolean;
 }
 
@@ -255,7 +257,7 @@ interface LlmSettingsSaveRequest {
   endpoint: string;
   apiKey: string;
   deploymentName: string;
-  whisperDeploymentName: string;
+  sttDeploymentName: string;
 }
 ```
 
@@ -272,7 +274,7 @@ public sealed record LlmSettings
     public required string Endpoint { get; init; }
     public required string ApiKey { get; init; }
     public required string DeploymentName { get; init; }
-    public required string WhisperDeploymentName { get; init; }
+    public required string SttDeploymentName { get; init; }
 }
 ```
 
@@ -296,7 +298,7 @@ public sealed record LlmSettingsResponse
     public required string Endpoint { get; init; }
     public required string ApiKeyHint { get; init; }
     public required string DeploymentName { get; init; }
-    public required string WhisperDeploymentName { get; init; }
+    public required string SttDeploymentName { get; init; }
     public required bool IsConfigured { get; init; }
 }
 ```

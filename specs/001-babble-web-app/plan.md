@@ -5,18 +5,20 @@
 
 ## Summary
 
-Build a local-first web application that captures speech via the browser's MediaRecorder API, transcribes it using Azure OpenAI Whisper through a .NET 10 backend proxy, and generates structured prompts for target systems (e.g., GitHub Copilot) via Azure OpenAI LLM. The architecture follows Libris-Maleficarum patterns: Clean Architecture backend (Api → Domain → Infrastructure), React 19 + TypeScript + Vite frontend, Aspire AppHost orchestration, and pnpm monorepo with GitHub Actions CI/CD. Babbles, templates, and generated prompts are stored in browser localStorage; LLM settings are stored server-side in `~/.prompt-babbler/settings.json`. The backend binds to localhost only and serves three API groups: prompt generation (SSE streaming), audio transcription (Whisper proxy), and settings management.
+Build a local-first web application that captures speech via the browser's MediaRecorder API, transcribes it using an Azure OpenAI STT model (default: gpt-4o-transcribe) through a .NET 10 backend proxy, and generates structured prompts for target systems (e.g., GitHub Copilot) via Azure OpenAI LLM. The architecture follows Libris-Maleficarum patterns: Clean Architecture backend (Api → Domain → Infrastructure), React 19 + TypeScript + Vite frontend, Aspire AppHost orchestration, and pnpm monorepo with GitHub Actions CI/CD. Babbles, templates, and generated prompts are stored in browser localStorage; LLM settings are stored server-side in `~/.prompt-babbler/settings.json`. The backend binds to localhost only and serves three API groups: prompt generation (SSE streaming), audio transcription (configurable STT proxy), and settings management.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x (frontend), C# / .NET 10.0.100 (backend)
 **Primary Dependencies**: React 19, Vite, Shadcn/UI, TailwindCSS v4, React Hook Form + Zod (frontend); ASP.NET Core, Azure.AI.OpenAI v2.1+, .NET Aspire 13.1 (backend)
+**STT Model**: Azure OpenAI gpt-4o-transcribe (via `Azure.AI.OpenAI` AudioClient) is the recommended default. Chosen over Whisper for lower word error rate and improved language recognition. Uses the same `AudioClient.TranscribeAudioAsync()` SDK API — model selection is purely a deployment name change, so users can switch to newer STT models (e.g., future successors) without code changes. No dependency on Microsoft Agent Framework for STT (it does not expose speech-to-text abstractions).
 **Storage**: Browser localStorage (babbles, templates, prompts); local config file `~/.prompt-babbler/settings.json` (LLM settings)
 **Testing**: Vitest + Testing Library (frontend); MSTest + FluentAssertions (backend)
 **Target Platform**: Local machine — Chrome 49+, Edge 79+, Safari 14.1+, Firefox 25+ (MediaRecorder API required)
 **Project Type**: Web application (frontend + backend monorepo)
 **Performance Goals**: App interactive < 3s; transcription chunk latency ~5s; prompt generation < 30s (excl. LLM response time)
 **Constraints**: Backend binds to `localhost` / `127.0.0.1` only; audio chunks `audio/webm;codecs=opus` max 25 MB; localStorage warn at 80% quota; UUID v4 for all entity IDs; interim transcription persisted after every chunk (~5s)
+**Spec note**: The spec (FR-001, FR-002, FR-024, FR-025, FR-031, SC-004) references "Whisper" as the STT model and uses the field name `whisperDeploymentName`. The plan refines this to use gpt-4o-transcribe as the recommended default (same Azure OpenAI Audio API, same SDK, better accuracy) and renames the field to `sttDeploymentName` for model-agnosticism. The STT model is fully configurable — users can deploy any compatible Azure OpenAI audio model and specify its deployment name. No code, API contract, or architecture changes are required to switch models. All spec functional requirements remain fully satisfied.
 **Scale/Scope**: Single user, local-first, 5 user stories (P1–P5), ~100-200 babbles in localStorage
 
 ## Constitution Check
@@ -65,7 +67,7 @@ prompt-babbler/
 │   │   ├── Api/                                  # ASP.NET Core API project
 │   │   │   ├── Controllers/
 │   │   │   │   ├── PromptController.cs           # POST /api/prompts/generate (SSE streaming)
-│   │   │   │   ├── TranscriptionController.cs    # POST /api/transcribe (Whisper proxy)
+│   │   │   │   ├── TranscriptionController.cs    # POST /api/transcribe (STT proxy)
 │   │   │   │   └── SettingsController.cs         # GET/PUT /api/settings, POST /api/settings/test
 │   │   │   ├── Models/
 │   │   │   │   ├── Requests/                     # GeneratePromptRequest, LlmSettingsSaveRequest

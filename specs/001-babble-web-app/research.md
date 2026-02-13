@@ -76,35 +76,57 @@
 - **Radix UI directly** — Rejected. Shadcn/UI provides the same Radix primitives with pre-styled defaults and TailwindCSS integration.
 - **Redux Toolkit / RTK Query** — Not needed for V1. Babble/template state lives in localStorage; only two API calls (generate prompt, manage settings). Simple `fetch` + React hooks suffice. Can be added if state management becomes complex.
 
-## R4: Speech-to-Text — Azure OpenAI Whisper via Backend
+## R4: Speech-to-Text — Azure OpenAI gpt-4o-transcribe via Backend
 
-**Decision**: Use the Azure OpenAI Whisper model for speech-to-text, called via the backend API as a proxy. Audio is captured in the browser using the `MediaRecorder` API and sent in chunks to the backend, which forwards each chunk to the Azure OpenAI Whisper `/audio/transcriptions` endpoint.
+**Decision**: Use the Azure OpenAI **gpt-4o-transcribe** model for speech-to-text, called via the backend API as a proxy using the `Azure.AI.OpenAI` SDK (`AudioClient.TranscribeAudioAsync()`). Audio is captured in the browser using the `MediaRecorder` API and sent in chunks to the backend, which forwards each chunk to the Azure OpenAI `/audio/transcriptions` endpoint.
 
-**Rationale**: The Azure OpenAI Whisper model provides high-quality, multilingual speech-to-text transcription. Because Azure OpenAI endpoints do not support CORS, the backend must proxy all STT calls (same pattern as prompt generation). Using the Azure OpenAI Whisper deployment means the user only needs **one** Azure resource — the same Azure OpenAI resource used for LLM prompt generation — with an additional Whisper model deployment. This avoids requiring a separate Azure Speech Service resource.
+**Rationale**: The gpt-4o-transcribe model was chosen over Whisper and other Azure OpenAI STT models based on a comparative evaluation (see model comparison below). It provides significantly lower word error rates and improved language recognition compared to Whisper, while using the identical `Azure.AI.OpenAI` AudioClient SDK API — making the model selection purely a deployment name change with no code impact. Because Azure OpenAI endpoints do not support CORS, the backend must proxy all STT calls (same pattern as prompt generation). Using the Azure OpenAI gpt-4o-transcribe deployment means the user only needs **one** Azure resource — the same Azure OpenAI resource used for LLM prompt generation — with an additional gpt-4o-transcribe model deployment.
+
+**STT Model Comparison** (Azure AI Foundry catalog, evaluated 2026-02-13):
+
+| Feature | Whisper | gpt-4o-transcribe | gpt-4o-mini-transcribe | gpt-4o-transcribe-diarize |
+|---|---|---|---|---|
+| Context Window | N/A (25 MB limit) | 16,000 tokens | 16,000 tokens | 16,000 tokens |
+| Max Output Tokens | N/A | 2,000 | 4,096 | 2,000 |
+| Languages | Not specified | 57 | 57 | 57 |
+| Diarization | No | No | No | Yes |
+| Word Error Rate | Baseline | Lower than Whisper | Lower than Whisper | Lower than Whisper |
+| Azure Offers | Standard PAYG, VM | Standard PAYG, VM | Standard PAYG, VM | AOAI only |
+| Status | GA | Preview | Preview | Preview |
+
+**Why gpt-4o-transcribe over alternatives**:
+
+- **vs. Whisper**: gpt-4o-transcribe has significantly lower word error rate. Higher transcription accuracy directly improves downstream prompt generation quality. Same SDK API — zero code changes.
+- **vs. gpt-4o-mini-transcribe**: Cost-optimized but lower accuracy. Since transcription quality is the foundation of the entire prompt pipeline, accuracy is prioritized over cost savings.
+- **vs. gpt-4o-transcribe-diarize**: Adds speaker identification overhead not needed for single-user stream-of-consciousness. Also has limited Azure deployment options.
+
+**SDK**: The `Azure.AI.OpenAI` package v2.1+ provides `AudioClient.TranscribeAudioAsync()` which works identically for Whisper, gpt-4o-transcribe, gpt-4o-mini-transcribe, and gpt-4o-transcribe-diarize. The model is selected via the deployment name passed to `client.GetAudioClient(deploymentName)`. The Microsoft Agent Framework (`Microsoft.Extensions.AI` / Semantic Kernel) does **not** expose speech-to-text abstractions — `Azure.AI.OpenAI` AudioClient is the recommended approach.
+
+**Spec note**: The feature spec (FR-001, FR-024, FR-031, etc.) references "Whisper" as the STT model and uses the field name `whisperDeploymentName`. This plan refines the model choice to gpt-4o-transcribe and renames the settings field to `sttDeploymentName` for model-agnosticism. All functional requirements remain fully satisfied — gpt-4o-transcribe supports the same audio formats, languages, and API patterns.
 
 **Architecture — Chunked HTTP Transcription (No WebSocket Required)**:
 
 1. **Browser**: `navigator.mediaDevices.getUserMedia({ audio: true })` → `MediaRecorder` captures audio
 1. **Chunking**: Every ~5 seconds, recording is stopped and restarted. Each stop produces a self-contained audio blob (WebM/OGG format) via the `onstop` event
 1. **Upload**: Each audio chunk is sent via `POST /api/transcribe` (multipart/form-data) to the backend
-1. **Backend proxy**: Backend receives the audio file, forwards it to `POST {endpoint}/openai/deployments/{whisperDeploymentName}/audio/transcriptions?api-version=2024-02-01` with the API key
-1. **Response**: Whisper returns the transcribed text for that chunk. Backend returns it to the frontend
+1. **Backend proxy**: Backend receives the audio file, forwards it to `POST {endpoint}/openai/deployments/{sttDeploymentName}/audio/transcriptions?api-version=2024-02-01` with the API key
+1. **Response**: gpt-4o-transcribe returns the transcribed text for that chunk. Backend returns it to the frontend
 1. **Display**: Frontend appends the transcribed text to the running transcript, giving near-real-time display with ~5-second latency per chunk
 
 **Why WebSockets are NOT required for V1**:
 
-- The Whisper model API is file-based (not streaming) — it accepts a complete audio file and returns the full transcription. There is no benefit to a persistent connection.
+- The gpt-4o-transcribe model API is file-based (not streaming) — it accepts a complete audio file and returns the full transcription. There is no benefit to a persistent connection.
 - Each chunk is an independent HTTP POST/response cycle, fitting the standard request-response pattern.
 - The 5-second chunk interval provides acceptable near-real-time feedback.
 - SignalR or WebSockets can be added later if true word-by-word real-time is needed (via Azure Speech Service SDK), but this would require a separate Azure resource.
 
 **Key implementation details**:
 
-- **Audio format**: `MediaRecorder` produces WebM (Chrome/Edge) or OGG (Firefox). Whisper API accepts both formats (supports: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm).
+- **Audio format**: `MediaRecorder` produces WebM (Chrome/Edge) or OGG (Firefox). The gpt-4o-transcribe API accepts both formats (supports: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm).
 - **Chunk strategy**: Stop/restart `MediaRecorder` every ~5 seconds. Each stop produces a complete, self-contained audio file with proper container headers. The gap between stop and restart is negligible (<50ms).
-- **Chunk size**: At typical audio bitrates (128 kbps), a 5-second chunk is ~80 KB — well under Whisper's 25 MB file limit.
-- **Language**: The Whisper API accepts an optional `language` parameter (ISO-639-1 code). Default is auto-detect. User can configure a preferred language in settings.
-- **Azure OpenAI integration**: Uses the same `endpoint` and `apiKey` as prompt generation. Requires an additional `whisperDeploymentName` in `LlmSettings`.
+- **Chunk size**: At typical audio bitrates (128 kbps), a 5-second chunk is ~80 KB — well under the 25 MB file limit.
+- **Language**: The transcription API accepts an optional `language` parameter (ISO-639-1 code). gpt-4o-transcribe supports 57 languages with auto-detection. User can configure a preferred language in settings.
+- **Azure OpenAI integration**: Uses the same `endpoint` and `apiKey` as prompt generation. Requires an additional `sttDeploymentName` in `LlmSettings`.
 - **Interim display**: While a chunk is being transcribed, the frontend shows a recording animation/indicator. Transcribed text appears when each chunk completes.
 - **Long recordings**: No practical limit — chunks are processed independently. A 30-minute recording produces ~360 chunks (5s each), each transcribed separately.
 - **Error handling**: If a chunk fails to transcribe, the error is displayed but recording continues. The user can re-record or edit the gap.
@@ -122,9 +144,9 @@
 
 **Advantages over Web Speech API**:
 
-- **Firefox supported** — Web Speech API is unsupported in Firefox; MediaRecorder + Whisper works in all major browsers
-- **Consistent quality** — Whisper model provides consistent transcription quality across all browsers, unlike browser-dependent speech recognition engines
-- **Multilingual** — Whisper supports 99 languages with auto-detection; no reliance on browser-specific language support
+- **Firefox supported** — Web Speech API is unsupported in Firefox; MediaRecorder + gpt-4o-transcribe works in all major browsers
+- **Consistent quality** — gpt-4o-transcribe provides consistent, high-accuracy transcription across all browsers with lower word error rate than Whisper, unlike browser-dependent speech recognition engines
+- **Multilingual** — gpt-4o-transcribe supports 57 languages with auto-detection; no reliance on browser-specific language support
 - **Offline recording** — Audio can be captured and stored offline, transcribed when connectivity is available
 - **Single Azure resource** — Same Azure OpenAI resource handles both LLM and STT
 
@@ -133,7 +155,7 @@
 - **Web Speech API (browser-native)** — Rejected. Not supported in Firefox. Transcription quality varies by browser. No user control over the STT model. Makes the app browser-dependent for a core feature.
 - **Azure Speech Service (real-time via Speech SDK)** — Rejected for V1. Requires a **separate** Azure resource (Azure AI Services / Speech), different authentication (Speech key + region), and the `Microsoft.CognitiveServices.Speech` NuGet package. The real-time Speech SDK uses `PushAudioInputStream` with continuous recognition (`Recognizing`/`Recognized` events) which provides true word-by-word streaming but requires WebSocket/SignalR for browser-to-backend audio streaming. Significantly more complex. Could be offered as an alternative STT provider in V2.
 - **Whisper.js (local/in-browser)** — Rejected. Large model download (~150MB), GPU-dependent performance, experimental. Violates Constitution Principle I (YAGNI).
-- **Azure OpenAI GPT-4o Realtime API** — Rejected. Uses WebSockets for bidirectional audio/text streaming. Designed for conversational AI, not pure transcription. More expensive and complex than Whisper for the STT use case.
+- **Azure OpenAI GPT-4o Realtime API** — Rejected. Uses WebSockets for bidirectional audio/text streaming. Designed for conversational AI, not pure transcription. More expensive and complex than gpt-4o-transcribe for the STT use case.
 
 ## R5: Azure OpenAI SDK — .NET Integration
 
@@ -195,20 +217,20 @@ builder.Build().Run();
 
 ## R7: V1 Scope — Backend Minimalism
 
-**Decision**: V1 backend has exactly three controller groups: PromptController (generate prompts), TranscriptionController (Whisper STT proxy), and SettingsController (CRUD LLM/STT settings).
+**Decision**: V1 backend has exactly three controller groups: PromptController (generate prompts), TranscriptionController (gpt-4o-transcribe STT proxy), and SettingsController (CRUD LLM/STT settings).
 
 **Rationale**: Babbles, templates, and prompt state all live in browser localStorage. The backend's only responsibilities are:
 
 1. Proxy LLM calls to Azure OpenAI (CORS workaround)
-1. Proxy Whisper STT calls to Azure OpenAI (CORS workaround)
+1. Proxy gpt-4o-transcribe STT calls to Azure OpenAI (CORS workaround)
 1. Persist LLM/STT settings to `~/.prompt-babbler/settings.json`
 1. Provide health checks and OpenTelemetry (via Aspire ServiceDefaults)
 
 This minimizes backend complexity while maintaining Clean Architecture for future expansion (adding Cosmos DB, blob storage, auth, etc.).
 
-**Domain layer (minimal)**: Contains `LlmSettings` model (with `WhisperDeploymentName`) and interfaces `ISettingsService`, `IPromptGenerationService`, `ITranscriptionService`.
+**Domain layer (minimal)**: Contains `LlmSettings` model (with `SttDeploymentName`) and interfaces `ISettingsService`, `IPromptGenerationService`, `ITranscriptionService`.
 
-**Infrastructure layer (minimal)**: Contains `FileSettingsService` (reads/writes config file), `AzureOpenAiPromptGenerationService` (wraps Azure.AI.OpenAI SDK for LLM), and `AzureOpenAiTranscriptionService` (wraps Azure.AI.OpenAI SDK for Whisper STT).
+**Infrastructure layer (minimal)**: Contains `FileSettingsService` (reads/writes config file), `AzureOpenAiPromptGenerationService` (wraps Azure.AI.OpenAI SDK for LLM), and `AzureOpenAiTranscriptionService` (wraps Azure.AI.OpenAI SDK for gpt-4o-transcribe STT).
 
 **Alternatives considered**:
 
@@ -284,7 +306,7 @@ The natural vNext target architecture is:
 
 ## R11: Speech-to-Text Strategy — SUPERSEDED by R4
 
-> **⚠️ SUPERSEDED**: This research decision was made before R4. R4 is the canonical STT decision for V1. V1 uses Azure OpenAI Whisper via backend proxy for all speech-to-text. The original reasoning below is preserved for historical context only.
+> **⚠️ SUPERSEDED**: This research decision was made before R4. R4 is the canonical STT decision for V1. V1 uses Azure OpenAI **gpt-4o-transcribe** via backend proxy for all speech-to-text (chosen over Whisper for lower word error rate — see R4 model comparison). The original reasoning below is preserved for historical context only.
 
 **Original Decision**: V1 uses the browser's Web Speech API for real-time transcription. vNext will migrate to a server-side Azure OpenAI STT model.
 
@@ -332,13 +354,13 @@ This approach decouples transcription from browser engine quality and enables co
 
 ## R13: Audio Chunk Format and Size Limit
 
-**Decision**: Audio captured as `audio/webm;codecs=opus` via the MediaRecorder API, with each chunk capped at 25 MB (matching the Azure OpenAI Whisper API file size limit).
+**Decision**: Audio captured as `audio/webm;codecs=opus` via the MediaRecorder API, with each chunk capped at 25 MB (matching the Azure OpenAI audio transcription API file size limit).
 
-**Rationale**: `webm/opus` is the most universally supported MediaRecorder output codec across Chrome, Edge, and Firefox. Safari 14.1+ also supports it. At typical audio bitrates (~128 kbps), a 5-second chunk is approximately 80 KB — well under the 25 MB limit. The 25 MB cap aligns directly with the Azure OpenAI Whisper API's maximum file size, preventing unnecessary backend validation complexity.
+**Rationale**: `webm/opus` is the most universally supported MediaRecorder output codec across Chrome, Edge, and Firefox. Safari 14.1+ also supports it. At typical audio bitrates (~128 kbps), a 5-second chunk is approximately 80 KB — well under the 25 MB limit. The 25 MB cap aligns directly with the Azure OpenAI audio transcription API's maximum file size, preventing unnecessary backend validation complexity.
 
 **Alternatives considered**:
 
-- **`audio/wav` (uncompressed)** — Rejected. Significantly larger files (~800 KB per 5-second chunk at 16-bit 44.1kHz mono). Wastes bandwidth for no quality benefit since Whisper internally resamples and compresses.
+- **`audio/wav` (uncompressed)** — Rejected. Significantly larger files (~800 KB per 5-second chunk at 16-bit 44.1kHz mono). Wastes bandwidth for no quality benefit since the STT model internally resamples and compresses.
 - **Runtime format negotiation** — Rejected for V1. Over-engineering given that `webm/opus` works in all target browsers. Can be revisited if a browser drops support (unlikely).
 
 ## R14: Local Storage Warning Threshold

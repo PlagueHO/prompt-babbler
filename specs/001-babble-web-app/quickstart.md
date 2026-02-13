@@ -11,7 +11,7 @@
 | pnpm | 10.x | `npm install -g pnpm` |
 | Git | 2.x | <https://git-scm.com/> |
 | Browser | Chrome 49+ / Edge 79+ / Safari 14.1+ / Firefox 25+ | (for MediaRecorder API support) |
-| Azure OpenAI | Active endpoint + API key + LLM deployment + Whisper deployment | <https://portal.azure.com/> |
+| Azure OpenAI | Active endpoint + API key + LLM deployment + STT deployment (default: gpt-4o-transcribe) | <https://portal.azure.com/> |
 
 ## Clone & Setup
 
@@ -89,7 +89,7 @@ Use the VS Code task runner (`Ctrl+Shift+P` → "Tasks: Run Task"):
    - **Endpoint**: e.g., `https://my-resource.openai.azure.com/`
    - **API Key**: Your Azure OpenAI API key
    - **LLM Deployment Name**: e.g., `gpt-4o-mini` (for prompt generation)
-   - **Whisper Deployment Name**: e.g., `whisper` (for speech-to-text)
+   - **STT Deployment Name**: e.g., `gpt-4o-transcribe` (for speech-to-text)
 1. Click **Save**
 1. Click **Test Connection** to verify
 
@@ -100,7 +100,7 @@ Settings are saved to `~/.prompt-babbler/settings.json` and survive restarts.
 1. Click **New Babble** or the **Record** button
 1. Grant microphone permission when prompted
 1. Speak your stream of consciousness
-1. Watch as your speech is transcribed in near-real-time (~5 second chunks via Whisper)
+1. Watch as your speech is transcribed in near-real-time (~5 second chunks via the configured STT model)
 1. Click **Stop** when finished
 1. Review and edit the transcribed text if needed
 1. Select a prompt template (e.g., "GitHub Copilot Prompt")
@@ -182,8 +182,8 @@ prompt-babbler/
 | Issue | Solution |
 |-------|----------|
 | Microphone not working | Check browser microphone permissions. Ensure no other app is using the mic. |
-| Transcription not appearing | Verify Azure OpenAI settings — ensure Whisper deployment name is correct and endpoint is reachable. |
-| "LLM settings not configured" | Go to Settings and enter your Azure OpenAI endpoint, API key, LLM deployment name, and Whisper deployment name. |
+| Transcription not appearing | Verify Azure OpenAI settings — ensure STT deployment name is correct (e.g., `gpt-4o-transcribe`) and endpoint is reachable. |
+| "LLM settings not configured" | Go to Settings and enter your Azure OpenAI endpoint, API key, LLM deployment name, and STT deployment name. |
 | `dotnet run` fails | Ensure .NET 10 SDK is installed: `dotnet --version` should show `10.0.x`. |
 | pnpm install fails | Ensure Node.js 22.x: `node --version`. Install pnpm: `npm install -g pnpm`. |
 | Aspire Dashboard not loading | Check <https://localhost:18888>. The port may differ — check terminal output. |

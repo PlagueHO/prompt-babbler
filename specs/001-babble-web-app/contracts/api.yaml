@@ -4,7 +4,7 @@ info:
   description: |
     Backend API for Prompt Babbler. V1 responsibilities:
     1. Proxy LLM calls to Azure OpenAI (CORS workaround)
-    2. Proxy Whisper STT calls to Azure OpenAI (CORS workaround)
+    2. Proxy STT calls to Azure OpenAI (CORS workaround)
     3. Manage LLM/STT settings (persist to local config file)
     4. Health checks (via Aspire ServiceDefaults)
   version: 1.0.0
@@ -82,11 +82,11 @@ paths:
   /api/transcribe:
     post:
       operationId: transcribeAudio
-      summary: Transcribe an audio chunk via Azure OpenAI Whisper
+      summary: Transcribe an audio chunk via Azure OpenAI STT
       description: |
         Receives an audio file (a ~5-second chunk captured by the browser's
         MediaRecorder API) and forwards it to the configured Azure OpenAI
-        Whisper deployment for transcription. Returns the transcribed text.
+        configured STT deployment for transcription. Returns the transcribed text.
         This endpoint is called repeatedly during recording — once per
         audio chunk — to provide near-real-time transcription.
       tags:
@@ -115,7 +115,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
         '422':
-          description: LLM settings not configured or Whisper deployment not set
+          description: LLM settings not configured or STT deployment not set
           content:
             application/problem+json:
               schema:
@@ -124,9 +124,9 @@ paths:
                 type: "https://promptbabbler.dev/errors/settings-not-configured"
                 title: "LLM Settings Not Configured"
                 status: 422
-                detail: "Azure OpenAI settings must be configured before transcribing audio. Please configure your endpoint, API key, and Whisper deployment name in Settings."
+                detail: "Azure OpenAI settings must be configured before transcribing audio. Please configure your endpoint, API key, and STT deployment name in Settings."
         '502':
-          description: Azure OpenAI Whisper endpoint error (invalid credentials, rate limiting, service unavailable)
+          description: Azure OpenAI STT endpoint error (invalid credentials, rate limiting, service unavailable)
           content:
             application/problem+json:
               schema:
@@ -155,7 +155,7 @@ paths:
                     endpoint: "https://my-resource.openai.azure.com/"
                     apiKeyHint: "...a1b2"
                     deploymentName: "gpt-4o-mini"
-                    whisperDeploymentName: "whisper"
+                    sttDeploymentName: "gpt-4o-transcribe"
                     isConfigured: true
                 notConfigured:
                   summary: Settings not yet configured
@@ -163,7 +163,7 @@ paths:
                     endpoint: ""
                     apiKeyHint: ""
                     deploymentName: ""
-                    whisperDeploymentName: ""
+                    sttDeploymentName: ""
                     isConfigured: false
 
     put:
@@ -185,7 +185,7 @@ paths:
               endpoint: "https://my-resource.openai.azure.com/"
               apiKey: "sk-abc123def456..."
               deploymentName: "gpt-4o-mini"
-              whisperDeploymentName: "whisper"
+              sttDeploymentName: "gpt-4o-transcribe"
       responses:
         '200':
           description: Settings saved successfully
@@ -303,7 +303,7 @@ components:
         - endpoint
         - apiKeyHint
         - deploymentName
-        - whisperDeploymentName
+        - sttDeploymentName
         - isConfigured
       properties:
         endpoint:
@@ -316,9 +316,9 @@ components:
         deploymentName:
           type: string
           description: Model deployment name for LLM/prompt generation.
-        whisperDeploymentName:
+        sttDeploymentName:
           type: string
-          description: Model deployment name for Whisper speech-to-text.
+          description: Model deployment name for speech-to-text (e.g., gpt-4o-transcribe).
         isConfigured:
           type: boolean
           description: Whether all required settings have been provided.
@@ -329,7 +329,7 @@ components:
         - endpoint
         - apiKey
         - deploymentName
-        - whisperDeploymentName
+        - sttDeploymentName
       properties:
         endpoint:
           type: string
@@ -344,11 +344,11 @@ components:
           minLength: 1
           maxLength: 64
           description: The deployment name of the LLM model to use for prompt generation.
-        whisperDeploymentName:
+        sttDeploymentName:
           type: string
           minLength: 1
           maxLength: 64
-          description: The deployment name of the Whisper model to use for speech-to-text.
+          description: The deployment name of the STT model to use for speech-to-text (e.g., gpt-4o-transcribe).
 
     TestConnectionResponse:
       type: object
@@ -397,10 +397,10 @@ components:
         file:
           type: string
           format: binary
-          description: Audio file to transcribe. Preferred format is audio/webm;codecs=opus. Other supported formats include ogg, wav, mp3, mp4, m4a, flac, mpeg, mpga. Max size 25 MB (Azure OpenAI Whisper API limit).
+          description: Audio file to transcribe. Preferred format is audio/webm;codecs=opus. Other supported formats include ogg, wav, mp3, mp4, m4a, flac, mpeg, mpga. Max size 25 MB (Azure OpenAI audio transcription API limit).
         language:
           type: string
-          description: Optional ISO-639-1 language code (e.g., "en", "es", "fr"). If omitted, Whisper auto-detects the language.
+          description: Optional ISO-639-1 language code (e.g., "en", "es", "fr"). If omitted, the STT model auto-detects the language.
 
     TranscriptionResponse:
       type: object
@@ -424,7 +424,7 @@ tags:
   - name: Prompts
     description: Prompt generation endpoints
   - name: Transcription
-    description: Speech-to-text transcription via Azure OpenAI Whisper
+    description: Speech-to-text transcription via Azure OpenAI
   - name: Settings
     description: LLM and STT configuration management
   - name: Health
