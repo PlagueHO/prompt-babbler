@@ -1,6 +1,6 @@
 # Data Model: Prompt Babbler — 001-babble-web-app
 
-**Date**: 2026-02-11 | **Spec**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
+**Date**: 2026-02-12 | **Spec**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
 
 ## Overview
 
@@ -9,7 +9,7 @@ V1 uses a split-storage model:
 - **Browser localStorage**: Babbles, Prompt Templates, Generated Prompts (last per babble)
 - **Backend config file** (`~/.prompt-babbler/settings.json`): LLM Settings
 
-All localStorage entities use JSON serialization. Entity IDs are generated client-side using `crypto.randomUUID()`.
+All localStorage entities use JSON serialization. Entity IDs are UUID v4, generated client-side using `crypto.randomUUID()`. Audio is captured as `audio/webm;codecs=opus` (max 25 MB per chunk). Interim transcription data is persisted to localStorage after every successfully transcribed chunk (~5 seconds). The app warns when localStorage usage reaches 80% of quota.
 
 ## Entities
 
@@ -177,13 +177,14 @@ The `apiKeyHint` field shows only the last 4 characters. The full `apiKey` is ne
          │  generatedAt
          └───────────────────┘
 
-┌─────────────┐
-│ LlmSettings │  (Server-side only)
-│             │
-│  endpoint   │
-│  apiKey     │
-│  deploymentName
-└─────────────┘
+┌──────────────────────────┐
+│ LlmSettings              │  (Server-side only)
+│                          │
+│  endpoint                │
+│  apiKey                  │
+│  deploymentName          │
+│  whisperDeploymentName   │
+└──────────────────────────┘
 ```
 
 - **Babble 1:0..1 GeneratedPrompt** (V1: stores only the last generated prompt per babble)
@@ -202,7 +203,7 @@ The `apiKeyHint` field shows only the last 4 characters. The full `apiKey` is ne
 | `prompt-babbler:templates` | `PromptTemplate[]` | All templates (built-in + custom) |
 | `prompt-babbler:settings:speechLang` | `string` | Whisper transcription language code (ISO-639-1, e.g., "en"). Empty = auto-detect. |
 
-**Size management**: Estimated storage per babble ≈ 5-50 KB (mostly text). localStorage limit is typically 5-10 MB. At 50 KB average, ~100-200 babbles fit comfortably. The app warns when usage exceeds 80% of the quota (FR-029).
+**Size management**: Estimated storage per babble ≈ 5-50 KB (mostly text). localStorage limit is typically 5-10 MB. At 50 KB average, ~100-200 babbles fit comfortably. The app warns when usage exceeds 80% of the quota (FR-029). At 100% capacity, the app refuses to create new babbles and displays guidance suggesting the user delete old babbles.
 
 ---
 

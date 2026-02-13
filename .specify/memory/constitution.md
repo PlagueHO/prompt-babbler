@@ -1,14 +1,17 @@
 <!--
   Sync Impact Report
   ==================================================
-  Version change: 1.0.0 → 1.1.0
-  Bump rationale: MINOR — new principle added (VII. Azure-First
-  & Cost Optimization).
+  Version change: 1.1.0 → 1.2.0
+  Bump rationale: MINOR — materially expanded IaC and deployment
+  guidance within Principle VII (Azure-First & Cost Optimization).
 
-  Modified principles: None renamed or redefined.
+  Modified principles:
+    - VII. Azure-First & Cost Optimization: IaC line updated from
+      "Bicep or Terraform" to Bicep-only; added Azure Verified
+      Modules (AVM) requirement; added Azure Developer CLI (azd)
+      requirement for quickstart deployments.
 
-  Added sections:
-    - Core Principle VII. Azure-First & Cost Optimization
+  Added sections: N/A (guidance added within existing principle)
 
   Removed sections: N/A
 
@@ -148,8 +151,17 @@
   - Development and test environments MUST use free-tier or
     dev/test-priced SKUs. Production-grade resources in non-
     production environments are prohibited.
-- Infrastructure MUST be defined as code (Bicep or Terraform) and
-  stored in version control alongside the application.
+- Infrastructure MUST be defined as code using Bicep and stored in
+  version control alongside the application. Terraform and other
+  IaC tools MUST NOT be used.
+- Bicep modules MUST use the latest Azure Verified Modules (AVM)
+  where a verified module exists for the target resource type.
+  Custom Bicep modules MUST NOT duplicate functionality already
+  provided by an AVM.
+- Azure Developer CLI (azd) MUST be used for quickstart and
+  developer-environment deployments of Azure infrastructure.
+  Deployment templates MUST include an `azure.yaml` manifest and
+  an `infra/` folder following azd conventions.
 - Azure service selection MUST prefer broadly adopted, GA (Generally
   Available) services. Preview services MUST NOT be used in
   production unless explicitly approved and documented.
@@ -218,4 +230,4 @@
 - Refer to the project's agent-file-template for runtime-specific
   development guidance.
 
-**Version**: 1.1.0 | **Ratified**: 2026-02-09 | **Last Amended**: 2026-02-09
+**Version**: 1.2.0 | **Ratified**: 2026-02-09 | **Last Amended**: 2026-02-12

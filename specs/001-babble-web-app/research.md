@@ -1,6 +1,6 @@
 # Research: Prompt Babbler — 001-babble-web-app
 
-**Date**: 2026-02-11 | **Spec**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
+**Date**: 2026-02-12 | **Spec**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
 
 ## R1: CORS on Azure OpenAI / Azure AI Foundry
 
@@ -282,9 +282,11 @@ The natural vNext target architecture is:
 - **Terraform instead of Bicep** — Rejected. Constitution Principle VII mandates Azure-First, and Bicep is the native Azure IaC language with first-class `azd` integration.
 - **No placeholder at all** — Rejected. The cost is a single YAML file and a README. Establishing structure now avoids re-scaffolding later and documents intent for contributors.
 
-## R11: Speech-to-Text Strategy — Web Speech API (V1) → Azure OpenAI STT (vNext)
+## R11: Speech-to-Text Strategy — SUPERSEDED by R4
 
-**Decision**: V1 uses the browser's Web Speech API for real-time transcription. vNext will migrate to a server-side Azure OpenAI STT model.
+> **⚠️ SUPERSEDED**: This research decision was made before R4. R4 is the canonical STT decision for V1. V1 uses Azure OpenAI Whisper via backend proxy for all speech-to-text. The original reasoning below is preserved for historical context only.
+
+**Original Decision**: V1 uses the browser's Web Speech API for real-time transcription. vNext will migrate to a server-side Azure OpenAI STT model.
 
 **Rationale**: The Web Speech API is free, requires zero backend infrastructure for speech recognition, and provides real-time interim results with continuous mode — all of which are ideal for a local-first V1. However, it has limitations:
 
@@ -316,3 +318,58 @@ This approach decouples transcription from browser engine quality and enables co
 - **Use STT in V1** — Rejected. Adds backend complexity (audio streaming endpoint, chunking, MediaRecorder integration) that isn't needed when Web Speech API works adequately for the MVP use case. Violates Principle I (YAGNI).
 - **Stay on Web Speech API forever** — Rejected. The browser inconsistencies and lack of Firefox support make it unsuitable for a production-quality product beyond MVP.
 - **Proxy approach (backend forwards audio to external endpoint)** — Rejected per user preference. vNext will deploy the STT model directly within Azure AI Foundry and call it natively from the .NET backend.
+
+## R12: Backend API Network Binding — Localhost Only
+
+**Decision**: The backend API binds to `localhost` / `127.0.0.1` only, rejecting connections from other network devices.
+
+**Rationale**: The backend stores and uses Azure OpenAI API keys server-side. Binding to all interfaces (`0.0.0.0`) would expose the API — and by extension the user's API keys — to any device on the local network. Since V1 is a single-user, local-first application with no authentication, localhost-only binding is the simplest and most secure default.
+
+**Alternatives considered**:
+
+- **Bind `0.0.0.0` (LAN-accessible)** — Rejected. Exposes API keys and unauthenticated endpoints to network peers. No use case for LAN access in V1.
+- **Localhost with optional LAN flag** — Rejected for V1. Unnecessary complexity (Principle I). Can be added later if multi-device access is requested.
+
+## R13: Audio Chunk Format and Size Limit
+
+**Decision**: Audio captured as `audio/webm;codecs=opus` via the MediaRecorder API, with each chunk capped at 25 MB (matching the Azure OpenAI Whisper API file size limit).
+
+**Rationale**: `webm/opus` is the most universally supported MediaRecorder output codec across Chrome, Edge, and Firefox. Safari 14.1+ also supports it. At typical audio bitrates (~128 kbps), a 5-second chunk is approximately 80 KB — well under the 25 MB limit. The 25 MB cap aligns directly with the Azure OpenAI Whisper API's maximum file size, preventing unnecessary backend validation complexity.
+
+**Alternatives considered**:
+
+- **`audio/wav` (uncompressed)** — Rejected. Significantly larger files (~800 KB per 5-second chunk at 16-bit 44.1kHz mono). Wastes bandwidth for no quality benefit since Whisper internally resamples and compresses.
+- **Runtime format negotiation** — Rejected for V1. Over-engineering given that `webm/opus` works in all target browsers. Can be revisited if a browser drops support (unlikely).
+
+## R14: Local Storage Warning Threshold
+
+**Decision**: Warn users when localStorage usage reaches 80% of total available quota. At 100% capacity, refuse to create new babbles and display guidance.
+
+**Rationale**: 80% is an industry-standard threshold (used in disk, memory, and storage alerting) that balances usable space with sufficient headroom. It gives users meaningful time to act (delete old babbles, edit text length) before hitting the hard limit. The `StorageManager.estimate()` API provides quota/usage data; for browsers without it, a fallback calculation based on serialized data size versus a conservative 5 MB assumption is used.
+
+**Alternatives considered**:
+
+- **90% threshold** — Rejected. Too late — users may hit 100% during a single recording session before acting on the warning.
+- **70% threshold** — Rejected. Too aggressive — triggers prematurely when substantial space remains, leading to warning fatigue.
+
+## R15: Entity Identifier Strategy — UUID v4
+
+**Decision**: All entities (Babble, PromptTemplate, GeneratedPrompt) use UUID v4 identifiers generated client-side via `crypto.randomUUID()`.
+
+**Rationale**: UUID v4 is the standard for client-generated unique identifiers. It has negligible collision probability, requires no server round-trip for ID generation, and is directly portable to a server-side database (Cosmos DB, SQL) in V2 without ID remapping. The `crypto.randomUUID()` API is available in all target browsers (Chrome 92+, Edge 92+, Safari 15.4+, Firefox 95+) and uses a cryptographically secure random source.
+
+**Alternatives considered**:
+
+- **Timestamp-based ID (Date.now() + random suffix)** — Rejected. Collision risk in rapid succession (multi-tab). Not cryptographically random. Leaks creation timing information.
+- **ULID (Universally Unique Lexicographically Sortable Identifier)** — Rejected. Requires an additional npm dependency. Sorting is already handled by `createdAt`/`updatedAt` fields. Violates Principle I (unnecessary complexity).
+
+## R16: Interim Transcription Persistence — Per-Chunk
+
+**Decision**: Persist interim transcription data to localStorage after every successfully transcribed audio chunk (~5 seconds). At most one chunk of transcription may be lost in an unexpected browser crash.
+
+**Rationale**: Each transcription chunk takes ~5 seconds to capture and a few hundred milliseconds to process. Writing to localStorage after each chunk adds negligible overhead (a single `JSON.stringify` + `setItem` call, typically <5ms). The benefit is near-zero data loss on crash — the user loses at most the last 5 seconds of speech. This is critical for long recording sessions (30+ minutes) where losing all text would be catastrophic.
+
+**Alternatives considered**:
+
+- **Persist every 30 seconds** — Rejected. Up to 30 seconds of data loss is unacceptable for the core feature of the application. Users speaking for extended periods should not fear data loss.
+- **Persist every 60 seconds** — Rejected. Same reasoning — unacceptable loss window for a speech capture tool.

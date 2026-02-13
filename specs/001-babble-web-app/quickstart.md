@@ -1,6 +1,6 @@
 # Quickstart: Prompt Babbler — 001-babble-web-app
 
-**Date**: 2026-02-11 | **Spec**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
+**Date**: 2026-02-12 | **Spec**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
 
 ## Prerequisites
 

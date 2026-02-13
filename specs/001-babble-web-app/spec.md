@@ -12,16 +12,24 @@
 - Q: How should the application access the Azure OpenAI/Foundry LLM given that CORS is not configurable on Azure OpenAI/Foundry endpoints (blocking browser-direct calls)? → A: Implement a .NET 10 backend API with Aspire AppHost. The backend proxies LLM calls to Azure OpenAI/Foundry, eliminating CORS issues. Scaffold and patterns to follow the Libris-Maleficarum repository structure (Clean Architecture: Api → Domain → Infrastructure, Aspire orchestration, React+TypeScript+Vite frontend, GitHub Actions CI/CD, VS Code tasks).
 - Q: Where should babbles, templates, and prompt history be stored in V1, given the new backend API? → A: Browser local storage. The backend API's role in V1 is limited to proxying LLM calls and managing LLM settings. Full backend CRUD storage will be added in a future iteration.
 - Q: How should the backend persist the Azure OpenAI API key between restarts? → A: Local config file on disk (e.g., `~/.prompt-babbler/settings.json`). Simple, survives restarts, no extra dependencies.
-- Q: How should the application handle speech recognition language? → A: Default to browser locale, but provide a speech language dropdown in settings so users can select from Web Speech API supported languages.
+- Q: How should the application handle speech recognition language? → A: Default to auto-detect, but provide a speech language dropdown in settings so users can select a preferred language from Whisper's supported languages (ISO-639-1 codes).
 - Q: Which user stories are in scope for V1? → A: P1–P5 (Record, Generate, Manage Babbles, Configure LLM, Manage Templates). P6 (Prompt History) is deferred to a future iteration.
+
+### Session 2026-02-12
+
+- Q: Should the backend API bind to localhost only or be LAN-accessible? → A: Localhost-only binding (`127.0.0.1`). The API is unreachable from other devices on the network, protecting server-side API keys.
+- Q: What audio format and maximum chunk size should the application use for Whisper transcription? → A: `audio/webm;codecs=opus`, 25 MB max per chunk (matches Azure OpenAI Whisper API limit).
+- Q: At what threshold should the application warn users about local storage capacity? → A: Warn at 80% of available quota. Balanced headroom to save a few more babbles after warning.
+- Q: How should unique identifiers for babbles, templates, and generated prompts be generated? → A: UUID v4 via `crypto.randomUUID()`. Collision-proof, portable to server-side storage in V2.
+- Q: How frequently should interim transcription data be persisted during long recordings? → A: After every successfully transcribed chunk (~5 seconds). Near-zero data loss on crash, negligible performance impact.
 
 ## Assumptions
 
-- **Single-user, local-first**: This iteration is a single-user application running on the user's machine. The .NET backend API and React frontend both run locally via Aspire AppHost. There is no authentication, user accounts, or cloud-hosted storage.
+- **Single-user, local-first**: This iteration is a single-user application running on the user's machine. The .NET backend API and React frontend both run locally via Aspire AppHost. The backend API binds to `localhost` / `127.0.0.1` only, ensuring it is unreachable from other devices on the network. There is no authentication, user accounts, or cloud-hosted storage.
 - **Backend API proxies LLM and STT calls**: Azure OpenAI endpoints do not support CORS for browser-direct calls. A .NET 10 ASP.NET Core backend API handles all LLM and Whisper STT communication, accepting requests from the frontend and forwarding them to the configured Azure OpenAI endpoint. API keys are stored and used server-side only.
 - **Aspire AppHost orchestration**: Local development uses .NET Aspire to orchestrate the backend API and (optionally) other services via a single `dotnet run --project src/Orchestration/AppHost` command.
 - **Libris-Maleficarum scaffold patterns**: The project structure, CI/CD pipelines, VS Code tasks, devcontainer, coding conventions, and tooling follow the patterns established in [Libris-Maleficarum](https://github.com/PlagueHO/Libris-Maleficarum). Specifically: Clean Architecture (Api/Domain/Infrastructure/Orchestration), React 19 + TypeScript + Vite frontend, GitHub Actions workflows, MSTest + FluentAssertions for backend, Vitest + Testing Library for frontend.
-- **Browser speech recognition**: The Azure OpenAI Whisper model will be used for converting speech to text, called through the backend API. The browser's MediaRecorder API captures audio, which is sent in chunks to the backend for transcription. Users will need a compatible browser that supports the MediaRecorder API (Chrome, Edge, Safari, Firefox).
+- **Browser speech recognition**: The Azure OpenAI Whisper model will be used for converting speech to text, called through the backend API. The browser's MediaRecorder API captures audio in `audio/webm;codecs=opus` format, which is sent in ~5-second chunks (max 25 MB per chunk, matching the Azure OpenAI Whisper API limit) to the backend for transcription. Users will need a compatible browser that supports the MediaRecorder API (Chrome, Edge, Safari, Firefox).
 - **Azure OpenAI only for first iteration**: The LLM provider for prompt generation is Azure OpenAI, accessed via API key and endpoint configured in the backend. Other LLM providers may be added in future iterations.
 - **Local storage persistence for babbles**: Babbles, templates, and prompt history are stored in browser local storage in this iteration. In future iterations, the backend API will provide server-side storage. Users are responsible for understanding that clearing browser data will remove their babbles.
 - **No offline LLM**: Prompt generation and speech transcription require an active internet connection to reach the Azure OpenAI endpoint via the backend. Audio recording works offline (can be transcribed when connectivity is available).
@@ -151,11 +159,11 @@ A user can view previously generated prompts for a babble. Each generated prompt
 
 #### Recording & Transcription
 
-- **FR-001**: System MUST allow users to record speech via their computer's microphone, capture audio using the browser MediaRecorder API, and transcribe it to text via the Azure OpenAI Whisper model through the backend API.
+- **FR-001**: System MUST allow users to record speech via their computer's microphone, capture audio using the browser MediaRecorder API in `audio/webm;codecs=opus` format, and transcribe it to text via the Azure OpenAI Whisper model through the backend API. Each audio chunk sent to the backend MUST NOT exceed 25 MB.
 - **FR-002**: System MUST display a near-real-time preview of the transcribed text as the user speaks, with transcription results appearing in ~5-second intervals as audio chunks are processed by Whisper.
 - **FR-003**: System MUST save the completed transcription as a new Babble when the user stops recording.
 - **FR-004**: System MUST auto-generate a babble title from the first few words of the transcription, with the option for the user to rename it.
-- **FR-005**: System MUST handle long recording sessions (30+ minutes) without data loss, periodically persisting interim transcription data.
+- **FR-005**: System MUST handle long recording sessions (30+ minutes) without data loss by persisting interim transcription data to local storage after every successfully transcribed audio chunk (~5 seconds). At most one chunk of transcription may be lost in the event of an unexpected browser crash.
 - **FR-006**: System MUST warn the user before navigating away from an active recording session.
 
 #### Babble Management
@@ -194,15 +202,15 @@ A user can view previously generated prompts for a babble. Each generated prompt
 #### Browser Compatibility & Resilience
 
 - **FR-028**: System MUST detect whether the browser supports the MediaRecorder API on load and display a clear message if not supported.
-- **FR-029**: System MUST warn the user when local storage is nearing capacity.
-- **FR-030**: System MUST run locally on the user's machine using the .NET Aspire AppHost to orchestrate the backend API and frontend. A single command (`dotnet run --project src/Orchestration/AppHost`) starts all services.
+- **FR-029**: System MUST warn the user when local storage usage reaches 80% of total available quota. At 100% capacity, the system MUST refuse to create new babbles rather than silently failing, and display a message suggesting the user delete old babbles.
+- **FR-030**: System MUST run locally on the user's machine using the .NET Aspire AppHost to orchestrate the backend API and frontend. The backend API MUST bind to `localhost` / `127.0.0.1` only, preventing access from other network devices. A single command (`dotnet run --project src/Orchestration/AppHost`) starts all services.
 - **FR-031**: System MUST default the transcription language to auto-detect and provide a setting for users to select a preferred language from Whisper's supported languages (ISO-639-1 codes).
 
 ### Key Entities
 
-- **Babble**: A captured stream-of-consciousness transcription. Key attributes: unique identifier, title, transcribed text content, creation date, last modified date, list of associated generated prompts.
-- **Prompt Template**: A reusable template that defines how a babble should be transformed into a prompt for a specific target system. Key attributes: unique identifier, name, description, system prompt text, whether it is built-in or custom, creation date.
-- **Generated Prompt**: The output of combining a babble with a template via the LLM. Key attributes: unique identifier, associated babble identifier, associated template identifier, generated prompt text, generation date.
+- **Babble**: A captured stream-of-consciousness transcription. Key attributes: unique identifier (UUID v4, generated client-side via `crypto.randomUUID()`), title, transcribed text content, creation date, last modified date, most recently generated prompt (V1; full prompt history deferred to V2).
+- **Prompt Template**: A reusable template that defines how a babble should be transformed into a prompt for a specific target system. Key attributes: unique identifier (UUID v4), name, description, system prompt text, whether it is built-in or custom, creation date.
+- **Generated Prompt**: The output of combining a babble with a template via the LLM. Key attributes: unique identifier (UUID v4), associated babble identifier, associated template identifier, generated prompt text, generation date.
 - **LLM Settings**: The user's Azure OpenAI configuration. Key attributes: endpoint URL, API key, LLM model/deployment name, Whisper model/deployment name. Stored server-side in a local config file (`~/.prompt-babbler/settings.json`); the frontend interacts with LLM settings via a backend settings API.
 
 ## Success Criteria *(mandatory)*

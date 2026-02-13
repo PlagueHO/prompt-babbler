@@ -14,7 +14,7 @@ info:
 
 servers:
   - url: http://localhost:5000
-    description: Local development (Aspire-assigned)
+    description: Local development (Aspire-assigned, binds to localhost/127.0.0.1 only)
 
 paths:
   /api/prompts/generate:
@@ -397,7 +397,7 @@ components:
         file:
           type: string
           format: binary
-          description: Audio file to transcribe. Supported formats include webm, ogg, wav, mp3, mp4, m4a, flac, mpeg, mpga. Max size 25 MB.
+          description: Audio file to transcribe. Preferred format is audio/webm;codecs=opus. Other supported formats include ogg, wav, mp3, mp4, m4a, flac, mpeg, mpga. Max size 25 MB (Azure OpenAI Whisper API limit).
         language:
           type: string
           description: Optional ISO-639-1 language code (e.g., "en", "es", "fr"). If omitted, Whisper auto-detects the language.
