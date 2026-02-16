@@ -6,6 +6,7 @@
     <!-- Aspire -->
     <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.1.1" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.1" />
+    <PackageVersion Include="Aspire.Hosting.Azure.AIFoundry" Version="13.1.1-preview.1.26105.8" />
     <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.1.1" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.3.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.3.0" />

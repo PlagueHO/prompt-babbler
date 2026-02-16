@@ -10,7 +10,7 @@
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3, US4, US5)
 - Include exact file paths in descriptions
 
 ## Path Conventions
@@ -49,7 +49,7 @@
 
 - [x] T012 Implement ServiceDefaults with OpenTelemetry tracing/metrics, health check endpoints (/health, /alive), and HTTP resilience policies in prompt-babbler-service/src/Orchestration/ServiceDefaults/Extensions.cs and PromptBabbler.ServiceDefaults.csproj
 - [x] T013 Configure Aspire AppHost with API project reference (localhost-only binding per R12) and Vite frontend (AddViteApp("frontend", "../../../../prompt-babbler-app", "dev").WithPnpm()) with service discovery in prompt-babbler-service/src/Orchestration/AppHost/AppHost.cs
-- [x] T014 [P] Create LlmSettings domain model (Endpoint, ApiKey, DeploymentName, WhisperDeploymentName) in prompt-babbler-service/src/Domain/Models/LlmSettings.cs
+- [x] T014 [P] Create LlmSettings domain model (Endpoint, ApiKey, DeploymentName, SttDeploymentName) in prompt-babbler-service/src/Domain/Models/LlmSettings.cs
 - [x] T015 [P] Create domain service interfaces (ISettingsService, IPromptGenerationService, ITranscriptionService) in prompt-babbler-service/src/Domain/Interfaces/
 - [x] T016 Create API request/response model classes per contracts/api.yaml: GeneratePromptRequest, GeneratePromptResponse, LlmSettingsResponse, LlmSettingsSaveRequest, TestConnectionResponse, TranscriptionResponse in prompt-babbler-service/src/Api/Models/
 - [x] T017 Implement FileSettingsService (read/write ~/.prompt-babbler/settings.json with JSON serialization, directory auto-creation, thread-safe file access) in prompt-babbler-service/src/Infrastructure/Services/FileSettingsService.cs
@@ -73,7 +73,7 @@
 
 ## Phase 3: User Story 1 — Record a Babble (Priority: P1) 🎯 MVP
 
-**Goal**: Users can record stream-of-consciousness speech, have it transcribed in near-real-time via Azure OpenAI Whisper (~5-second chunks in `audio/webm;codecs=opus` format, R13), and save the result as a new babble in localStorage with UUID v4 IDs (R15).
+**Goal**: Users can record stream-of-consciousness speech, have it transcribed in near-real-time via the configured Azure OpenAI STT model (~5-second chunks in `audio/webm;codecs=opus` format, R13), and save the result as a new babble in localStorage with UUID v4 IDs (R15).
 
 **Independent Test**: Open the app, grant microphone access, click Record, speak, see transcribed text appear in ~5-second intervals, click Stop, verify babble is saved and persists across page reloads.
 
@@ -82,12 +82,12 @@
 > **Write these tests FIRST, ensure they FAIL before implementation**
 
 - [x] T031 [P] [US1] Write unit tests for AzureOpenAiTranscriptionService (transcribe audio chunk, handle missing settings, handle API errors, validate audio format webm/opus) in prompt-babbler-service/tests/unit/Infrastructure.UnitTests/Services/AzureOpenAiTranscriptionServiceTests.cs
-- [x] T032 [P] [US1] Write unit tests for TranscriptionController (POST /api/transcribe — success, missing file, file exceeds 25 MB, settings not configured, Whisper API error) in prompt-babbler-service/tests/unit/Api.UnitTests/Controllers/TranscriptionControllerTests.cs
+- [x] T032 [P] [US1] Write unit tests for TranscriptionController (POST /api/transcribe — success, missing file, file exceeds 25 MB, settings not configured, STT API error) in prompt-babbler-service/tests/unit/Api.UnitTests/Controllers/TranscriptionControllerTests.cs
 - [x] T033 [P] [US1] Write component tests for RecordButton (render, microphone permission handling, click states) and RecordingIndicator (start/stop toggle, duration timer) in prompt-babbler-app/tests/components/recording/RecordButton.test.tsx and prompt-babbler-app/tests/components/recording/RecordingIndicator.test.tsx
 
 ### Implementation for User Story 1
 
-- [x] T034 [US1] Implement AzureOpenAiTranscriptionService (proxy audio to Azure OpenAI Whisper /audio/transcriptions endpoint, support language parameter, return transcribed text with duration) in prompt-babbler-service/src/Infrastructure/Services/AzureOpenAiTranscriptionService.cs
+- [x] T034 [US1] Implement AzureOpenAiTranscriptionService (proxy audio to configured Azure OpenAI STT model via AudioClient.TranscribeAudioAsync, support language parameter, return transcribed text with duration) in prompt-babbler-service/src/Infrastructure/Services/AzureOpenAiTranscriptionService.cs
 - [x] T035 [US1] Implement TranscriptionController with POST /api/transcribe endpoint (accept multipart/form-data audio file up to 25 MB, optional language code, return TranscriptionResponse, handle 400/422/502 per contracts/api.yaml) in prompt-babbler-service/src/Api/Controllers/TranscriptionController.cs
 - [x] T036 [US1] Implement useAudioRecording hook: MediaRecorder wrapper capturing audio/webm;codecs=opus format (R13), ~5-second chunk stop/restart cycle, handle microphone permissions, expose start/stop/isRecording/duration state in prompt-babbler-app/src/hooks/useAudioRecording.ts
 - [x] T037 [US1] Implement useTranscription hook: POST each audio chunk to /api/transcribe, accumulate transcribed text, manage loading/error state per chunk, expose transcribedText/isTranscribing in prompt-babbler-app/src/hooks/useTranscription.ts
@@ -159,7 +159,7 @@
 
 ## Phase 6: User Story 4 — Configure LLM Settings (Priority: P4)
 
-**Goal**: Users can enter, save, and test their Azure OpenAI configuration (endpoint, API key, LLM deployment, Whisper deployment). Settings persist via the backend to ~/.prompt-babbler/settings.json.
+**Goal**: Users can enter, save, and test their Azure OpenAI configuration (endpoint, API key, LLM deployment name, STT deployment name). Settings persist via the backend to ~/.prompt-babbler/settings.json.
 
 **Independent Test**: Navigate to Settings, enter Azure OpenAI credentials, save, verify settings persist across page reloads (API key masked), click "Test Connection" to verify endpoint is reachable.
 
@@ -176,7 +176,7 @@
 - [x] T066 [US4] Implement useSettings hook: GET/PUT settings from backend API via api-client, manage loading/error/saving state, expose settings/updateSettings/testConnection in prompt-babbler-app/src/hooks/useSettings.ts
 - [x] T067 [P] [US4] Create SettingsForm component with React Hook Form + Zod validation (endpoint URL format, required fields, deployment name constraints), masked API key display for existing settings, and save action with toast feedback in prompt-babbler-app/src/components/settings/SettingsForm.tsx
 - [x] T068 [P] [US4] Create ConnectionTest component with test button, loading spinner, success/failure result display with latency, and error message in prompt-babbler-app/src/components/settings/ConnectionTest.tsx
-- [x] T069 [P] [US4] Create LanguageSelector component with Whisper-supported language dropdown (ISO-639-1 codes), auto-detect default option, persisted to localStorage key prompt-babbler:settings:speechLang in prompt-babbler-app/src/components/settings/LanguageSelector.tsx
+- [x] T069 [P] [US4] Create LanguageSelector component with Azure OpenAI STT model-supported language dropdown (ISO-639-1 codes), auto-detect default option, persisted to localStorage key prompt-babbler:settings:speechLang in prompt-babbler-app/src/components/settings/LanguageSelector.tsx
 - [x] T070 [US4] Implement SettingsPage with SettingsForm, ConnectionTest, and LanguageSelector sections, loading settings from backend on mount via useSettings in prompt-babbler-app/src/pages/SettingsPage.tsx
 - [x] T071 [US4] Add settings-not-configured detection banner to RecordPage and BabblePage that checks GET /api/settings isConfigured flag and displays a message directing users to Settings in prompt-babbler-app/src/components/layout/SettingsRequiredBanner.tsx
 

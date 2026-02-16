@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.Azure.AIFoundry" />
     <PackageReference Include="Aspire.Hosting.JavaScript" />
   </ItemGroup>
   <ItemGroup>

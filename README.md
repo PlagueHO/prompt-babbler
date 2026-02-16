@@ -6,7 +6,7 @@ A speech-to-prompt web application that captures stream-of-consciousness speech,
 
 ```text
 ┌─────────────────────┐     ┌─────────────────────────────┐
-│   React Frontend    │     │    .NET Backend API          │
+│   React Frontend    │     │    .NET Backend API         │
 │   (Vite + TS)       │────▶│    (ASP.NET Core)           │
 │                     │     │                             │
 │  • Record speech    │     │  • POST /api/transcribe     │
@@ -22,7 +22,7 @@ A speech-to-prompt web application that captures stream-of-consciousness speech,
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | Frontend | React 19, TypeScript 5.x, Vite, Shadcn/UI, TailwindCSS v4 |
 | Backend | .NET 10, ASP.NET Core, Clean Architecture |
 | AI Services | Azure OpenAI (Whisper STT + LLM) |
@@ -32,7 +32,7 @@ A speech-to-prompt web application that captures stream-of-consciousness speech,
 
 ## Quick Start
 
-See [quickstart.md](specs/001-babble-web-app/quickstart.md) for detailed setup instructions.
+See [docs/QUICKSTART.md](docs/QUICKSTART.md) for detailed setup instructions.
 
 ### Prerequisites
 

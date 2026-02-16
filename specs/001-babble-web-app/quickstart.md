@@ -7,11 +7,13 @@
 | Tool | Version | Install |
 |------|---------|---------|
 | .NET SDK | 10.0.100+ | <https://dotnet.microsoft.com/download/dotnet/10.0> |
+| .NET Aspire | 13.1+ | Included in .NET SDK or `dotnet workload install aspire` |
 | Node.js | 22.x LTS | <https://nodejs.org/> |
 | pnpm | 10.x | `npm install -g pnpm` |
+| Azure CLI | 2.x | <https://learn.microsoft.com/cli/azure/install-azure-cli> |
 | Git | 2.x | <https://git-scm.com/> |
 | Browser | Chrome 49+ / Edge 79+ / Safari 14.1+ / Firefox 25+ | (for MediaRecorder API support) |
-| Azure OpenAI | Active endpoint + API key + LLM deployment + STT deployment (default: gpt-4o-transcribe) | <https://portal.azure.com/> |
+| Azure Subscription | Active subscription with Contributor access | <https://portal.azure.com/> |
 
 ## Clone & Setup
 
@@ -45,22 +47,91 @@ pnpm install
 cd ..
 ```
 
+## Configure Azure for Local Provisioning
+
+Aspire automatically provisions Azure AI Foundry resources during local development.
+This requires Azure CLI authentication and your Azure subscription details.
+
+See: [Aspire Local Azure Provisioning](https://aspire.dev/integrations/cloud/azure/local-provisioning/)
+
+### 1. Sign in to Azure CLI
+
+Sign in to the Azure CLI, targeting the tenant that contains your subscription:
+
+```bash
+az login --tenant <your-tenant-id>
+```
+
+Verify the correct subscription is active:
+
+```bash
+az account show --query "{name:name, id:id, tenantId:tenantId}" -o table
+```
+
+### 2. Set user secrets
+
+Aspire reads Azure configuration from [dotnet user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
+This keeps sensitive values out of source control.
+
+```bash
+cd prompt-babbler-service
+
+# Initialize user secrets for the AppHost project (only needed once)
+dotnet user-secrets init --project src/Orchestration/AppHost/PromptBabbler.AppHost.csproj
+
+# Set your Azure subscription ID (required)
+dotnet user-secrets set "Azure:SubscriptionId" "<your-subscription-id>" --project src/Orchestration/AppHost
+
+# Set your Azure tenant ID (required)
+dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>" --project src/Orchestration/AppHost
+```
+
+Replace `<your-subscription-id>` and `<your-tenant-id>` with your actual values.
+You can find these by running `az account show`.
+
+> **Note**: The Azure region (`swedencentral`) and credential source (`AzureCli`) are
+> configured in `launchSettings.json` and do not need to be set as user secrets.
+
+### 3. Verify model quota (optional)
+
+The AppHost deploys two AI models by default:
+
+| Deployment | Default Model | SKU |
+|------------|--------------|-----|
+| `chat` | gpt-4.1 | Standard |
+| `stt` | gpt-4o-transcribe | GlobalStandard |
+
+Model names and versions can be overridden via `MicrosoftFoundry__*` environment
+variables in `launchSettings.json`. Ensure your subscription has available quota
+for the configured models in the target region.
+
 ## Run Locally (Aspire)
 
 The entire application starts with a single command:
 
 ```bash
 cd prompt-babbler-service
+aspire run
+```
+
+Or using `dotnet run`:
+
+```bash
+cd prompt-babbler-service
 dotnet run --project src/Orchestration/AppHost/PromptBabbler.AppHost.csproj
 ```
 
-This starts:
+On first run, Aspire will:
 
-- **Backend API** at `http://localhost:5000` (port assigned by Aspire)
-- **Frontend app** at `http://localhost:5173` (Vite dev server, proxied by Aspire)
-- **Aspire Dashboard** at `https://localhost:18888` (telemetry, logs, traces)
+1. **Provision Azure resources** — creates an AI Foundry resource group and deploys the chat and STT models
+2. **Start the backend API** (port assigned by Aspire)
+3. **Start the frontend app** via Vite dev server (proxied by Aspire)
+4. **Launch the Aspire Dashboard** for telemetry, logs, and traces
 
-Open the Aspire Dashboard to see all services and their endpoints.
+> **First run takes several minutes** while Azure resources are provisioned.
+> Subsequent runs reuse the existing resources and start much faster.
+
+Open the Aspire Dashboard (URL shown in terminal output) to see all services and their endpoints.
 
 ## VS Code Tasks
 
@@ -83,17 +154,19 @@ Use the VS Code task runner (`Ctrl+Shift+P` → "Tasks: Run Task"):
 
 ## Configure LLM Settings
 
-1. Open the app in your browser (URL from Aspire Dashboard)
-1. Navigate to **Settings**
-1. Enter your Azure OpenAI details:
-   - **Endpoint**: e.g., `https://my-resource.openai.azure.com/`
-   - **API Key**: Your Azure OpenAI API key
-   - **LLM Deployment Name**: e.g., `gpt-4o-mini` (for prompt generation)
-   - **STT Deployment Name**: e.g., `gpt-4o-transcribe` (for speech-to-text)
-1. Click **Save**
-1. Click **Test Connection** to verify
+The Azure AI Foundry endpoint and model deployments are automatically configured
+by Aspire and injected into the API service. No manual endpoint or API key
+configuration is needed.
 
-Settings are saved to `~/.prompt-babbler/settings.json` and survive restarts.
+To customize model deployments, edit the `MicrosoftFoundry__*` environment
+variables in `launchSettings.json`:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MicrosoftFoundry__chatModelName` | `gpt-4.1` | Chat/LLM model name |
+| `MicrosoftFoundry__chatModelVersion` | `2025-04-14` | Chat model version |
+| `MicrosoftFoundry__sttModelName` | `gpt-4o-transcribe` | Speech-to-text model name |
+| `MicrosoftFoundry__sttModelVersion` | `2025-03-20` | STT model version |
 
 ## First Babble
 
@@ -181,12 +254,14 @@ prompt-babbler/
 
 | Issue | Solution |
 |-------|----------|
+| `InvalidAuthenticationTokenTenant` | Azure CLI is signed into the wrong tenant. Run `az login --tenant <your-tenant-id>` and ensure `Azure:TenantId` is set in user secrets. |
+| `InsufficientQuota` | Your subscription has no available quota for the model/SKU in the target region. Check quota in the Azure Portal or switch to a model with capacity. |
+| Azure provisioning hangs | Ensure `Azure:SubscriptionId` and `Azure:TenantId` are set: `dotnet user-secrets list --project src/Orchestration/AppHost`. |
 | Microphone not working | Check browser microphone permissions. Ensure no other app is using the mic. |
-| Transcription not appearing | Verify Azure OpenAI settings — ensure STT deployment name is correct (e.g., `gpt-4o-transcribe`) and endpoint is reachable. |
-| "LLM settings not configured" | Go to Settings and enter your Azure OpenAI endpoint, API key, LLM deployment name, and STT deployment name. |
+| Transcription not appearing | Check the Aspire Dashboard for API errors. Ensure the STT model deployed successfully. |
 | `dotnet run` fails | Ensure .NET 10 SDK is installed: `dotnet --version` should show `10.0.x`. |
 | pnpm install fails | Ensure Node.js 22.x: `node --version`. Install pnpm: `npm install -g pnpm`. |
-| Aspire Dashboard not loading | Check <https://localhost:18888>. The port may differ — check terminal output. |
+| Aspire Dashboard not loading | The dashboard URL is shown in terminal output. Port may differ from default. |
 | localStorage full warning | Delete old babbles you no longer need. Each babble uses ~5-50 KB. |
 
 ## Azure Developer CLI (vNext)
