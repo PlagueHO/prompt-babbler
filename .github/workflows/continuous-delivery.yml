@@ -1,0 +1,80 @@
+name: Continuous Delivery
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+    paths:
+      - infra/**
+      - prompt-babbler-service/**
+      - prompt-babbler-app/**
+
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  set-build-variables:
+    name: Set Build Variables
+    uses: ./.github/workflows/set-build-variables.yml
+
+  lint-and-publish-bicep:
+    name: Lint and Publish Bicep
+    uses: ./.github/workflows/lint-and-publish-bicep.yml
+
+  lint-build-test-and-publish-backend-service:
+    name: Lint, Build, Test and Publish Backend Service
+    uses: ./.github/workflows/build-and-publish-backend-service.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    with:
+      build_configuration: 'Release'
+
+  build-and-publish-frontend-app:
+    name: Build and Publish Frontend App
+    uses: ./.github/workflows/build-and-publish-frontend-app.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+  validate-infrastructure:
+    name: Validate Infrastructure
+    needs:
+      - set-build-variables
+      - lint-and-publish-bicep
+      - lint-build-test-and-publish-backend-service
+    uses: ./.github/workflows/validate-infrastructure.yml
+    with:
+      ENVIRONMENT: test
+      BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_ENV_NAME: ${{ format('pbblr-{0}', github.run_id) }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
+  e2e-test:
+    name: E2E Test
+    needs:
+      - set-build-variables
+      - validate-infrastructure
+    uses: ./.github/workflows/e2e-test.yml
+    with:
+      ENVIRONMENT: test
+      BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_ENV_NAME: ${{ format('pbblr-{0}', github.run_id) }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}

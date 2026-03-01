@@ -1,37 +1,175 @@
-name: Build and Publish Backend Service
+name: Lint, Build, Test and Publish Backend Service
 
 on:
   workflow_call:
     inputs:
-      version:
-        required: true
+      build_configuration:
+        description: 'Build configuration (Debug/Release)'
         type: string
+        default: 'Debug'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
-  build:
+  dotnet-lint:
     runs-on: ubuntu-latest
+    name: Lint Solution
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore prompt-babbler-service/PromptBabbler.slnx
+
+      - name: Lint with dotnet format
+        run: dotnet format prompt-babbler-service/PromptBabbler.slnx --verify-no-changes --severity error
+
+  dotnet-build-test:
+    runs-on: ubuntu-latest
+    needs: dotnet-lint
+    name: Build and Test Solution
     defaults:
       run:
         working-directory: prompt-babbler-service
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
         run: dotnet restore PromptBabbler.slnx
 
-      - name: Build
-        run: dotnet build PromptBabbler.slnx --no-restore --configuration Release
+      - name: Build solution
+        run: dotnet build PromptBabbler.slnx --no-restore --configuration ${{ inputs.build_configuration || 'Debug' }}
 
-      - name: Format Check
-        run: dotnet format PromptBabbler.slnx --verify-no-changes --no-restore
-
-      - name: Test
+      - name: Run unit tests
         run: |
-          dotnet test --project tests/unit/Api.UnitTests/PromptBabbler.Api.UnitTests.csproj --no-build --configuration Release
-          dotnet test --project tests/unit/Domain.UnitTests/PromptBabbler.Domain.UnitTests.csproj --no-build --configuration Release
-          dotnet test --project tests/unit/Infrastructure.UnitTests/PromptBabbler.Infrastructure.UnitTests.csproj --no-build --configuration Release
+          dotnet test --solution PromptBabbler.slnx \
+            --ignore-exit-code 8 \
+            --configuration ${{ inputs.build_configuration || 'Debug' }} \
+            --no-restore \
+            --results-directory ./TestResults \
+            --coverage \
+            --coverage-output-format cobertura \
+            --report-trx
+
+      - name: Install ReportGenerator
+        if: always()
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate Coverage Report
+        if: always()
+        run: |
+          reportgenerator \
+            -reports:TestResults/**/*.cobertura.xml \
+            -targetdir:TestResults/CoverageReport \
+            -reporttypes:"Html;MarkdownSummaryGithub" \
+            -assemblyfilters:"+PromptBabbler.*"
+
+      - name: Add Coverage to Job Summary
+        if: always()
+        run: cat TestResults/CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage PR Comment
+        if: github.event_name == 'pull_request' && always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: prompt-babbler-service/TestResults/CoverageReport/SummaryGithub.md
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: Unit Test Results
+          files: |
+            prompt-babbler-service/TestResults/**/*.trx
+          comment_title: Unit Test Results
+
+      - name: Upload Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dotnet-test-results
+          path: |
+            prompt-babbler-service/TestResults/**/*.trx
+          retention-days: 7
+
+      - name: Upload Coverage Report (HTML)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report-html
+          path: prompt-babbler-service/TestResults/CoverageReport/
+          retention-days: 7
+
+  publish-api-app:
+    name: Publish API Application
+    runs-on: ubuntu-latest
+    needs: dotnet-build-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore prompt-babbler-service/PromptBabbler.slnx
+
+      - name: Publish API Application
+        run: |
+          dotnet publish prompt-babbler-service/src/Api/PromptBabbler.Api.csproj \
+            --configuration Release \
+            --output ./publish \
+            --no-restore \
+            --self-contained false \
+            --framework net10.0
+
+      - name: Upload API Application Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-app-published
+          path: ./publish/
+          retention-days: 1

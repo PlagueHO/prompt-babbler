@@ -1,31 +1,43 @@
 name: Continuous Integration
 
 on:
-  push:
-    branches: [main, '001-babble-web-app']
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
-  set-build-variables:
-    uses: ./.github/workflows/set-build-variables.yml
-
   lint-markdown:
+    name: Lint Markdown
     uses: ./.github/workflows/lint-markdown.yml
 
-  build-backend:
-    needs: [set-build-variables]
-    uses: ./.github/workflows/build-and-publish-backend-service.yml
-    with:
-      version: ${{ needs.set-build-variables.outputs.semVer }}
+  lint-and-publish-bicep:
+    name: Lint and Publish Bicep
+    uses: ./.github/workflows/lint-and-publish-bicep.yml
+    permissions:
+      contents: read
 
-  build-frontend:
-    needs: [set-build-variables]
+  lint-build-test-and-publish-backend-service:
+    name: Lint, Build, Test and Publish Backend Service
+    uses: ./.github/workflows/build-and-publish-backend-service.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+  build-and-publish-frontend-app:
+    name: Build and Publish Frontend App
     uses: ./.github/workflows/build-and-publish-frontend-app.yml
-    with:
-      version: ${{ needs.set-build-variables.outputs.semVer }}
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write

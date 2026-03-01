@@ -1,0 +1,220 @@
+name: Provision Infrastructure
+
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        description: "The environment to provision the application infrastructure for"
+        required: true
+        type: string
+      BUILD_VERSION:
+        description: "The version of the build to deploy to the application resources"
+        required: true
+        type: string
+      AZURE_LOCATION:
+        description: "The Azure region to deploy the application resources to"
+        required: true
+        type: string
+      AZURE_ENV_NAME:
+        description: "The name of the Azure environment"
+        required: true
+        type: string
+
+    outputs:
+      AZURE_RESOURCE_GROUP:
+        description: "The Azure resource group name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_PRINCIPAL_ID:
+        description: "The Azure principal ID"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_PRINCIPAL_ID }}
+      AZURE_PRINCIPAL_ID_TYPE:
+        description: "The Azure principal ID type"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_PRINCIPAL_ID_TYPE }}
+      LOG_ANALYTICS_WORKSPACE_NAME:
+        description: "The Log Analytics workspace name"
+        value: ${{ jobs.provision-infrastructure.outputs.LOG_ANALYTICS_WORKSPACE_NAME }}
+      LOG_ANALYTICS_RESOURCE_ID:
+        description: "The Log Analytics resource ID"
+        value: ${{ jobs.provision-infrastructure.outputs.LOG_ANALYTICS_RESOURCE_ID }}
+      LOG_ANALYTICS_WORKSPACE_ID:
+        description: "The Log Analytics workspace ID"
+        value: ${{ jobs.provision-infrastructure.outputs.LOG_ANALYTICS_WORKSPACE_ID }}
+      APPLICATION_INSIGHTS_NAME:
+        description: "The Application Insights name"
+        value: ${{ jobs.provision-infrastructure.outputs.APPLICATION_INSIGHTS_NAME }}
+      APPLICATION_INSIGHTS_RESOURCE_ID:
+        description: "The Application Insights resource ID"
+        value: ${{ jobs.provision-infrastructure.outputs.APPLICATION_INSIGHTS_RESOURCE_ID }}
+      APPLICATION_INSIGHTS_INSTRUMENTATION_KEY:
+        description: "The Application Insights instrumentation key"
+        value: ${{ jobs.provision-infrastructure.outputs.APPLICATION_INSIGHTS_INSTRUMENTATION_KEY }}
+      AZURE_AI_FOUNDRY_NAME:
+        description: "The Microsoft Foundry service name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_AI_FOUNDRY_NAME }}
+      AZURE_AI_FOUNDRY_ID:
+        description: "The Microsoft Foundry service resource ID"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_AI_FOUNDRY_ID }}
+      AZURE_AI_FOUNDRY_ENDPOINT:
+        description: "The Microsoft Foundry service endpoint"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_AI_FOUNDRY_ENDPOINT }}
+      AZURE_AI_FOUNDRY_RESOURCE_ID:
+        description: "The Microsoft Foundry service resource ID"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_AI_FOUNDRY_RESOURCE_ID }}
+      AZURE_AI_FOUNDRY_PROJECT_ENDPOINT:
+        description: "The Microsoft Foundry project endpoint"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_AI_FOUNDRY_PROJECT_ENDPOINT }}
+      AZURE_CONTAINER_REGISTRY_NAME:
+        description: "The Azure Container Registry name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_REGISTRY_NAME }}
+      AZURE_CONTAINER_REGISTRY_LOGIN_SERVER:
+        description: "The Azure Container Registry login server"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_REGISTRY_LOGIN_SERVER }}
+      AZURE_CONTAINER_REGISTRY_ENDPOINT:
+        description: "The Azure Container Registry endpoint"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
+      AZURE_CONTAINER_APP_NAME:
+        description: "The Azure Container App name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_NAME }}
+      AZURE_CONTAINER_APP_FQDN:
+        description: "The Azure Container App FQDN"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_FQDN }}
+      AZURE_STATIC_WEB_APP_NAME:
+        description: "The Azure Static Web App name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_NAME }}
+      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME:
+        description: "The Azure Static Web App default hostname"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
+
+    secrets:
+      AZURE_TENANT_ID:
+        description: "The Azure tenant ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        description: "The Azure subscription ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_CLIENT_ID:
+        description: "The Azure client ID to use for authentication to Azure for deployment"
+        required: true
+
+jobs:
+  provision-infrastructure:
+    name: Provision Infrastructure ${{ inputs.ENVIRONMENT }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
+      AZURE_PRINCIPAL_ID_TYPE: 'ServicePrincipal'
+
+    outputs:
+      AZURE_RESOURCE_GROUP: ${{ steps.get_infrastructure_outputs.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_PRINCIPAL_ID: ${{ steps.get_infrastructure_outputs.outputs.AZURE_PRINCIPAL_ID }}
+      AZURE_PRINCIPAL_ID_TYPE: ${{ steps.get_infrastructure_outputs.outputs.AZURE_PRINCIPAL_ID_TYPE }}
+      LOG_ANALYTICS_WORKSPACE_NAME: ${{ steps.get_infrastructure_outputs.outputs.LOG_ANALYTICS_WORKSPACE_NAME }}
+      LOG_ANALYTICS_RESOURCE_ID: ${{ steps.get_infrastructure_outputs.outputs.LOG_ANALYTICS_RESOURCE_ID }}
+      LOG_ANALYTICS_WORKSPACE_ID: ${{ steps.get_infrastructure_outputs.outputs.LOG_ANALYTICS_WORKSPACE_ID }}
+      APPLICATION_INSIGHTS_NAME: ${{ steps.get_infrastructure_outputs.outputs.APPLICATION_INSIGHTS_NAME }}
+      APPLICATION_INSIGHTS_RESOURCE_ID: ${{ steps.get_infrastructure_outputs.outputs.APPLICATION_INSIGHTS_RESOURCE_ID }}
+      APPLICATION_INSIGHTS_INSTRUMENTATION_KEY: ${{ steps.get_infrastructure_outputs.outputs.APPLICATION_INSIGHTS_INSTRUMENTATION_KEY }}
+      AZURE_AI_FOUNDRY_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_NAME }}
+      AZURE_AI_FOUNDRY_ID: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_ID }}
+      AZURE_AI_FOUNDRY_ENDPOINT: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_ENDPOINT }}
+      AZURE_AI_FOUNDRY_RESOURCE_ID: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_RESOURCE_ID }}
+      AZURE_AI_FOUNDRY_PROJECT_ENDPOINT: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_PROJECT_ENDPOINT }}
+      AZURE_CONTAINER_REGISTRY_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_REGISTRY_NAME }}
+      AZURE_CONTAINER_REGISTRY_LOGIN_SERVER: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_REGISTRY_LOGIN_SERVER }}
+      AZURE_CONTAINER_REGISTRY_ENDPOINT: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
+      AZURE_CONTAINER_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_APP_NAME }}
+      AZURE_CONTAINER_APP_FQDN: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_APP_FQDN }}
+      AZURE_STATIC_WEB_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_STATIC_WEB_APP_NAME }}
+      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Azure Developer CLI
+        uses: Azure/setup-azd@v2.2.1
+
+      - name: Authenticate Azure Developer CLI (Federated Credentials)
+        run: |
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+
+      - name: Create Azure Developer CLI environment
+        run: |
+          azd env new "$AZURE_ENV_NAME" --location "$AZURE_LOCATION"
+
+      - name: Set Azure Developer CLI environment variables
+        run: |
+          azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
+
+      - name: Provision Infrastructure using Azure Developer CLI
+        id: provision
+        continue-on-error: true
+        run: azd provision --no-prompt
+
+      - name: Cleanup on Provision Failure
+        if: steps.provision.outcome == 'failure'
+        run: |
+          echo "Provisioning failed. Cleaning up partially deployed infrastructure..."
+          azd down --no-prompt --purge --force
+          echo "Cleanup completed."
+
+      - name: Fail if Provision Failed
+        if: steps.provision.outcome == 'failure'
+        run: |
+          echo "::error::Infrastructure provisioning failed. Partial deployment has been cleaned up."
+          exit 1
+
+      - name: Save azd environment state
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: azd-env-${{ inputs.AZURE_ENV_NAME }}
+          path: .azure/${{ inputs.AZURE_ENV_NAME }}
+          retention-days: 1
+
+      - name: Get Output Endpoints
+        id: get_infrastructure_outputs
+        run: |
+          # Get all outputs from azd env get-values and pass them through directly
+          echo "Getting azd environment outputs..."
+          AZD_OUTPUTS=$(azd env get-values)
+
+          # Define all the output variables we want to extract from azd outputs
+          OUTPUT_VARS=(
+            "AZURE_RESOURCE_GROUP"
+            "AZURE_PRINCIPAL_ID"
+            "AZURE_PRINCIPAL_ID_TYPE"
+            "LOG_ANALYTICS_WORKSPACE_NAME"
+            "LOG_ANALYTICS_RESOURCE_ID"
+            "LOG_ANALYTICS_WORKSPACE_ID"
+            "APPLICATION_INSIGHTS_NAME"
+            "APPLICATION_INSIGHTS_RESOURCE_ID"
+            "APPLICATION_INSIGHTS_INSTRUMENTATION_KEY"
+            "AZURE_AI_FOUNDRY_NAME"
+            "AZURE_AI_FOUNDRY_ID"
+            "AZURE_AI_FOUNDRY_ENDPOINT"
+            "AZURE_AI_FOUNDRY_RESOURCE_ID"
+            "AZURE_AI_FOUNDRY_PROJECT_ENDPOINT"
+            "AZURE_CONTAINER_REGISTRY_NAME"
+            "AZURE_CONTAINER_REGISTRY_LOGIN_SERVER"
+            "AZURE_CONTAINER_REGISTRY_ENDPOINT"
+            "AZURE_CONTAINER_APP_NAME"
+            "AZURE_CONTAINER_APP_FQDN"
+            "AZURE_STATIC_WEB_APP_NAME"
+            "AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME"
+          )
+
+          # Extract and set each output variable directly from azd outputs
+          for VAR_NAME in "${OUTPUT_VARS[@]}"; do
+            VAR_VALUE=$(echo "$AZD_OUTPUTS" | grep "^${VAR_NAME}=" | cut -d'=' -f2- | xargs)
+            echo "$VAR_NAME=$VAR_VALUE" >> $GITHUB_OUTPUT
+            echo "Set $VAR_NAME=$VAR_VALUE"
+          done
