@@ -56,11 +56,12 @@ dotnet run --project src/Orchestration/AppHost/PromptBabbler.AppHost.csproj
 ### Run Tests
 
 ```bash
-# Backend
+# Backend — all tests
 cd prompt-babbler-service
-dotnet test --project tests/unit/Api.UnitTests/PromptBabbler.Api.UnitTests.csproj
-dotnet test --project tests/unit/Domain.UnitTests/PromptBabbler.Domain.UnitTests.csproj
-dotnet test --project tests/unit/Infrastructure.UnitTests/PromptBabbler.Infrastructure.UnitTests.csproj
+dotnet test --solution PromptBabbler.slnx
+
+# Backend — unit tests only
+dotnet test --solution PromptBabbler.slnx --filter "TestCategory=Unit"
 
 # Frontend
 cd prompt-babbler-app

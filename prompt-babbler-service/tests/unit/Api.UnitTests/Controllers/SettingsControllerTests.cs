@@ -13,11 +13,12 @@ namespace PromptBabbler.Api.UnitTests.Controllers;
 public sealed class SettingsControllerTests
 {
     private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
+    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
     private readonly SettingsController _controller;
 
     public SettingsControllerTests()
     {
-        _controller = new SettingsController(_settingsService);
+        _controller = new SettingsController(_settingsService, _httpClientFactory);
     }
 
     [TestMethod]

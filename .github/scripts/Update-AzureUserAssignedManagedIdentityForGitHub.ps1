@@ -377,8 +377,11 @@ function Grant-ManagedIdentityRBAC {
     
     .DESCRIPTION
         Assigns Contributor and conditional User Access Administrator roles to a
-        managed identity at the subscription scope. The User Access Administrator
-        role includes conditions to prevent assignment of privileged roles.
+        managed identity. The Contributor role is assigned at the subscription scope.
+        The User Access Administrator role is scoped to a resource group when
+        ResourceGroupName is provided, otherwise falls back to subscription scope.
+        The User Access Administrator role includes conditions to prevent assignment
+        of privileged roles.
     
     .PARAMETER PrincipalId
         The principal ID of the managed identity.
@@ -388,6 +391,10 @@ function Grant-ManagedIdentityRBAC {
     
     .PARAMETER SubscriptionId
         The subscription ID for role scope.
+    
+    .PARAMETER ResourceGroupName
+        Optional resource group name to scope User Access Administrator role.
+        When provided, the UAA role is scoped to this resource group instead of the subscription.
     
     .PARAMETER Force
         Skip confirmation prompts.
@@ -402,6 +409,9 @@ function Grant-ManagedIdentityRBAC {
 
         [Parameter(Mandatory = $true)]
         [string]$SubscriptionId,
+
+        [Parameter()]
+        [string]$ResourceGroupName,
 
         [Parameter()]
         [switch]$Force
@@ -455,11 +465,17 @@ function Grant-ManagedIdentityRBAC {
     }
 
     # Assign User Access Administrator role with conditions
+    # Scope to resource group when provided, otherwise fall back to subscription
+    $uaaScope = if ($ResourceGroupName) {
+        "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName"
+    } else {
+        $subscriptionScope
+    }
     $userAccessAdminRoleDefinitionId = (Get-AzRoleDefinition -Name 'User Access Administrator').Id
     $uaaAssignment = Get-AzRoleAssignment `
         -ObjectId $PrincipalId `
         -RoleDefinitionId $userAccessAdminRoleDefinitionId `
-        -Scope $subscriptionScope `
+        -Scope $uaaScope `
         -ErrorAction SilentlyContinue
 
     if (-not $uaaAssignment) {
@@ -482,12 +498,12 @@ function Grant-ManagedIdentityRBAC {
                     New-AzRoleAssignment `
                         -ObjectId $PrincipalId `
                         -RoleDefinitionName 'User Access Administrator' `
-                        -Scope $subscriptionScope `
+                        -Scope $uaaScope `
                         -Condition $condition `
                         -ConditionVersion $conditionVersion `
                         -ErrorAction Stop | Out-Null
                     $success = $true
-                    Write-Warning "User Access Administrator role (with conditions) assigned to '$IdentityName'"
+                    Write-Warning "User Access Administrator role (with conditions) assigned to '$IdentityName' at scope '$uaaScope'"
                     Write-Verbose "Condition prevents assignment of Owner, User Access Administrator, and RBAC Administrator roles"
                 }
                 catch {
@@ -617,6 +633,7 @@ process {
                 -PrincipalId $identity.PrincipalId `
                 -IdentityName $identityName `
                 -SubscriptionId $azureContext.Subscription.Id `
+                -ResourceGroupName $resourceGroupName `
                 -Force:$Force
 
             # Add to collection

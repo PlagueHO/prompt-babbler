@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 interface RecordButtonProps {
   isRecording: boolean;
-  onStart: () => void;
+  onStart: () => Promise<void> | void;
   onStop: () => void;
   disabled?: boolean;
 }
@@ -25,7 +25,7 @@ export function RecordButton({
     }
     try {
       setPermissionDenied(false);
-      onStart();
+      await onStart();
     } catch {
       setPermissionDenied(true);
     }

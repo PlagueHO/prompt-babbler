@@ -77,7 +77,7 @@ public sealed class TranscriptionController(ITranscriptionService transcriptionS
             {
                 Title = "Azure OpenAI Whisper Error",
                 Status = 502,
-                Detail = $"An error occurred while communicating with Azure OpenAI Whisper: {ex.Message}",
+                Detail = "An error occurred while communicating with Azure OpenAI Whisper. Please try again or check your settings.",
             });
         }
     }

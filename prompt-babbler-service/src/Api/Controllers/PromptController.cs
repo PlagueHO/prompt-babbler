@@ -68,14 +68,17 @@ public sealed class PromptController(IPromptGenerationService promptService, ISe
         }
         catch (InvalidOperationException)
         {
-            HttpContext.Response.StatusCode = 422;
-            await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+            if (!Response.HasStarted)
             {
-                Type = "https://promptbabbler.dev/errors/settings-not-configured",
-                Title = "LLM Settings Not Configured",
-                Status = 422,
-                Detail = "Azure OpenAI settings must be configured before generating prompts.",
-            }, cancellationToken);
+                HttpContext.Response.StatusCode = 422;
+                await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                {
+                    Type = "https://promptbabbler.dev/errors/settings-not-configured",
+                    Title = "LLM Settings Not Configured",
+                    Status = 422,
+                    Detail = "Azure OpenAI settings must be configured before generating prompts.",
+                }, cancellationToken);
+            }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -86,7 +89,7 @@ public sealed class PromptController(IPromptGenerationService promptService, ISe
                 {
                     Title = "Azure OpenAI Error",
                     Status = 502,
-                    Detail = $"An error occurred while communicating with Azure OpenAI: {ex.Message}",
+                    Detail = "An error occurred while communicating with Azure OpenAI. Please try again or check your settings.",
                 }, cancellationToken);
             }
         }

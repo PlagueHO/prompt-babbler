@@ -41,6 +41,7 @@ export function RecordPage() {
     const handler = (e: BeforeUnloadEvent) => {
       if (isRecording || transcribedText) {
         e.preventDefault();
+        e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handler);
@@ -89,13 +90,13 @@ export function RecordPage() {
         <div className="flex flex-col items-center gap-6 rounded-lg border p-8">
           <RecordButton
             isRecording={isRecording}
-            onStart={() => void start()}
+            onStart={start}
             onStop={stop}
           />
           <RecordingIndicator
             isRecording={isRecording}
             duration={duration}
-            onStart={() => void start()}
+            onStart={start}
             onStop={stop}
           />
         </div>

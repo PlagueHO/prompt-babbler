@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 interface RecordingIndicatorProps {
   isRecording: boolean;
   duration: number;
-  onStart: () => void;
+  onStart: () => Promise<void> | void;
   onStop: () => void;
   disabled?: boolean;
 }

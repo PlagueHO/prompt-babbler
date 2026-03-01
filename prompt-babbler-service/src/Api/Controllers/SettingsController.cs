@@ -9,7 +9,7 @@ namespace PromptBabbler.Api.Controllers;
 
 [ApiController]
 [Route("api/settings")]
-public sealed class SettingsController(ISettingsService settingsService) : ControllerBase
+public sealed class SettingsController(ISettingsService settingsService, IHttpClientFactory httpClientFactory) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetSettings(CancellationToken cancellationToken)
@@ -122,7 +122,7 @@ public sealed class SettingsController(ISettingsService settingsService) : Contr
         {
             var stopwatch = Stopwatch.StartNew();
 
-            using var httpClient = new HttpClient();
+            using var httpClient = httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Add("api-key", settings.ApiKey);
             var response = await httpClient.GetAsync(
                 $"{settings.Endpoint.TrimEnd('/')}/openai/models?api-version=2024-06-01",

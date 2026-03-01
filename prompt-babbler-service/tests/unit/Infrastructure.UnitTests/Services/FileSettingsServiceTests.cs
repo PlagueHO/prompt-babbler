@@ -40,7 +40,7 @@ public sealed class FileSettingsServiceTests
     }
 
     [TestMethod]
-    public void JsonDeserialization_WithInvalidJson_ReturnsNull()
+    public void JsonDeserialization_WithInvalidJson_ThrowsJsonException()
     {
         var options = new JsonSerializerOptions
         {

@@ -12,12 +12,14 @@ builder.Services.AddControllers()
 
 builder.Services.AddInfrastructure();
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
         policy.SetIsOriginAllowed(origin =>
-               new Uri(origin).Host is "localhost" or "127.0.0.1")
+               Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.Host is "localhost" or "127.0.0.1")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
