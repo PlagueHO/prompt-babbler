@@ -9,7 +9,7 @@
     "lint:md:ci": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#prompt-babbler-app\" \"#prompt-babbler-service\""
   },
   "devDependencies": {
-    "markdownlint-cli2": "^0.20.0"
+    "markdownlint-cli2": "^0.21.0"
   },
   "description": "Prompt Babbler - Speech-to-prompt web application",
   "repository": {
