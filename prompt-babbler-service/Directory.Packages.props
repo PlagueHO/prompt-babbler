@@ -17,7 +17,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
     <!-- Azure -->
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
     <!-- Testing -->
     <PackageVersion Include="FluentAssertions" Version="8.3.0" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
