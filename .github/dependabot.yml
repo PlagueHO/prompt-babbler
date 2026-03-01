@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://json.schemastore.org/dependabot-2.0.json
+version: 2
+
+updates:
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci"
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # NuGet (.NET backend)
+  - package-ecosystem: nuget
+    directory: /prompt-babbler-service
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "deps(nuget)"
+    labels:
+      - dependencies
+      - nuget
+    groups:
+      aspire:
+        patterns:
+          - "Aspire.*"
+      opentelemetry:
+        patterns:
+          - "OpenTelemetry.*"
+      testing:
+        patterns:
+          - "Microsoft.AspNetCore.Mvc.Testing"
+          - "MSTest.*"
+          - "FluentAssertions"
+          - "NSubstitute"
+          - "coverlet.*"
+      azure:
+        patterns:
+          - "Azure.*"
+
+  # npm/pnpm (React frontend)
+  - package-ecosystem: npm
+    directory: /prompt-babbler-app
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "deps(npm)"
+    labels:
+      - dependencies
+      - npm
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      testing:
+        patterns:
+          - "vitest"
+          - "@testing-library/*"
+          - "@vitest/*"
+          - "jsdom"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+      eslint:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@eslint/*"
+          - "typescript-eslint"
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+
+  # npm/pnpm (root - markdown linting, etc.)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "deps(npm)"
+    labels:
+      - dependencies
+      - npm

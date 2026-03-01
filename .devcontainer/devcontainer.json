@@ -1,0 +1,109 @@
+// For format details, see https://aka.ms/devcontainer.json.
+// For config options, see https://containers.dev/implementors/json_reference/
+{
+  "name": "Prompt Babbler",
+
+  // Use the official base image — no custom Dockerfile needed
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  // ── Features ──────────────────────────────────────────────────────
+  "features": {
+    // .NET 10 SDK (preview) — required for the service
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "10.0",
+      "installUsingApt": false
+    },
+    // Node.js 22 LTS — required for the frontend app
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    },
+    // Docker-in-Docker — required for .NET Aspire orchestration
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerDashComposeVersion": "v2"
+    },
+    // Azure CLI
+    "ghcr.io/devcontainers/features/azure-cli:1": {},
+    // Azure Developer CLI (azd)
+    "ghcr.io/azure/azure-dev/azd:0": {},
+    // GitHub CLI
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    // PowerShell — used by workspace tasks
+    "ghcr.io/devcontainers/features/powershell:1": {}
+  },
+
+  // ── Codespaces / machine settings ─────────────────────────────────
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  // ── Environment variables ─────────────────────────────────────────
+  "containerEnv": {
+    "DOTNET_NOLOGO": "true",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "true"
+  },
+
+  // ── Lifecycle commands ────────────────────────────────────────────
+  "postCreateCommand": {
+    "pnpm-setup": "corepack enable && corepack prepare pnpm@latest --activate",
+    "dotnet-workloads": "dotnet workload install aspire",
+    "dotnet-tools": "dotnet tool restore || true",
+    "root-deps": "pnpm install",
+    "app-deps": "cd prompt-babbler-app && pnpm install",
+    "service-restore": "cd prompt-babbler-service && dotnet restore PromptBabbler.slnx"
+  },
+
+  // ── VS Code customizations ────────────────────────────────────────
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "pwsh",
+        "dotnet.defaultSolution": "prompt-babbler-service/PromptBabbler.slnx",
+        "editor.formatOnSave": true,
+        "editor.bracketPairColorization.enabled": true,
+        "files.trimTrailingWhitespace": true
+      },
+      "extensions": [
+        // C# / .NET
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        // JavaScript / TypeScript / React
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        // Testing
+        "vitest.explorer",
+        // Azure
+        "ms-azuretools.azure-dev",
+        "ms-azuretools.vscode-azurefunctions",
+        // Markdown
+        "DavidAnson.vscode-markdownlint",
+        // Git
+        "eamodio.gitlens",
+        // PowerShell
+        "ms-vscode.PowerShell",
+        // Containers
+        "ms-azuretools.vscode-docker",
+        // General
+        "EditorConfig.EditorConfig",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ]
+    }
+  },
+
+  // ── Port forwarding ───────────────────────────────────────────────
+  "forwardPorts": [
+    5173, // Vite dev server
+    5000, // API (HTTP)
+    5001, // API (HTTPS)
+    15888 // Aspire dashboard
+  ],
+  "portsAttributes": {
+    "5173": { "label": "Frontend (Vite)", "onAutoForward": "notify" },
+    "5000": { "label": "API (HTTP)", "onAutoForward": "silent" },
+    "5001": { "label": "API (HTTPS)", "onAutoForward": "silent" },
+    "15888": { "label": "Aspire Dashboard", "onAutoForward": "notify" }
+  }
+}

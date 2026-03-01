@@ -1,0 +1,14 @@
+# azure.yaml — Azure Developer CLI manifest (placeholder for vNext)
+name: prompt-babbler
+metadata:
+  template: prompt-babbler@0.0.1
+services:
+  api:
+    project: ./prompt-babbler-service/src/Api/PromptBabbler.Api.csproj
+    language: csharp
+    host: containerapp
+  frontend:
+    project: ./prompt-babbler-app
+    language: js
+    host: staticwebapp
+    dist: dist

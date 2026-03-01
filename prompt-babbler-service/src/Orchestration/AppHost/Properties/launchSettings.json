@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:17269;http://localhost:15228",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21001",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23097",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22205",
+        "Azure__Location": "swedencentral",
+        "Azure__CredentialSource": "AzureCli",
+        "Azure__AllowResourceGroupCreation": "true",
+        "MicrosoftFoundry__chatModelName": "gpt-4.1",
+        "MicrosoftFoundry__chatModelVersion": "2025-04-14",
+        "MicrosoftFoundry__sttModelName": "gpt-4o-transcribe",
+        "MicrosoftFoundry__sttModelVersion": "2025-03-20"
+      }
+    },
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:15228",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19255",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "http://localhost:18034",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20012",
+        "Azure__Location": "swedencentral",
+        "Azure__CredentialSource": "AzureCli",
+        "Azure__AllowResourceGroupCreation": "true",
+        "MicrosoftFoundry__chatModelName": "gpt-4.1",
+        "MicrosoftFoundry__chatModelVersion": "2025-04-14",
+        "MicrosoftFoundry__sttModelName": "gpt-4o-transcribe",
+        "MicrosoftFoundry__sttModelVersion": "2025-03-20"
+      }
+    }
+  }
+}
