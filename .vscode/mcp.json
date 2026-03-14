@@ -1,6 +1,10 @@
 {
   "inputs": [],
   "servers": {
+    "azure/verified-module-bicep": {
+      "type": "sse",
+      "url": "https://gitmcp.io/Azure/bicep-registry-modules"
+    },
     "context7": {
       "type": "stdio",
       "command": "npx",
@@ -13,17 +17,25 @@
       "url": "https://api.githubcopilot.com/mcp/",
       "type": "http"
     },
-    "microsoft-learn": {
-      "url": "https://learn.microsoft.com/api/mcp",
-      "type": "http"
+    "microsoft/aspire": {
+      "type": "stdio",
+      "command": "aspire",
+      "args": [
+        "mcp",
+        "start"
+      ]
     },
-    "agent-framework-docs": {
+    "microsoft/agent-framework": {
       "url": "https://gitmcp.io/microsoft/agent-framework",
       "type": "sse"
     },
-    "azure-verified-module-bicep-docs": {
-      "type": "sse",
-      "url": "https://gitmcp.io/Azure/bicep-registry-modules"
+    "microsoft/learn": {
+      "url": "https://learn.microsoft.com/api/mcp",
+      "type": "http"
+    },
+    "microsoft/foundry": {
+        "type": "http",
+        "url": "https://mcp.ai.azure.com"
     },
     "react-docs": {
       "url": "https://gitmcp.io/facebook/react",
@@ -37,9 +49,13 @@
       "url": "https://gitmcp.io/nodejs/node",
       "type": "sse"
     },
-    "shadcnui-docs": {
-      "url": "https://gitmcp.io/shadcn-ui/ui",
-      "type": "sse"
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
     },
     "playwright-test": {
       "type": "stdio",
@@ -49,33 +65,9 @@
         "run-test-mcp-server"
       ]
     },
-    "aspire": {
-      "type": "stdio",
-      "command": "aspire",
-      "args": [
-        "mcp",
-        "start"
-      ]
-    },
-    "playwright": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ]
-    },
-      "microsoft-foundry": {
-        "type": "stdio",
-        "command": "uvx",
-        "args": [
-          "--prerelease=allow",
-          "--from",
-          "git+https://github.com/azure-ai-foundry/mcp-foundry.git",
-          "run-azure-ai-foundry-mcp",
-          "--envFile",
-          "${workspaceFolder}/.env"
-        ]
+    "shadcnui-docs": {
+      "url": "https://gitmcp.io/shadcn-ui/ui",
+      "type": "sse"
     }
   }
 }

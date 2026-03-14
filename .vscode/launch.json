@@ -1,0 +1,22 @@
+{
+  // VS Code Launch Configurations for Prompt Babbler
+  // Requires the Aspire VS Code extension: https://aspire.dev/get-started/aspire-vscode-extension/
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Aspire: Launch AppHost",
+      "type": "aspire",
+      "request": "launch",
+      "program": "${workspaceFolder}/prompt-babbler-service/src/Orchestration/AppHost/PromptBabbler.AppHost.csproj"
+    },
+    {
+      "name": "Frontend: Dev (MSW mocked)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/prompt-babbler-app",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "console": "integratedTerminal"
+    }
+  ]
+}

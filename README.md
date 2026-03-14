@@ -1,34 +1,44 @@
 # Prompt Babbler
 
-A speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Azure OpenAI Whisper, and generates structured prompts for target systems like GitHub Copilot.
+[![CI][ci-shield]][ci-url]
+[![CD][cd-shield]][cd-url]
+[![License][license-shield]][license-url]
+[![Azure][azure-shield]][azure-url]
+[![IaC][iac-shield]][iac-url]
+
+A speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Azure AI Foundry, and generates structured prompts for target systems like GitHub Copilot.
 
 ## Architecture
 
 ```text
-┌─────────────────────┐     ┌─────────────────────────────┐
-│   React Frontend    │     │    .NET Backend API         │
-│   (Vite + TS)       │────▶│    (ASP.NET Core)           │
-│                     │     │                             │
-│  • Record speech    │     │  • POST /api/transcribe     │
-│  • Manage babbles   │     │  • POST /api/prompts/gen    │
-│  • Generate prompts │     │  • GET/PUT /api/settings    │
-│  • Manage templates │     │  • POST /api/settings/test  │
-│                     │     │                             │
-│  localStorage:      │     │  Azure OpenAI:              │
-│  babbles, templates │     │  Whisper STT + LLM          │
-└─────────────────────┘     └─────────────────────────────┘
+┌─────────────────────────┐     ┌──────────────────────────────────┐
+│   React Frontend        │     │    .NET Backend API              │
+│   (Vite + TS)           │────▶│    (ASP.NET Core)                │
+│                         │     │                                  │
+│  • Record speech        │     │  • POST /api/transcribe          │
+│  • Manage babbles       │     │  • POST /api/prompts/generate    │
+│  • Generate prompts     │     │  • GET/PUT /api/settings         │
+│  • Manage templates     │     │  • POST /api/settings/test       │
+│                         │     │                                  │
+│  localStorage:          │     │  Azure AI Foundry:               │
+│  babbles, templates     │     │  STT (gpt-4o-transcribe) + LLM   │
+└─────────────────────────┘     └──────────────────────────────────┘
+                  ▲                              │
+                  │         .NET Aspire          │
+                  └──────── (orchestration) ─────┘
 ```
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React 19, TypeScript 5.x, Vite, Shadcn/UI, TailwindCSS v4 |
+| Frontend | React 19, TypeScript 5.9, Vite 8, Shadcn/UI, TailwindCSS v4, React Router 7 |
 | Backend | .NET 10, ASP.NET Core, Clean Architecture |
-| AI Services | Azure OpenAI (Whisper STT + LLM) |
-| Orchestration | .NET Aspire |
-| Testing | Vitest + Testing Library (frontend), MSTest + FluentAssertions (backend) |
-| CI/CD | GitHub Actions |
+| AI Services | Azure AI Foundry (LLM chat + speech-to-text via Aspire integration) |
+| Orchestration | .NET Aspire (Azure AI Foundry provisioning via Aspire hosting integration) |
+| Infrastructure | Azure Bicep (Cognitive Services, RBAC) |
+| Testing | Vitest + Testing Library (frontend), MSTest SDK + FluentAssertions + NSubstitute (backend) |
+| CI/CD | GitHub Actions (12 workflows: CI, CD, IaC validation, linting, E2E) |
 
 ## Quick Start
 
@@ -39,7 +49,8 @@ See [docs/QUICKSTART.md](docs/QUICKSTART.md) for detailed setup instructions.
 - .NET SDK 10.0.100+
 - Node.js 22.x LTS
 - pnpm 10.x
-- Azure OpenAI endpoint with LLM and Whisper deployments
+- Azure CLI (for Azure authentication)
+- Azure subscription with Contributor access
 
 ### Run Locally
 
@@ -84,11 +95,23 @@ prompt-babbler/
 │   ├── src/services/           # API client, localStorage
 │   ├── src/pages/              # Page components
 │   └── tests/                  # Vitest tests
-├── .github/workflows/          # CI/CD pipelines
+├── .github/workflows/          # CI/CD pipelines (12 workflows)
 ├── specs/                      # Feature specifications
-└── infra/                      # Azure IaC (planned)
+└── infra/                      # Azure Bicep infrastructure (Cognitive Services, RBAC)
 ```
 
 ## License
 
 MIT
+
+<!-- Badge reference links -->
+[ci-shield]: https://img.shields.io/github/actions/workflow/status/PlagueHO/prompt-babbler/continuous-integration.yml?branch=main&label=CI
+[ci-url]: https://github.com/PlagueHO/prompt-babbler/actions/workflows/continuous-integration.yml
+[cd-shield]: https://img.shields.io/github/actions/workflow/status/PlagueHO/prompt-babbler/continuous-delivery.yml?branch=main&label=CD
+[cd-url]: https://github.com/PlagueHO/prompt-babbler/actions/workflows/continuous-delivery.yml
+[license-shield]: https://img.shields.io/github/license/PlagueHO/prompt-babbler
+[license-url]: https://github.com/PlagueHO/prompt-babbler/blob/main/LICENSE
+[azure-shield]: https://img.shields.io/badge/Azure-Solution%20Accelerator-0078D4?logo=microsoftazure&logoColor=white
+[azure-url]: https://azure.microsoft.com/
+[iac-shield]: https://img.shields.io/badge/Infrastructure%20as%20Code-Bicep-5C2D91?logo=azurepipelines&logoColor=white
+[iac-url]: https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview
