@@ -33,6 +33,7 @@ var templatesContainer = cosmosDb.AddContainer("prompt-templates", "/userId");
 var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithReference(foundry)
     .WithReference(chatDeployment)
+    .WithReference(cosmos)
     .WithReference(templatesContainer)
     .WaitFor(chatDeployment)
     .WaitFor(cosmos)
