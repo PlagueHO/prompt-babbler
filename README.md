@@ -59,10 +59,20 @@ See [docs/QUICKSTART.md](docs/QUICKSTART.md) for detailed setup instructions.
 cd prompt-babbler-app && pnpm install && cd ..
 cd prompt-babbler-service && dotnet restore PromptBabbler.slnx && cd ..
 
+# Configure Azure credentials (one-time setup — see docs/QUICKSTART.md for details)
+az login --tenant <your-tenant-id>
+cd prompt-babbler-service
+dotnet user-secrets set "Azure:SubscriptionId" "<your-subscription-id>" --project src/Orchestration/AppHost
+dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>" --project src/Orchestration/AppHost
+
 # Start via Aspire (starts both backend and frontend)
 cd prompt-babbler-service
 dotnet run --project src/Orchestration/AppHost/PromptBabbler.AppHost.csproj
 ```
+
+> **Note:** On first run, Aspire automatically provisions an Azure resource group
+> and Azure AI Foundry resources (chat + STT model deployments) in your subscription.
+> This takes several minutes. Subsequent runs reuse existing resources.
 
 ### Run Tests
 
