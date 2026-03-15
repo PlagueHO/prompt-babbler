@@ -4,9 +4,8 @@ metadata:
   template: prompt-babbler@0.0.1
 services:
   api:
-    project: ./prompt-babbler-service/src/Api/PromptBabbler.Api.csproj
-    language: csharp
     host: containerapp
+    image: ghcr.io/plagueho/prompt-babbler-api:latest
   frontend:
     project: ./prompt-babbler-app
     language: js

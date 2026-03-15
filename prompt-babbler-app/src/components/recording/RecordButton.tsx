@@ -32,18 +32,18 @@ export function RecordButton({
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-1">
       <Button
-        size="icon-lg"
+        size="icon"
         variant={isRecording ? 'destructive' : 'default'}
         disabled={disabled}
         onClick={() => void handleClick()}
         className={cn(
-          'size-16 rounded-full transition-all',
+          'size-10 rounded-full transition-all',
           isRecording && 'animate-pulse'
         )}
       >
-        <Mic className="size-6" />
+        <Mic className="size-5" />
       </Button>
       {permissionDenied && (
         <p className="text-sm text-destructive">

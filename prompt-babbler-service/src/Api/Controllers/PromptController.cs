@@ -43,12 +43,30 @@ public sealed class PromptController(
 
         try
         {
-            await foreach (var chunk in promptService.GeneratePromptStreamAsync(
-                request.BabbleText, request.SystemPrompt, cancellationToken))
+            if (!string.IsNullOrWhiteSpace(request.TemplateName))
             {
-                var data = System.Text.Json.JsonSerializer.Serialize(new { text = chunk });
-                await Response.WriteAsync($"data: {data}\n\n", cancellationToken);
+                var result = await promptService.GenerateStructuredPromptAsync(
+                    request.BabbleText, request.SystemPrompt, request.TemplateName,
+                    request.PromptFormat, request.AllowEmojis, cancellationToken);
+
+                var nameData = System.Text.Json.JsonSerializer.Serialize(new { name = result.Name });
+                await Response.WriteAsync($"data: {nameData}\n\n", cancellationToken);
                 await Response.Body.FlushAsync(cancellationToken);
+
+                var textData = System.Text.Json.JsonSerializer.Serialize(new { text = result.Prompt });
+                await Response.WriteAsync($"data: {textData}\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+            }
+            else
+            {
+                await foreach (var chunk in promptService.GeneratePromptStreamAsync(
+                    request.BabbleText, request.SystemPrompt,
+                    request.PromptFormat, request.AllowEmojis, cancellationToken))
+                {
+                    var data = System.Text.Json.JsonSerializer.Serialize(new { text = chunk });
+                    await Response.WriteAsync($"data: {data}\n\n", cancellationToken);
+                    await Response.Body.FlushAsync(cancellationToken);
+                }
             }
 
             await Response.WriteAsync("data: [DONE]\n\n", cancellationToken);

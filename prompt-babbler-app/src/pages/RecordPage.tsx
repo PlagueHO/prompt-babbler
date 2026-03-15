@@ -5,17 +5,25 @@ import { RecordButton } from '@/components/recording/RecordButton';
 import { RecordingIndicator } from '@/components/recording/RecordingIndicator';
 import { TranscriptPreview } from '@/components/recording/TranscriptPreview';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { useTranscription } from '@/hooks/useTranscription';
 import { useBabbles } from '@/hooks/useBabbles';
+import { useTemplates } from '@/hooks/useTemplates';
 import { getSpeechLanguage } from '@/services/local-storage';
 import type { Babble } from '@/types';
-import { Save } from 'lucide-react';
+import { Save, ChevronDown, Sparkles } from 'lucide-react';
 
 export function RecordPage() {
   const navigate = useNavigate();
   const { createBabble } = useBabbles();
+  const { templates } = useTemplates();
   const {
     transcribedText,
     partialText,
@@ -72,11 +80,7 @@ export function RecordPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSave = () => {
-    if (!transcribedText.trim()) {
-      toast.error('Nothing to save. Record something first.');
-      return;
-    }
+  const saveBabble = useCallback(() => {
     const now = new Date().toISOString();
     const babble: Babble = {
       id: babbleId,
@@ -87,9 +91,30 @@ export function RecordPage() {
       lastGeneratedPrompt: null,
     };
     createBabble(babble);
+    return babble;
+  }, [babbleId, title, transcribedText, createBabble]);
+
+  const handleSave = () => {
+    if (!transcribedText.trim()) {
+      toast.error('Nothing to save. Record something first.');
+      return;
+    }
+    const babble = saveBabble();
     toast.success('Babble saved!');
     void navigate(`/babble/${babble.id}`);
   };
+
+  const handleSaveAndGenerate = (templateId: string) => {
+    if (!transcribedText.trim()) {
+      toast.error('Nothing to save. Record something first.');
+      return;
+    }
+    const babble = saveBabble();
+    toast.success('Babble saved!');
+    void navigate(`/babble/${babble.id}?autoGenerate=${encodeURIComponent(templateId)}`);
+  };
+
+  const transcriptionDone = !isRecording && !isConnected;
 
   // Display text: final text + partial result
   const displayText = partialText
@@ -112,7 +137,7 @@ export function RecordPage() {
           placeholder="Give your babble a title (optional)"
         />
 
-        <div className="flex flex-col items-center gap-6 rounded-lg border p-8">
+        <div className="flex items-center gap-4 rounded-lg border px-4 py-3">
           <RecordButton
             isRecording={isRecording}
             onStart={handleStart}
@@ -138,11 +163,36 @@ export function RecordPage() {
         <div className="flex gap-2">
           <Button
             onClick={handleSave}
-            disabled={!transcribedText.trim()}
+            disabled={!transcribedText.trim() || !transcriptionDone}
           >
             <Save className="size-4" />
             Save Babble
           </Button>
+
+          <div className="flex">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  disabled={!transcribedText.trim() || !transcriptionDone}
+                >
+                  <Sparkles className="size-4" />
+                  Save &amp; Generate Prompt
+                  <ChevronDown className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {templates.map((t) => (
+                  <DropdownMenuItem
+                    key={t.id}
+                    onClick={() => handleSaveAndGenerate(t.id)}
+                  >
+                    {t.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </div>

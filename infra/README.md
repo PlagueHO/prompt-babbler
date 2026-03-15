@@ -9,7 +9,6 @@ Bicep Infrastructure-as-Code (IaC) for deploying Prompt Babbler to Azure using [
 | **Azure Container Apps** | `avm/res/app/container-app` | .NET backend API |
 | **Azure Static Web Apps** | `avm/res/web/static-site` | React frontend |
 | **Microsoft Foundry (AI Services)** | Custom `cognitive-services/accounts` module | GPT-4o (prompt generation) + gpt-4o-transcribe (STT) via managed identity |
-| **Azure Container Registry** | `avm/res/container-registry/registry` | Docker images for the API |
 | **Container Apps Environment** | `avm/res/app/managed-environment` | Managed environment for Container Apps |
 | **Azure Log Analytics** | `avm/res/operational-insights/workspace` | Logging and monitoring |
 | **Application Insights** | `avm/res/insights/component` | Application performance monitoring |

@@ -43,4 +43,27 @@ Output only the refined prompt, without any preamble or explanation.`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: 'builtin-image-generation',
+    name: 'Image Generation Prompt',
+    description:
+      'Converts stream-of-consciousness babble into a detailed prompt optimized for AI image generation models.',
+    systemPrompt: `You are a prompt engineering assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a detailed, effective prompt for an AI image generation model (such as DALL-E, Midjourney, or Stable Diffusion).
+
+Guidelines:
+- Extract the visual concept and subject from the rambling text
+- Describe the scene composition, subjects, and their arrangement
+- Include art style, medium, and aesthetic details (e.g. photorealistic, watercolor, digital art)
+- Specify lighting, color palette, and mood/atmosphere
+- Add relevant camera or perspective details (e.g. close-up, wide angle, bird's eye view)
+- Include background and environment descriptions
+- Remove non-visual or irrelevant details from the transcript
+- Keep the prompt concise but richly descriptive
+- Use comma-separated descriptive phrases for clarity
+
+Output only the refined image generation prompt, without any preamble or explanation.`,
+    isBuiltIn: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];

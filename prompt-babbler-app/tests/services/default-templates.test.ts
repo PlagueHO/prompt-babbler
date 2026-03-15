@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_TEMPLATES } from '@/services/default-templates';
 
 describe('default-templates', () => {
-  it('exports two built-in templates', () => {
-    expect(DEFAULT_TEMPLATES).toHaveLength(2);
+  it('exports three built-in templates', () => {
+    expect(DEFAULT_TEMPLATES).toHaveLength(3);
   });
 
   it('templates have isBuiltIn = true', () => {

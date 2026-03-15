@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router';
 import { toast } from 'sonner';
 import { Edit, Trash2, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,20 +13,37 @@ import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { usePromptGeneration } from '@/hooks/usePromptGeneration';
 import { getBabble } from '@/services/local-storage';
-import type { Babble, PromptTemplate } from '@/types';
+import type { Babble } from '@/types';
+import type { PromptGenerateOptions } from '@/components/prompts/PromptGenerator';
 
 export function BabblePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { updateBabble, deleteBabble } = useBabbles();
   const { templates } = useTemplates();
-  const { generatedText, isGenerating, error: genError, generate } = usePromptGeneration();
+  const { generatedText, generatedName, isGenerating, error: genError, generate } = usePromptGeneration();
 
   const [babble, setBabble] = useState<Babble | undefined>(() =>
     id ? getBabble(id) : undefined
   );
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const autoGenerateTriggered = useRef(false);
+
+  // Auto-generate prompt when navigated with ?autoGenerate=templateId
+  useEffect(() => {
+    const autoGenerateId = searchParams.get('autoGenerate');
+    if (autoGenerateId && babble && !autoGenerateTriggered.current) {
+      autoGenerateTriggered.current = true;
+      const template = templates.find((t) => t.id === autoGenerateId);
+      if (template) {
+        void generate(babble.text, template.systemPrompt, template.name);
+      }
+      // Clear the query parameter so refresh doesn't re-trigger
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams, babble, templates, generate]);
 
   const handleSave = useCallback(
     (updated: Babble) => {
@@ -47,13 +64,28 @@ export function BabblePage() {
   }, [babble, deleteBabble, navigate]);
 
   const handleGenerate = useCallback(
-    (template: PromptTemplate) => {
+    (options: PromptGenerateOptions) => {
       if (babble) {
-        void generate(babble.text, template.systemPrompt);
+        void generate(
+          babble.text,
+          options.template.systemPrompt,
+          options.template.name,
+          options.promptFormat,
+          options.allowEmojis
+        );
       }
     },
     [babble, generate]
   );
+
+  // Auto-rename babble when generation completes with a generated name
+  useEffect(() => {
+    if (!isGenerating && generatedName && babble && babble.title.startsWith('Babble ')) {
+      const updated = { ...babble, title: generatedName, updatedAt: new Date().toISOString() };
+      updateBabble(updated);
+      setBabble(updated);
+    }
+  }, [isGenerating, generatedName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!babble) {
     return (

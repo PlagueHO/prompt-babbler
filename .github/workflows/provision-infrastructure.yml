@@ -63,15 +63,6 @@ on:
       AZURE_AI_FOUNDRY_PROJECT_ENDPOINT:
         description: "The Microsoft Foundry project endpoint"
         value: ${{ jobs.provision-infrastructure.outputs.AZURE_AI_FOUNDRY_PROJECT_ENDPOINT }}
-      AZURE_CONTAINER_REGISTRY_NAME:
-        description: "The Azure Container Registry name"
-        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_REGISTRY_NAME }}
-      AZURE_CONTAINER_REGISTRY_LOGIN_SERVER:
-        description: "The Azure Container Registry login server"
-        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_REGISTRY_LOGIN_SERVER }}
-      AZURE_CONTAINER_REGISTRY_ENDPOINT:
-        description: "The Azure Container Registry endpoint"
-        value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
       AZURE_CONTAINER_APP_NAME:
         description: "The Azure Container App name"
         value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_NAME }}
@@ -127,9 +118,6 @@ jobs:
       AZURE_AI_FOUNDRY_ENDPOINT: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_ENDPOINT }}
       AZURE_AI_FOUNDRY_RESOURCE_ID: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_RESOURCE_ID }}
       AZURE_AI_FOUNDRY_PROJECT_ENDPOINT: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_PROJECT_ENDPOINT }}
-      AZURE_CONTAINER_REGISTRY_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_REGISTRY_NAME }}
-      AZURE_CONTAINER_REGISTRY_LOGIN_SERVER: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_REGISTRY_LOGIN_SERVER }}
-      AZURE_CONTAINER_REGISTRY_ENDPOINT: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
       AZURE_CONTAINER_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_APP_NAME }}
       AZURE_CONTAINER_APP_FQDN: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_APP_FQDN }}
       AZURE_STATIC_WEB_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_STATIC_WEB_APP_NAME }}
@@ -253,9 +241,6 @@ jobs:
             "AZURE_AI_FOUNDRY_ENDPOINT"
             "AZURE_AI_FOUNDRY_RESOURCE_ID"
             "AZURE_AI_FOUNDRY_PROJECT_ENDPOINT"
-            "AZURE_CONTAINER_REGISTRY_NAME"
-            "AZURE_CONTAINER_REGISTRY_LOGIN_SERVER"
-            "AZURE_CONTAINER_REGISTRY_ENDPOINT"
             "AZURE_CONTAINER_APP_NAME"
             "AZURE_CONTAINER_APP_FQDN"
             "AZURE_STATIC_WEB_APP_NAME"

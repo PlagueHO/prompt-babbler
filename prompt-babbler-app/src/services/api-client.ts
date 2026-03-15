@@ -34,13 +34,16 @@ export async function getStatus(): Promise<StatusResponse> {
 
 export async function generatePrompt(
   babbleText: string,
-  systemPrompt: string
+  systemPrompt: string,
+  templateName?: string,
+  promptFormat: string = 'text',
+  allowEmojis: boolean = false
 ): Promise<ReadableStream<Uint8Array>> {
   const base = getApiBaseUrl();
   const res = await fetch(`${base}/api/prompts/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ babbleText, systemPrompt }),
+    body: JSON.stringify({ babbleText, systemPrompt, templateName, promptFormat, allowEmojis }),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);

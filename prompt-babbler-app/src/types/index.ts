@@ -29,3 +29,10 @@ export interface GeneratedPrompt {
 export interface StatusResponse {
   status: string;
 }
+
+export type PromptFormat = 'text' | 'markdown';
+
+export interface PromptOptions {
+  promptFormat: PromptFormat;
+  allowEmojis: boolean;
+}

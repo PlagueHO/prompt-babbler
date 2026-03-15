@@ -52,7 +52,6 @@ var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
 var foundryName = '${abbrs.aiFoundryAccounts}${environmentName}'
 var foundryCustomSubDomainName = toLower(replace(environmentName, '-', ''))
 var defaultProjectName = 'promptbabbler'
-var containerRegistryName = '${abbrs.containerRegistryRegistries}${toLower(replace(environmentName, '-', ''))}'
 var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
 var containerAppName = '${abbrs.appContainerApps}${environmentName}-api'
 var staticWebAppName = '${abbrs.webStaticSites}${environmentName}'
@@ -182,23 +181,6 @@ module foundryRoleAssignments './core/security/role_foundry.bicep' = {
   }
 }
 
-// --------- CONTAINER REGISTRY ---------
-module containerRegistry 'br/public:avm/res/container-registry/registry:0.8.0' = {
-  name: 'container-registry-deployment-${resourceToken}'
-  scope: resourceGroup(resourceGroupName)
-  dependsOn: [
-    rg
-  ]
-  params: {
-    name: containerRegistryName
-    location: location
-    tags: tags
-    acrSku: 'Basic'
-    acrAdminUserEnabled: true
-    publicNetworkAccess: enablePublicNetworkAccess ? 'Enabled' : 'Disabled'
-  }
-}
-
 // --------- CONTAINER APPS ENVIRONMENT ---------
 module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.10.0' = {
   name: 'container-apps-environment-deployment-${resourceToken}'
@@ -222,7 +204,6 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
   dependsOn: [
     rg
     containerAppsEnvironment
-    containerRegistry
   ]
   params: {
     name: containerAppName
@@ -237,7 +218,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
     containers: [
       {
         name: 'api'
-        image: 'mcr.microsoft.com/dotnet/samples:aspnetapp'
+        image: 'ghcr.io/plagueho/prompt-babbler-api:latest'
         resources: {
           cpu: '0.5'
           memory: '1Gi'
@@ -263,12 +244,6 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
     ingressTransport: 'auto'
     scaleMinReplicas: 0
     scaleMaxReplicas: 3
-    registries: [
-      {
-        server: containerRegistry.outputs.loginServer
-        identity: 'system'
-      }
-    ]
   }
 }
 
@@ -336,11 +311,6 @@ output AZURE_AI_FOUNDRY_ID string = foundryService.outputs.resourceId
 output AZURE_AI_FOUNDRY_ENDPOINT string = foundryService.outputs.endpoint
 output AZURE_AI_FOUNDRY_RESOURCE_ID string = foundryService.outputs.resourceId
 output AZURE_AI_FOUNDRY_PROJECT_ENDPOINT string = 'https://${foundryCustomSubDomainName}.services.ai.azure.com/api/projects/${defaultProjectName}'
-
-// Container Registry
-output AZURE_CONTAINER_REGISTRY_NAME string = containerRegistry.outputs.name
-output AZURE_CONTAINER_REGISTRY_LOGIN_SERVER string = containerRegistry.outputs.loginServer
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
 
 // Container App (API)
 output AZURE_CONTAINER_APP_NAME string = containerApp.outputs.name

@@ -1,24 +1,33 @@
 import { useState, useCallback, useRef } from 'react';
 import * as api from '@/services/api-client';
+import type { PromptFormat } from '@/types';
 
 export function usePromptGeneration() {
   const [generatedText, setGeneratedText] = useState('');
+  const [generatedName, setGeneratedName] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const generate = useCallback(
-    async (babbleText: string, systemPrompt: string) => {
+    async (
+      babbleText: string,
+      systemPrompt: string,
+      templateName?: string,
+      promptFormat: PromptFormat = 'text',
+      allowEmojis: boolean = false
+    ) => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
 
       setGeneratedText('');
+      setGeneratedName(null);
       setIsGenerating(true);
       setError(null);
 
       try {
-        const stream = await api.generatePrompt(babbleText, systemPrompt);
+        const stream = await api.generatePrompt(babbleText, systemPrompt, templateName, promptFormat, allowEmojis);
         const reader = stream.getReader();
         const decoder = new TextDecoder();
 
@@ -41,7 +50,10 @@ export function usePromptGeneration() {
               const payload = line.slice(6);
               if (payload === '[DONE]') break;
               try {
-                const parsed = JSON.parse(payload) as { text?: string };
+                const parsed = JSON.parse(payload) as { text?: string; name?: string };
+                if (parsed.name) {
+                  setGeneratedName(parsed.name);
+                }
                 if (parsed.text) {
                   setGeneratedText((prev) => prev + parsed.text);
                 }
@@ -65,5 +77,5 @@ export function usePromptGeneration() {
     []
   );
 
-  return { generatedText, isGenerating, error, generate };
+  return { generatedText, generatedName, isGenerating, error, generate };
 }
