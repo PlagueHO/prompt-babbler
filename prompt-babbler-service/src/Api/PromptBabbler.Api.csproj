@@ -3,6 +3,9 @@
     <RootNamespace>PromptBabbler.Api</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Domain\PromptBabbler.Domain.csproj" />
     <ProjectReference Include="..\Infrastructure\PromptBabbler.Infrastructure.csproj" />
     <ProjectReference Include="..\Orchestration\ServiceDefaults\PromptBabbler.ServiceDefaults.csproj" />

@@ -4,8 +4,8 @@ info:
   description: |
     Backend API for Prompt Babbler. V1 responsibilities:
     1. Proxy LLM calls to Azure OpenAI (CORS workaround)
-    2. Proxy STT calls to Azure OpenAI (CORS workaround)
-    3. Manage LLM/STT settings (persist to local config file)
+    2. Real-time speech-to-text via Azure AI Speech Service (WebSocket)
+    3. Manage LLM settings (persist to local config file)
     4. Health checks (via Aspire ServiceDefaults)
   version: 1.0.0
   contact:
@@ -79,54 +79,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
 
-  /api/transcribe:
-    post:
-      operationId: transcribeAudio
-      summary: Transcribe an audio chunk via Azure OpenAI STT
+  /api/transcribe/stream:
+    get:
+      operationId: streamTranscription
+      summary: Real-time audio transcription via WebSocket
       description: |
-        Receives an audio file (a ~5-second chunk captured by the browser's
-        MediaRecorder API) and forwards it to the configured Azure OpenAI
-        configured STT deployment for transcription. Returns the transcribed text.
-        This endpoint is called repeatedly during recording — once per
-        audio chunk — to provide near-real-time transcription.
+        Opens a WebSocket connection for real-time speech-to-text transcription
+        using Azure AI Speech Service. The client sends raw PCM audio frames
+        (16 kHz, 16-bit, mono) as binary WebSocket messages. The server
+        responds with JSON text messages containing partial and final
+        transcription results.
+
+        Protocol:
+        1. Client opens WebSocket to this URL (with optional `?language=en-US`)
+        2. Client sends binary frames of raw PCM audio data
+        3. Server sends JSON text frames: `{"text":"...", "isFinal": true|false}`
+        4. Client closes WebSocket when recording stops
       tags:
         - Transcription
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/TranscribeAudioRequest'
+      parameters:
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+          description: |
+            BCP-47 language code (e.g., "en-US", "es-ES"). If omitted,
+            defaults to "en-US". Used to configure the Speech Recognizer.
       responses:
-        '200':
-          description: Transcribed text from the audio chunk
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TranscriptionResponse'
-              example:
-                text: "I need to create a function that handles edge cases"
-                language: "en"
-                duration: 4.82
+        '101':
+          description: WebSocket upgrade — real-time transcription session begins
         '400':
-          description: Invalid request (no audio file, unsupported format, file too large)
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetails'
-        '422':
-          description: LLM settings not configured or STT deployment not set
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetails'
-              example:
-                type: "https://promptbabbler.dev/errors/settings-not-configured"
-                title: "LLM Settings Not Configured"
-                status: 422
-                detail: "Azure OpenAI settings must be configured before transcribing audio. Please configure your endpoint, API key, and STT deployment name in Settings."
-        '502':
-          description: Azure OpenAI STT endpoint error (invalid credentials, rate limiting, service unavailable)
+          description: Not a WebSocket request
           content:
             application/problem+json:
               schema:
@@ -389,35 +373,21 @@ components:
           format: uri
           description: URI identifying the specific occurrence.
 
-    TranscribeAudioRequest:
+    TranscriptionMessage:
       type: object
-      required:
-        - file
-      properties:
-        file:
-          type: string
-          format: binary
-          description: Audio file to transcribe. Preferred format is audio/webm;codecs=opus. Other supported formats include ogg, wav, mp3, mp4, m4a, flac, mpeg, mpga. Max size 25 MB (Azure OpenAI audio transcription API limit).
-        language:
-          type: string
-          description: Optional ISO-639-1 language code (e.g., "en", "es", "fr"). If omitted, the STT model auto-detects the language.
-
-    TranscriptionResponse:
-      type: object
+      description: A single transcription event received over the WebSocket.
       required:
         - text
+        - isFinal
       properties:
         text:
           type: string
-          description: The transcribed text from the audio chunk.
-        language:
-          type: string
-          nullable: true
-          description: The detected or specified language code.
-        duration:
-          type: number
-          format: float
-          nullable: true
+          description: The recognized text (partial or final).
+        isFinal:
+          type: boolean
+          description: |
+            True when this is a finalized recognition result.
+            False for interim/partial results that may change.
           description: Duration of the audio in seconds.
 
 tags:

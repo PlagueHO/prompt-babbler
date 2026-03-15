@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial project scaffold with .NET 10 backend and React 19 frontend
-- Speech-to-text transcription via Azure OpenAI Whisper
+- Speech-to-text transcription via Azure AI Speech Service with WebSocket streaming
 - Prompt generation via Azure OpenAI LLM with streaming (SSE)
 - LLM settings management (endpoint, API key, deployments)
 - Babble management (create, read, update, delete) with localStorage

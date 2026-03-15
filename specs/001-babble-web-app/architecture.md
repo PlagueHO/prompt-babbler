@@ -28,6 +28,7 @@ graph TB
 
             subgraph Services["Services"]
                 API[api-client.ts]
+                TS[transcription-stream.ts]
                 LS[local-storage.ts]
                 DT[default-templates.ts]
             end
@@ -42,28 +43,28 @@ graph TB
             end
         end
 
-        MediaRecorder[MediaRecorder API]
+        MediaRecorder[AudioWorklet\nPCM Capture]
         LocalStorage[(localStorage)]
     end
 
     subgraph AspireAppHost["Aspire AppHost — Orchestration"]
         subgraph Backend["prompt-babbler-service — .NET 10 Clean Architecture"]
             subgraph ApiLayer["Api Layer — ASP.NET Core"]
-                TC[TranscriptionController\nPOST /api/transcribe]
+                TC[TranscriptionWebSocketController\nWS /api/transcribe/stream]
                 PC[PromptController\nPOST /api/prompts/generate]
                 SC[SettingsController\nGET/PUT /api/settings\nPOST /api/settings/test]
                 HC[Health Checks\n/health  /alive]
             end
 
             subgraph DomainLayer["Domain Layer"]
-                ITS[ITranscriptionService]
+                ITS[IRealtimeTranscriptionService]
                 IPGS[IPromptGenerationService]
                 ISS[ISettingsService]
                 LLM[LlmSettings Model]
             end
 
             subgraph InfraLayer["Infrastructure Layer"]
-                AOTS[AzureOpenAi\nTranscriptionService]
+                ASTS[AzureSpeech\nTranscriptionService]
                 AOPGS[AzureOpenAi\nPromptGenerationService]
                 FSS[FileSettingsService]
             end
@@ -78,7 +79,7 @@ graph TB
 
     subgraph ExternalServices["External Services"]
         AOAI[Azure OpenAI]
-        STT[Speech-to-Text\nModel]
+        SPEECH[Azure AI\nSpeech Service]
         LLMGen[GPT-4o / GPT-4o-mini\nPrompt Generation]
     end
 
@@ -88,11 +89,13 @@ graph TB
     Pages --> Hooks
     Hooks --> Services
     useAR --> MediaRecorder
+    useTR --> TS
     useLS --> LocalStorage
     useB --> useLS
     useT --> useLS
     LS --> LocalStorage
     API -->|HTTP| ApiLayer
+    TS -->|WebSocket| TC
 
     %% API to Domain
     TC --> ITS
@@ -100,14 +103,13 @@ graph TB
     SC --> ISS
 
     %% Domain to Infrastructure
-    ITS -.->|implements| AOTS
+    ITS -.->|implements| ASTS
     IPGS -.->|implements| AOPGS
     ISS -.->|implements| FSS
 
     %% Infrastructure to External
-    AOTS -->|Audio API| STT
+    ASTS -->|Speech SDK\nWebSocket| SPEECH
     AOPGS -->|Chat Completions\nSSE Streaming| LLMGen
-    STT --> AOAI
     LLMGen --> AOAI
     FSS -->|Read/Write JSON| ConfigFile
 
@@ -120,7 +122,7 @@ graph TB
     classDef browser fill:#89b4fa,stroke:#1e66f5,color:#000
     classDef backend fill:#cba6f7,stroke:#8839ef,color:#000
 
-    class AOAI,STT,LLMGen external
+    class AOAI,SPEECH,LLMGen external
     class LocalStorage,ConfigFile storage
     class MediaRecorder browser
 ```
@@ -131,23 +133,30 @@ graph TB
 sequenceDiagram
     participant U as User
     participant B as Browser
-    participant MR as MediaRecorder API
+    participant AW as AudioWorklet
     participant LS as localStorage
-    participant API as .NET API
+    participant API as .NET API (WebSocket)
+    participant SPEECH as Azure AI Speech Service
     participant AOAI as Azure OpenAI
 
-    Note over U,AOAI: Recording & Transcription Flow
+    Note over U,AOAI: Recording & Transcription Flow (Real-time WebSocket)
     U->>B: Click Record
-    B->>MR: Start capture (webm/opus)
-    loop Every ~5 seconds
-        MR-->>B: Audio chunk (≤25 MB)
-        B->>API: POST /api/transcribe
-        API->>AOAI: Audio → STT Model
-        AOAI-->>API: Transcribed text
-        API-->>B: TranscriptionResponse
-        B->>LS: Persist interim babble
+    B->>AW: Start AudioWorklet (16kHz/16-bit/mono PCM)
+    B->>API: Open WebSocket /api/transcribe/stream
+    API->>SPEECH: Start SpeechRecognizer session
+    loop Continuous audio frames
+        AW-->>B: PCM Int16 buffer
+        B->>API: Binary WebSocket frame (PCM)
+        API->>SPEECH: PushAudioInputStream.Write()
+        SPEECH-->>API: Recognizing (partial) event
+        API-->>B: JSON {"text":"...", "isFinal": false}
+        B->>B: Update partial transcript preview
     end
+    SPEECH-->>API: Recognized (final) event
+    API-->>B: JSON {"text":"...", "isFinal": true}
+    B->>B: Append to final transcript
     U->>B: Click Stop
+    B->>API: Close WebSocket
     B->>LS: Save final Babble
 
     Note over U,AOAI: Prompt Generation Flow

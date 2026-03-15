@@ -67,8 +67,8 @@ aspire run
 
 On first run, Aspire will:
 
-1. Provision an Azure AI Foundry resource with chat and STT model deployments
-2. Start the .NET backend API
+1. Provision an Azure AI Foundry resource with a chat model deployment
+2. Start the .NET backend API (with WebSocket support for real-time transcription)
 3. Start the React frontend via Vite
 4. Launch the Aspire Dashboard (telemetry, logs, traces)
 
@@ -87,22 +87,22 @@ Open the **Aspire Dashboard** (URL shown in terminal output) to find all service
 
 ## Model configuration
 
-The AppHost deploys two AI models by default:
+The AppHost deploys one AI model by default:
 
 | Deployment | Model | SKU |
 |------------|-------|-----|
-| chat | gpt-4.1 | Standard |
-| stt | gpt-4o-transcribe | GlobalStandard |
+| chat | gpt-5.3-chat | GlobalStandard |
 
-Override models via environment variables in
+Speech-to-text uses **Azure AI Speech Service** (real-time streaming), which is
+part of the same AIServices resource — no separate model deployment is needed.
+
+Override the chat model via environment variables in
 `prompt-babbler-service/src/Orchestration/AppHost/Properties/launchSettings.json`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MicrosoftFoundry__chatModelName` | `gpt-4.1` | Chat/LLM model |
-| `MicrosoftFoundry__chatModelVersion` | `2025-04-14` | Chat model version |
-| `MicrosoftFoundry__sttModelName` | `gpt-4o-transcribe` | Speech-to-text model |
-| `MicrosoftFoundry__sttModelVersion` | `2025-03-20` | STT model version |
+| `MicrosoftFoundry__chatModelName` | `gpt-5.3-chat` | Chat/LLM model |
+| `MicrosoftFoundry__chatModelVersion` | `2026-03-03` | Chat model version |
 
 Ensure your subscription has available quota for the configured models in the
 target region.
@@ -145,7 +145,7 @@ Open `Ctrl+Shift+P` → **Tasks: Run Task** for common workflows:
 | `InsufficientQuota` | No quota for the model/SKU in the target region. Check quota in Azure Portal or use a different model. |
 | Azure provisioning hangs | Verify secrets are set: `dotnet user-secrets list --project src/Orchestration/AppHost`. |
 | Microphone not working | Check browser permissions. Ensure no other app is using the mic. |
-| Transcription errors | Check the Aspire Dashboard for API errors. Verify the STT model deployed correctly. |
+| Transcription errors | Check the Aspire Dashboard for WebSocket/Speech Service errors. Verify the AIServices resource has Speech capabilities enabled and RBAC roles are assigned. |
 | `dotnet run` fails | Ensure .NET 10 SDK: `dotnet --version` → `10.0.x`. |
 | `pnpm install` fails | Ensure Node.js 22.x: `node --version`. |
 

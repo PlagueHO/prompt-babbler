@@ -395,3 +395,29 @@ This approach decouples transcription from browser engine quality and enables co
 
 - **Persist every 30 seconds** — Rejected. Up to 30 seconds of data loss is unacceptable for the core feature of the application. Users speaking for extended periods should not fear data loss.
 - **Persist every 60 seconds** — Rejected. Same reasoning — unacceptable loss window for a speech capture tool.
+
+## R17: Speech-to-Text Engine — Azure AI Speech Service (Real-time WebSocket)
+
+**Decision**: Replace the batch-based `gpt-4o-transcribe` OpenAI model with Azure AI Speech Service real-time streaming STT. Audio is captured via AudioWorklet as raw 16 kHz/16-bit/mono PCM, streamed over WebSocket to the .NET backend, and fed into a `SpeechRecognizer` via `PushAudioInputStream`. Partial (`Recognizing`) and final (`Recognized`) events are forwarded back to the browser as JSON text frames.
+
+**Supersedes**: R4 (Audio capture strategy), R13 (Audio format — now raw PCM, not webm/opus)
+
+**Rationale**:
+
+- **True real-time**: Sub-second partial results provide live-as-you-speak transcript preview, compared to ~5-second batch latency with the previous approach.
+- **No model deployment**: The Speech Service is part of the AIServices resource (kind: `AIServices`), so no separate model deployment in Foundry is needed. This simplifies infrastructure and reduces cost.
+- **Built for streaming**: The Speech SDK's `SpeechRecognizer` is designed for continuous recognition of audio streams, handling silence detection, punctuation insertion, and language detection natively.
+- **Same Azure resource**: The existing Cognitive Services / AI Foundry account supports Speech Service endpoints — no new Azure resource or separate SKU is needed.
+
+**Architecture changes**:
+
+- **Backend**: New `IRealtimeTranscriptionService` domain interface with `TranscriptionSession` abstraction (channel-based). `AzureSpeechTranscriptionService` implements it using `Microsoft.CognitiveServices.Speech` SDK v1.42.0. New `TranscriptionWebSocketController` with `GET /api/transcribe/stream` WebSocket endpoint.
+- **Frontend**: AudioWorklet (`pcm-processor.js`) replaces MediaRecorder. `TranscriptionStream` WebSocket client replaces HTTP `transcribeAudio()`. Hooks rewritten: `useAudioRecording` emits PCM frames, `useTranscription` manages WebSocket lifecycle with `connect`/`sendAudio`/`disconnect`.
+- **Aspire**: Removed `sttDeployment` (gpt-4o-transcribe) from AppHost. Speech SDK configuration passed as `SpeechConfig` singleton.
+- **Infrastructure**: Removed `gpt-4o-transcribe` from `model-deployments.json`. Added `Cognitive Services Speech User` RBAC role for both deploying principal and Container App managed identity.
+
+**References**:
+
+- [Azure AI Speech real-time STT docs](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/speech-to-text)
+- [Speech SDK samples](https://github.com/Azure-Samples/cognitive-services-speech-sdk)
+- [Microsoft.CognitiveServices.Speech NuGet](https://www.nuget.org/packages/Microsoft.CognitiveServices.Speech)

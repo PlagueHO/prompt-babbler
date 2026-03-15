@@ -4,12 +4,10 @@ import { toast } from 'sonner';
 import { RecordButton } from '@/components/recording/RecordButton';
 import { RecordingIndicator } from '@/components/recording/RecordingIndicator';
 import { TranscriptPreview } from '@/components/recording/TranscriptPreview';
-import { SettingsRequiredBanner } from '@/components/layout/SettingsRequiredBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { useTranscription } from '@/hooks/useTranscription';
-import { useSettings } from '@/hooks/useSettings';
 import { useBabbles } from '@/hooks/useBabbles';
 import { getSpeechLanguage } from '@/services/local-storage';
 import type { Babble } from '@/types';
@@ -17,24 +15,42 @@ import { Save } from 'lucide-react';
 
 export function RecordPage() {
   const navigate = useNavigate();
-  const { settings } = useSettings();
   const { createBabble } = useBabbles();
-  const { transcribedText, isTranscribing, error: transcriptionError, transcribeChunk } = useTranscription();
+  const {
+    transcribedText,
+    partialText,
+    isConnected,
+    error: transcriptionError,
+    connect,
+    sendAudio,
+    disconnect,
+    reset,
+  } = useTranscription();
   const [title, setTitle] = useState('');
   const [babbleId] = useState(() => crypto.randomUUID());
 
   const language = getSpeechLanguage();
 
-  const onChunk = useCallback(
-    (blob: Blob) => {
-      void transcribeChunk(blob, language || undefined);
+  const onPcmFrame = useCallback(
+    (buffer: ArrayBuffer) => {
+      sendAudio(buffer);
     },
-    [transcribeChunk, language]
+    [sendAudio],
   );
 
-  const { isRecording, duration, start, stop } = useAudioRecording({
-    onChunk,
+  const { isRecording, duration, start: startRecording, stop: stopRecording } = useAudioRecording({
+    onPcmFrame,
   });
+
+  const handleStart = useCallback(async () => {
+    connect(language || undefined);
+    await startRecording();
+  }, [connect, language, startRecording]);
+
+  const handleStop = useCallback(() => {
+    stopRecording();
+    disconnect();
+  }, [stopRecording, disconnect]);
 
   // Warn before leaving while recording
   useEffect(() => {
@@ -47,6 +63,14 @@ export function RecordPage() {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [isRecording, transcribedText]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = () => {
     if (!transcribedText.trim()) {
@@ -67,7 +91,10 @@ export function RecordPage() {
     void navigate(`/babble/${babble.id}`);
   };
 
-  const isConfigured = settings?.isConfigured ?? false;
+  // Display text: final text + partial result
+  const displayText = partialText
+    ? transcribedText ? `${transcribedText} ${partialText}` : partialText
+    : transcribedText;
 
   return (
     <div className="space-y-6">
@@ -77,8 +104,6 @@ export function RecordPage() {
           Speak your thoughts freely. We&apos;ll transcribe them for you.
         </p>
       </div>
-
-      <SettingsRequiredBanner isConfigured={isConfigured} />
 
       <div className="space-y-4">
         <Input
@@ -90,20 +115,20 @@ export function RecordPage() {
         <div className="flex flex-col items-center gap-6 rounded-lg border p-8">
           <RecordButton
             isRecording={isRecording}
-            onStart={start}
-            onStop={stop}
+            onStart={handleStart}
+            onStop={handleStop}
           />
           <RecordingIndicator
             isRecording={isRecording}
             duration={duration}
-            onStart={start}
-            onStop={stop}
+            onStart={handleStart}
+            onStop={handleStop}
           />
         </div>
 
         <TranscriptPreview
-          text={transcribedText}
-          isTranscribing={isTranscribing}
+          text={displayText}
+          isTranscribing={isConnected}
         />
 
         {transcriptionError && (

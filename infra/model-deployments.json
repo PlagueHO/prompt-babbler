@@ -2,22 +2,10 @@
   {
     "model": {
       "format": "OpenAI",
-      "name": "gpt-4o",
-      "version": "2024-11-20"
+      "name": "gpt-5.3-chat",
+      "version": "2026-03-03"
     },
-    "name": "gpt-4o",
-    "sku": {
-      "name": "GlobalStandard",
-      "capacity": 50
-    }
-  },
-  {
-    "model": {
-      "format": "OpenAI",
-      "name": "gpt-4o-transcribe",
-      "version": "2025-03-20"
-    },
-    "name": "gpt-4o-transcribe",
+    "name": "gpt-5.3-chat",
     "sku": {
       "name": "GlobalStandard",
       "capacity": 50

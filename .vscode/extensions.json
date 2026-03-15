@@ -17,6 +17,7 @@
         "mikestead.dotenv",
         "ms-azure-load-testing.microsoft-testing",
         "ms-azuretools.azure-dev",
+        "ms-azureaispeech.azure-ai-speech-toolkit",
         "ms-azuretools.vscode-azure-github-copilot",
         "ms-azuretools.vscode-azure-mcp-server",
         "ms-azuretools.vscode-azureappservice",

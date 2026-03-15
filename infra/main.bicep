@@ -161,6 +161,11 @@ var foundryRoleAssignmentsArray = [
       principalType: principalIdType
       principalId: principalId
     }
+    {
+      roleDefinitionIdOrName: 'Cognitive Services Speech User'
+      principalType: principalIdType
+      principalId: principalId
+    }
   ] : [])
 ]
 
@@ -267,11 +272,16 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
   }
 }
 
-// Assign Cognitive Services OpenAI User role to the Container App's managed identity
-// so it can call the Foundry models via managed identity
+// Assign Cognitive Services OpenAI User + Speech User roles to the Container App's
+// managed identity so it can call Foundry models and Speech Service via managed identity
 var containerAppFoundryRoleAssignments = [
   {
     roleDefinitionIdOrName: 'Cognitive Services OpenAI User'
+    principalType: 'ServicePrincipal'
+    principalId: containerApp.outputs.systemAssignedMIPrincipalId
+  }
+  {
+    roleDefinitionIdOrName: 'Cognitive Services Speech User'
     principalType: 'ServicePrincipal'
     principalId: containerApp.outputs.systemAssignedMIPrincipalId
   }

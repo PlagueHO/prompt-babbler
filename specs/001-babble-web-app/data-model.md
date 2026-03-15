@@ -11,7 +11,7 @@ V1 uses a split-storage model:
 
 All localStorage entities use JSON serialization. Entity IDs are UUID v4, generated client-side using `crypto.randomUUID()`. Audio is captured as `audio/webm;codecs=opus` (max 25 MB per chunk). Interim transcription data is persisted to localStorage after every successfully transcribed chunk (~5 seconds). The app warns when localStorage usage reaches 80% of quota.
 
-**STT model**: Azure OpenAI gpt-4o-transcribe is the recommended default (via `Azure.AI.OpenAI` AudioClient). The STT model is fully configurable via the `sttDeploymentName` settings field — users can switch to any Azure OpenAI audio transcription model (e.g., Whisper, future successors) by changing the deployment name. No code changes required.
+**STT model**: Azure OpenAI gpt-4o-transcribe is the recommended default (via `Azure.AI.OpenAI` AudioClient). The STT model is fully configurable via the `sttDeploymentName` settings field — users can switch to any Azure OpenAI audio transcription model (e.g., gpt-4o-transcribe, future successors) by changing the deployment name. No code changes required.
 
 ## Entities
 

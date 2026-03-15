@@ -1,90 +1,196 @@
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Channels;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using PromptBabbler.Api.Controllers;
-using PromptBabbler.Api.Models.Responses;
 using PromptBabbler.Domain.Interfaces;
-using PromptBabbler.Domain.Models;
 
 namespace PromptBabbler.Api.UnitTests.Controllers;
 
 [TestClass]
-public sealed class TranscriptionControllerTests
+[TestCategory("Unit")]
+public sealed class TranscriptionWebSocketControllerTests
 {
-    private readonly ITranscriptionService _transcriptionService = Substitute.For<ITranscriptionService>();
-    private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
-    private readonly TranscriptionController _controller;
+    private readonly IRealtimeTranscriptionService _transcriptionService = Substitute.For<IRealtimeTranscriptionService>();
+    private readonly ILogger<TranscriptionWebSocketController> _logger = Substitute.For<ILogger<TranscriptionWebSocketController>>();
+    private readonly TranscriptionWebSocketController _controller;
 
-    public TranscriptionControllerTests()
+    public TranscriptionWebSocketControllerTests()
     {
-        _controller = new TranscriptionController(_transcriptionService, _settingsService);
+        _controller = new TranscriptionWebSocketController(_transcriptionService, _logger);
     }
 
     [TestMethod]
-    public async Task Transcribe_WithNoFile_ReturnsBadRequest()
+    public async Task StreamTranscription_NonWebSocket_Returns400()
     {
-        var result = await _controller.Transcribe(null!, null, CancellationToken.None);
-
-        var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var problem = badRequest.Value.Should().BeOfType<ProblemDetails>().Subject;
-        problem.Status.Should().Be(400);
-        problem.Detail.Should().Contain("audio file");
-    }
-
-    [TestMethod]
-    public async Task Transcribe_WhenSettingsNotConfigured_Returns422()
-    {
-        var file = CreateFormFile("test.wav", 1024);
-        _settingsService.GetSettingsAsync(Arg.Any<CancellationToken>()).Returns((LlmSettings?)null);
-
-        var result = await _controller.Transcribe(file, null, CancellationToken.None);
-
-        var unprocessable = result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject;
-        var problem = unprocessable.Value.Should().BeOfType<ProblemDetails>().Subject;
-        problem.Status.Should().Be(422);
-    }
-
-    [TestMethod]
-    public async Task Transcribe_WithValidFile_ReturnsTranscription()
-    {
-        var file = CreateFormFile("test.wav", 1024);
-        var settings = new LlmSettings
+        // Arrange: simulate a normal HTTP request (not a WebSocket upgrade)
+        var httpContext = new DefaultHttpContext();
+        _controller.ControllerContext = new ControllerContext
         {
-            Endpoint = "https://test.openai.azure.com",
-            ApiKey = "test-key",
-            DeploymentName = "gpt-4o",
-            WhisperDeploymentName = "whisper",
+            HttpContext = httpContext,
         };
-        _settingsService.GetSettingsAsync(Arg.Any<CancellationToken>()).Returns(settings);
 
-        var transcriptionResult = new TranscriptionResult
-        {
-            Text = "Hello world",
-            Language = "en",
-            Duration = 2.5f,
-        };
-        _transcriptionService.TranscribeAsync(
-            Arg.Any<Stream>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(transcriptionResult);
+        // Act
+        await _controller.StreamTranscription(null, CancellationToken.None);
 
-        var result = await _controller.Transcribe(file, "en", CancellationToken.None);
-
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<TranscriptionResponse>().Subject;
-        response.Text.Should().Be("Hello world");
-        response.Language.Should().Be("en");
-        response.Duration.Should().Be(2.5f);
+        // Assert
+        httpContext.Response.StatusCode.Should().Be(400);
     }
 
-    private static IFormFile CreateFormFile(string fileName, int sizeInBytes)
+    [TestMethod]
+    public async Task StreamTranscription_WebSocket_StartsSessionAndForwardsEvents()
     {
-        var content = new byte[sizeInBytes];
-        var stream = new MemoryStream(content);
-        var file = Substitute.For<IFormFile>();
-        file.FileName.Returns(fileName);
-        file.Length.Returns(sizeInBytes);
-        file.OpenReadStream().Returns(stream);
-        return file;
+        // Arrange: create a channel that the mock session will emit events on
+        var channel = Channel.CreateUnbounded<TranscriptionEvent>();
+        var writtenAudio = new List<byte[]>();
+        var completeCalled = false;
+        var disposeCalled = false;
+
+        var session = new TranscriptionSession(
+            channel.Reader,
+            (data, _) =>
+            {
+                writtenAudio.Add(data.ToArray());
+                return Task.CompletedTask;
+            },
+            () =>
+            {
+                completeCalled = true;
+                channel.Writer.TryComplete();
+                return Task.CompletedTask;
+            },
+            () =>
+            {
+                disposeCalled = true;
+                return ValueTask.CompletedTask;
+            });
+
+        _transcriptionService.StartSessionAsync(Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(session);
+
+        // Create a fake WebSocket that sends one binary frame then a close frame
+        var audioData = new byte[] { 0x01, 0x02, 0x03, 0x04 };
+        var fakeSocket = new FakeWebSocket(audioData);
+
+        // Write a transcription event before the controller starts reading
+        await channel.Writer.WriteAsync(new TranscriptionEvent
+        {
+            Text = "hello",
+            IsFinal = true,
+        });
+
+        var webSocketManager = Substitute.For<WebSocketManager>();
+        webSocketManager.IsWebSocketRequest.Returns(true);
+        webSocketManager.AcceptWebSocketAsync().Returns(fakeSocket);
+
+        var httpContext = Substitute.For<HttpContext>();
+        httpContext.WebSockets.Returns(webSocketManager);
+        httpContext.Response.Returns(Substitute.For<HttpResponse>());
+        httpContext.RequestAborted.Returns(CancellationToken.None);
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext,
+        };
+
+        // Act
+        await _controller.StreamTranscription("en-US", CancellationToken.None);
+
+        // Assert — audio was forwarded to the session
+        writtenAudio.Should().ContainSingle();
+        writtenAudio[0].Should().BeEquivalentTo(audioData);
+
+        // Transcription was completed
+        completeCalled.Should().BeTrue();
+        disposeCalled.Should().BeTrue();
+
+        // The session sent a text message to the WebSocket
+        fakeSocket.SentMessages.Should().ContainSingle();
+        var sentJson = Encoding.UTF8.GetString(fakeSocket.SentMessages[0]);
+        var msg = JsonSerializer.Deserialize<JsonElement>(sentJson);
+        msg.GetProperty("text").GetString().Should().Be("hello");
+        msg.GetProperty("isFinal").GetBoolean().Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Minimal in-memory WebSocket for unit testing.
+    /// Receives one binary message (the audio data), then a close message.
+    /// Records text messages sent by the controller.
+    /// </summary>
+    private sealed class FakeWebSocket : WebSocket
+    {
+        private readonly byte[] _audioData;
+        private int _receiveCall;
+        private WebSocketState _state = WebSocketState.Open;
+
+        public FakeWebSocket(byte[] audioData)
+        {
+            _audioData = audioData;
+        }
+
+        public List<byte[]> SentMessages { get; } = [];
+
+        public override WebSocketCloseStatus? CloseStatus => _state == WebSocketState.Closed
+            ? WebSocketCloseStatus.NormalClosure : null;
+
+        public override string? CloseStatusDescription => null;
+        public override WebSocketState State => _state;
+        public override string? SubProtocol => null;
+
+        public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType,
+            bool endOfMessage, CancellationToken cancellationToken)
+        {
+            if (messageType == WebSocketMessageType.Text)
+            {
+                SentMessages.Add(buffer.Array![buffer.Offset..(buffer.Offset + buffer.Count)]);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer,
+            CancellationToken cancellationToken)
+        {
+            _receiveCall++;
+            if (_receiveCall == 1)
+            {
+                _audioData.CopyTo(buffer.Array!, buffer.Offset);
+                return Task.FromResult(new WebSocketReceiveResult(
+                    _audioData.Length, WebSocketMessageType.Binary, true));
+            }
+
+            // Second call: return close message — keep State as Open so the
+            // writer task can still send pending events before the graceful close.
+            return Task.FromResult(new WebSocketReceiveResult(
+                0, WebSocketMessageType.Close, true, WebSocketCloseStatus.NormalClosure, "done"));
+        }
+
+        public override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription,
+            CancellationToken cancellationToken)
+        {
+            _state = WebSocketState.Closed;
+            return Task.CompletedTask;
+        }
+
+        public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription,
+            CancellationToken cancellationToken)
+        {
+            _state = WebSocketState.Closed;
+            return Task.CompletedTask;
+        }
+
+        public override void Abort()
+        {
+            _state = WebSocketState.Aborted;
+        }
+
+        public override void Dispose()
+        {
+        }
     }
 }

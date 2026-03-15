@@ -26,29 +26,6 @@ export interface GeneratedPrompt {
   generatedAt: string;
 }
 
-export interface LlmSettingsView {
-  endpoint: string;
-  apiKeyHint: string;
-  deploymentName: string;
-  whisperDeploymentName: string;
-  isConfigured: boolean;
-}
-
-export interface LlmSettingsSaveRequest {
-  endpoint: string;
-  apiKey: string;
-  deploymentName: string;
-  whisperDeploymentName: string;
-}
-
-export interface TranscriptionResponse {
-  text: string;
-  language: string | null;
-  duration: number | null;
-}
-
-export interface TestConnectionResponse {
-  success: boolean;
-  message: string;
-  latencyMs: number | null;
+export interface StatusResponse {
+  status: string;
 }

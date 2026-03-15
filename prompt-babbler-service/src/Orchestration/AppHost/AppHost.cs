@@ -8,35 +8,27 @@ var foundry = builder.AddAzureAIFoundry("ai-foundry");
 
 // Model deployment configuration — read from MicrosoftFoundry config section with sensible defaults.
 // These are NOT Aspire parameters — just configuration values for the deployment names.
-// Defaults: gpt-4.1 for chat/LLM, gpt-4o-transcribe for STT.
 var chatDeployment = foundry.AddDeployment(
     "chat",
-    builder.Configuration["MicrosoftFoundry:chatModelName"] ?? "gpt-4.1",
-    builder.Configuration["MicrosoftFoundry:chatModelVersion"] ?? "2025-04-14",
-    "OpenAI")
-    .WithProperties(deployment =>
-    {
-        deployment.SkuName = "Standard";
-        deployment.SkuCapacity = 1;
-    });
-
-var sttDeployment = foundry.AddDeployment(
-    "stt",
-    builder.Configuration["MicrosoftFoundry:sttModelName"] ?? "gpt-4o-transcribe",
-    builder.Configuration["MicrosoftFoundry:sttModelVersion"] ?? "2025-03-20",
+    builder.Configuration["MicrosoftFoundry:chatModelName"] ?? "gpt-5.3-chat",
+    builder.Configuration["MicrosoftFoundry:chatModelVersion"] ?? "2026-03-03",
     "OpenAI")
     .WithProperties(deployment =>
     {
         deployment.SkuName = "GlobalStandard";
-        deployment.SkuCapacity = 1;
+        deployment.SkuCapacity = 50;
     });
 
+// Speech-to-text uses Azure AI Speech Service (part of the same AIServices resource)
+// instead of an OpenAI model deployment. No Aspire deployment needed — the Speech SDK
+// connects directly to the AIServices endpoint via SpeechConfig.
 var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithReference(foundry)
     .WithReference(chatDeployment)
-    .WithReference(sttDeployment)
     .WaitFor(chatDeployment)
-    .WaitFor(sttDeployment);
+    .WithEnvironment("Azure__TenantId", builder.Configuration["Azure:TenantId"])
+    .WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"])
+    .WithEnvironment("Speech__Region", builder.Configuration["Azure:Location"] ?? "");
 
 builder.AddViteApp("frontend", "../../../../prompt-babbler-app", "dev")
     .WithPnpm()

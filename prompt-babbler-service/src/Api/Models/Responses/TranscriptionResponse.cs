@@ -1,8 +1,3 @@
-namespace PromptBabbler.Api.Models.Responses;
-
-public sealed record TranscriptionResponse
-{
-    public required string Text { get; init; }
-    public string? Language { get; init; }
-    public float? Duration { get; init; }
-}
+// This file is intentionally left empty. The TranscriptionResponse model has been removed
+// because the transcription endpoint now uses WebSocket messages instead of HTTP JSON responses.
+// This file can be safely deleted.
