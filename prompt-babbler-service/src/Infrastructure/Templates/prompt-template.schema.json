@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/PlagueHO/prompt-babbler/prompt-template.schema.json",
+  "title": "Prompt Template Definition",
+  "description": "Schema for built-in prompt template definition files used by PromptBabbler.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "id",
+    "name",
+    "description",
+    "systemPrompt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON Schema file for validation."
+    },
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of the prompt template schema this file conforms to.",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the built-in template.",
+      "pattern": "^builtin-[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the template.",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what the template does.",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "systemPrompt": {
+      "type": "string",
+      "description": "The system prompt text used by the template.",
+      "minLength": 1,
+      "maxLength": 50000
+    }
+  }
+}

@@ -1,9 +1,7 @@
-import type { Babble, PromptTemplate } from '@/types';
-import { DEFAULT_TEMPLATES } from './default-templates';
+import type { Babble } from '@/types';
 
 const KEYS = {
   babbles: 'prompt-babbler:babbles',
-  templates: 'prompt-babbler:templates',
   speechLang: 'prompt-babbler:settings:speechLang',
 } as const;
 
@@ -50,40 +48,6 @@ export function updateBabble(updated: Babble): Babble {
 export function deleteBabble(id: string): void {
   const babbles = getBabbles().filter((b) => b.id !== id);
   saveBabbles(babbles);
-}
-
-// Templates
-export function getTemplates(): PromptTemplate[] {
-  const stored = read<PromptTemplate[] | null>(KEYS.templates, null);
-  if (stored === null) {
-    write(KEYS.templates, DEFAULT_TEMPLATES);
-    return [...DEFAULT_TEMPLATES];
-  }
-  return stored;
-}
-
-export function saveTemplates(templates: PromptTemplate[]): void {
-  write(KEYS.templates, templates);
-}
-
-export function createTemplate(template: PromptTemplate): PromptTemplate {
-  const templates = getTemplates();
-  templates.push(template);
-  saveTemplates(templates);
-  return template;
-}
-
-export function updateTemplate(updated: PromptTemplate): PromptTemplate {
-  const templates = getTemplates().map((t) =>
-    t.id === updated.id ? updated : t
-  );
-  saveTemplates(templates);
-  return updated;
-}
-
-export function deleteTemplate(id: string): void {
-  const templates = getTemplates().filter((t) => t.id !== id);
-  saveTemplates(templates);
 }
 
 // Speech language

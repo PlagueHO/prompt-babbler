@@ -1,4 +1,5 @@
 using Azure.Core;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PromptBabbler.Domain.Interfaces;
@@ -23,6 +24,17 @@ public static class DependencyInjection
             var logger = sp.GetRequiredService<ILogger<AzureSpeechTranscriptionService>>();
             return new AzureSpeechTranscriptionService(speechRegion, aiServicesEndpoint, credential, logger);
         });
+
+        // Prompt template repository and service backed by Cosmos DB with in-memory caching.
+        services.AddMemoryCache();
+        services.AddSingleton<IPromptTemplateRepository>(sp =>
+        {
+            var cosmosClient = sp.GetRequiredService<CosmosClient>();
+            var logger = sp.GetRequiredService<ILogger<CosmosPromptTemplateRepository>>();
+            return new CosmosPromptTemplateRepository(cosmosClient, logger);
+        });
+        services.AddSingleton<IPromptTemplateService, PromptTemplateService>();
+        services.AddHostedService<BuiltInTemplateSeedingService>();
 
         return services;
     }

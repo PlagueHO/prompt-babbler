@@ -1,41 +1,58 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { PromptTemplate } from '@/types';
-import * as storage from '@/services/local-storage';
+import * as api from '@/services/api-client';
 
 export function useTemplates() {
-  const [templates, setTemplates] = useState<PromptTemplate[]>(() =>
-    storage.getTemplates()
-  );
+  const [templates, setTemplates] = useState<PromptTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(() => {
-    setTemplates(storage.getTemplates());
+  const fetchTemplates = useCallback(async (forceRefresh = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.getTemplates(forceRefresh);
+      setTemplates(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load templates');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
+
   const createTemplate = useCallback(
-    (template: PromptTemplate): PromptTemplate => {
-      storage.createTemplate(template);
-      refresh();
-      return template;
+    async (template: { name: string; description: string; systemPrompt: string }): Promise<PromptTemplate> => {
+      const created = await api.createTemplate(template);
+      await fetchTemplates();
+      return created;
     },
-    [refresh]
+    [fetchTemplates]
   );
 
   const updateTemplate = useCallback(
-    (template: PromptTemplate): PromptTemplate => {
-      storage.updateTemplate(template);
-      refresh();
-      return template;
+    async (template: PromptTemplate): Promise<PromptTemplate> => {
+      const updated = await api.updateTemplate(template.id, {
+        name: template.name,
+        description: template.description,
+        systemPrompt: template.systemPrompt,
+      });
+      await fetchTemplates();
+      return updated;
     },
-    [refresh]
+    [fetchTemplates]
   );
 
   const deleteTemplate = useCallback(
-    (id: string): void => {
-      storage.deleteTemplate(id);
-      refresh();
+    async (id: string): Promise<void> => {
+      await api.deleteTemplate(id);
+      await fetchTemplates();
     },
-    [refresh]
+    [fetchTemplates]
   );
 
-  return { templates, createTemplate, updateTemplate, deleteTemplate };
+  return { templates, loading, error, createTemplate, updateTemplate, deleteTemplate, refresh: fetchTemplates };
 }

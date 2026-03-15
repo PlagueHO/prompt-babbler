@@ -55,6 +55,7 @@ var defaultProjectName = 'promptbabbler'
 var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
 var containerAppName = '${abbrs.appContainerApps}${environmentName}-api'
 var staticWebAppName = '${abbrs.webStaticSites}${environmentName}'
+var cosmosDbAccountName = '${abbrs.cosmosDBAccounts}${resourceToken}'
 
 // The application resources that are deployed into the application resource group
 module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
@@ -181,6 +182,61 @@ module foundryRoleAssignments './core/security/role_foundry.bicep' = {
   }
 }
 
+// --------- COSMOS DB (SERVERLESS) ---------
+module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' = {
+  name: 'cosmos-db-account-deployment-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    rg
+  ]
+  params: {
+    name: cosmosDbAccountName
+    location: location
+    tags: tags
+    capabilitiesToAdd: [
+      'EnableServerless'
+    ]
+    disableLocalAuthentication: false
+    disableKeyBasedMetadataWriteAccess: false
+    enableBurstCapacity: false
+    zoneRedundant: false
+    networkRestrictions: {
+      publicNetworkAccess: enablePublicNetworkAccess ? 'Enabled' : 'Disabled'
+    }
+    diagnosticSettings: [
+      {
+        name: 'send-to-log-analytics'
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+        logCategoriesAndGroups: [
+          {
+            categoryGroup: 'allLogs'
+            enabled: true
+          }
+        ]
+        metricCategories: [
+          {
+            category: 'AllMetrics'
+            enabled: true
+          }
+        ]
+      }
+    ]
+    sqlDatabases: [
+      {
+        name: 'prompt-babbler'
+        containers: [
+          {
+            name: 'prompt-templates'
+            paths: [
+              '/userId'
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+
 // --------- CONTAINER APPS ENVIRONMENT ---------
 module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.10.0' = {
   name: 'container-apps-environment-deployment-${resourceToken}'
@@ -236,6 +292,10 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
             name: 'AZURE_AI_FOUNDRY_PROJECT_ENDPOINT'
             value: 'https://${foundryCustomSubDomainName}.services.ai.azure.com/api/projects/${defaultProjectName}'
           }
+          {
+            name: 'ConnectionStrings__cosmos'
+            value: 'AccountEndpoint=${cosmosDbAccount.outputs.endpoint}'
+          }
         ]
       }
     ]
@@ -272,6 +332,44 @@ module containerAppFoundryRoles './core/security/role_foundry.bicep' = {
   params: {
     foundryName: foundryName
     roleAssignments: containerAppFoundryRoleAssignments
+  }
+}
+
+// Assign Cosmos DB Built-in Data Contributor role to the Container App's managed identity
+// for data plane access. The built-in role GUID is 00000000-0000-0000-0000-000000000002.
+module containerAppCosmosDbRoles 'br/public:avm/res/document-db/database-account:0.19.0' = {
+  name: 'container-app-cosmos-roles-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    cosmosDbAccount
+    containerApp
+  ]
+  params: {
+    name: cosmosDbAccountName
+    sqlRoleAssignments: [
+      {
+        principalId: containerApp.outputs.systemAssignedMIPrincipalId
+        roleDefinitionId: '00000000-0000-0000-0000-000000000002'
+      }
+    ]
+  }
+}
+
+// Assign Cosmos DB Built-in Data Contributor to the deploying principal for local dev
+module principalCosmosDbRoles 'br/public:avm/res/document-db/database-account:0.19.0' = if (!empty(principalId)) {
+  name: 'principal-cosmos-roles-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    cosmosDbAccount
+  ]
+  params: {
+    name: cosmosDbAccountName
+    sqlRoleAssignments: [
+      {
+        principalId: principalId
+        roleDefinitionId: '00000000-0000-0000-0000-000000000002'
+      }
+    ]
   }
 }
 
@@ -319,3 +417,7 @@ output AZURE_CONTAINER_APP_FQDN string = containerApp.outputs.fqdn
 // Static Web App (Frontend)
 output AZURE_STATIC_WEB_APP_NAME string = staticWebApp.outputs.name
 output AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME string = staticWebApp.outputs.defaultHostname
+
+// Cosmos DB
+output COSMOS_DB_ACCOUNT_NAME string = cosmosDbAccount.outputs.name
+output COSMOS_DB_ENDPOINT string = cosmosDbAccount.outputs.endpoint

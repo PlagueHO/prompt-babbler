@@ -9,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+// Register Azure Cosmos DB client from Aspire connection (auto-configured from AppHost).
+builder.AddAzureCosmosClient("cosmos", configureClientOptions: options =>
+{
+    options.UseSystemTextJsonSerializerWithOptions = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);
+});
+
 // Log tenant configuration at startup for diagnostics.
 var startupLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger("Startup");
 var configuredTenantId = builder.Configuration["Azure:TenantId"];

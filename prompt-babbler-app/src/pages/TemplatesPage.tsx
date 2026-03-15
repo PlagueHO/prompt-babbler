@@ -6,7 +6,7 @@ import { useTemplates } from '@/hooks/useTemplates';
 import type { PromptTemplate } from '@/types';
 
 export function TemplatesPage() {
-  const { templates, createTemplate, updateTemplate, deleteTemplate } =
+  const { templates, loading, error, createTemplate, updateTemplate, deleteTemplate } =
     useTemplates();
   const [selected, setSelected] = useState<PromptTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -17,21 +17,12 @@ export function TemplatesPage() {
   }, []);
 
   const handleSave = useCallback(
-    (data: { name: string; description: string; systemPrompt: string }) => {
+    async (data: { name: string; description: string; systemPrompt: string }) => {
       if (isCreating) {
-        const now = new Date().toISOString();
-        createTemplate({
-          id: crypto.randomUUID(),
-          name: data.name,
-          description: data.description,
-          systemPrompt: data.systemPrompt,
-          isBuiltIn: false,
-          createdAt: now,
-          updatedAt: now,
-        });
+        await createTemplate(data);
         toast.success('Template created');
       } else if (selected) {
-        updateTemplate({
+        await updateTemplate({
           ...selected,
           name: data.name,
           description: data.description,
@@ -46,9 +37,9 @@ export function TemplatesPage() {
     [isCreating, selected, createTemplate, updateTemplate]
   );
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     if (selected && !selected.isBuiltIn) {
-      deleteTemplate(selected.id);
+      await deleteTemplate(selected.id);
       toast.success('Template deleted');
       setSelected(null);
     }
@@ -88,11 +79,17 @@ export function TemplatesPage() {
           prompts.
         </p>
       </div>
-      <TemplateList
-        templates={templates}
-        onSelect={setSelected}
-        onCreate={handleCreate}
-      />
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading templates...</p>
+      ) : error ? (
+        <p className="text-sm text-destructive">Error: {error}</p>
+      ) : (
+        <TemplateList
+          templates={templates}
+          onSelect={setSelected}
+          onCreate={handleCreate}
+        />
+      )}
     </div>
   );
 }

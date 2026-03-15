@@ -1,4 +1,5 @@
 import type {
+  PromptTemplate,
   StatusResponse,
 } from '@/types';
 
@@ -30,6 +31,50 @@ async function fetchJson<T>(
 
 export async function getStatus(): Promise<StatusResponse> {
   return fetchJson<StatusResponse>('/api/status');
+}
+
+// Template APIs
+
+export async function getTemplates(forceRefresh = false): Promise<PromptTemplate[]> {
+  const query = forceRefresh ? '?forceRefresh=true' : '';
+  return fetchJson<PromptTemplate[]>(`/api/templates${query}`);
+}
+
+export async function getTemplate(id: string): Promise<PromptTemplate> {
+  return fetchJson<PromptTemplate>(`/api/templates/${encodeURIComponent(id)}`);
+}
+
+export async function createTemplate(request: {
+  name: string;
+  description: string;
+  systemPrompt: string;
+}): Promise<PromptTemplate> {
+  return fetchJson<PromptTemplate>('/api/templates', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export async function updateTemplate(
+  id: string,
+  request: { name: string; description: string; systemPrompt: string }
+): Promise<PromptTemplate> {
+  return fetchJson<PromptTemplate>(`/api/templates/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
+}
+
+export async function deleteTemplate(id: string): Promise<void> {
+  const base = getApiBaseUrl();
+  const res = await fetch(`${base}/api/templates/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
 }
 
 export async function generatePrompt(
