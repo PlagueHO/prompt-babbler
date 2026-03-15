@@ -68,9 +68,9 @@ aspire run
 On first run, Aspire will:
 
 1. Provision an Azure AI Foundry resource with a chat model deployment
-2. Start the .NET backend API (with WebSocket support for real-time transcription)
-3. Start the React frontend via Vite
-4. Launch the Aspire Dashboard (telemetry, logs, traces)
+1. Start the .NET backend API (with WebSocket support for real-time transcription)
+1. Start the React frontend via Vite
+1. Launch the Aspire Dashboard (telemetry, logs, traces)
 
 > **First run takes several minutes** for Azure provisioning.
 > Subsequent runs reuse existing resources and start quickly.
@@ -80,10 +80,10 @@ Open the **Aspire Dashboard** (URL shown in terminal output) to find all service
 ## 5. Create your first babble
 
 1. Open the frontend URL from the Aspire Dashboard
-2. Click **New Babble** and grant microphone permission
-3. Speak — your speech is transcribed in near-real-time
-4. Click **Stop**, then select a prompt template and click **Generate**
-5. Copy the structured prompt to your clipboard
+1. Click **New Babble** and grant microphone permission
+1. Speak — your speech is transcribed in near-real-time
+1. Click **Stop**, then select a prompt template and click **Generate**
+1. Copy the structured prompt to your clipboard
 
 ## Model configuration
 

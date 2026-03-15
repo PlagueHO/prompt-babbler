@@ -8,6 +8,7 @@ namespace PromptBabbler.Api.Controllers;
 [Route("api/prompts")]
 public sealed class PromptController(
     IPromptGenerationService promptService,
+    IPromptTemplateService templateService,
     ILogger<PromptController> logger) : ControllerBase
 {
     [HttpPost("generate")]
@@ -25,14 +26,27 @@ public sealed class PromptController(
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(request.SystemPrompt))
+        if (string.IsNullOrWhiteSpace(request.TemplateId))
         {
             HttpContext.Response.StatusCode = 400;
             await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
             {
                 Title = "Invalid Request",
                 Status = 400,
-                Detail = "SystemPrompt is required and cannot be empty.",
+                Detail = "TemplateId is required and cannot be empty.",
+            }, cancellationToken);
+            return;
+        }
+
+        var template = await templateService.GetByIdAsync(null, request.TemplateId, cancellationToken);
+        if (template is null)
+        {
+            HttpContext.Response.StatusCode = 404;
+            await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Title = "Template Not Found",
+                Status = 404,
+                Detail = $"No template found with ID '{request.TemplateId}'.",
             }, cancellationToken);
             return;
         }
@@ -43,31 +57,17 @@ public sealed class PromptController(
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(request.TemplateName))
-            {
-                var result = await promptService.GenerateStructuredPromptAsync(
-                    request.BabbleText, request.SystemPrompt, request.TemplateName,
-                    request.PromptFormat, request.AllowEmojis, cancellationToken);
+            var result = await promptService.GenerateStructuredPromptAsync(
+                request.BabbleText, template.SystemPrompt, template.Name,
+                request.PromptFormat, request.AllowEmojis, cancellationToken);
 
-                var nameData = System.Text.Json.JsonSerializer.Serialize(new { name = result.Name });
-                await Response.WriteAsync($"data: {nameData}\n\n", cancellationToken);
-                await Response.Body.FlushAsync(cancellationToken);
+            var nameData = System.Text.Json.JsonSerializer.Serialize(new { name = result.Name });
+            await Response.WriteAsync($"data: {nameData}\n\n", cancellationToken);
+            await Response.Body.FlushAsync(cancellationToken);
 
-                var textData = System.Text.Json.JsonSerializer.Serialize(new { text = result.Prompt });
-                await Response.WriteAsync($"data: {textData}\n\n", cancellationToken);
-                await Response.Body.FlushAsync(cancellationToken);
-            }
-            else
-            {
-                await foreach (var chunk in promptService.GeneratePromptStreamAsync(
-                    request.BabbleText, request.SystemPrompt,
-                    request.PromptFormat, request.AllowEmojis, cancellationToken))
-                {
-                    var data = System.Text.Json.JsonSerializer.Serialize(new { text = chunk });
-                    await Response.WriteAsync($"data: {data}\n\n", cancellationToken);
-                    await Response.Body.FlushAsync(cancellationToken);
-                }
-            }
+            var textData = System.Text.Json.JsonSerializer.Serialize(new { text = result.Prompt });
+            await Response.WriteAsync($"data: {textData}\n\n", cancellationToken);
+            await Response.Body.FlushAsync(cancellationToken);
 
             await Response.WriteAsync("data: [DONE]\n\n", cancellationToken);
             await Response.Body.FlushAsync(cancellationToken);

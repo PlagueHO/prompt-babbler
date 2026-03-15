@@ -38,7 +38,7 @@ export function BabblePage() {
       autoGenerateTriggered.current = true;
       const template = templates.find((t) => t.id === autoGenerateId);
       if (template) {
-        void generate(babble.text, template.systemPrompt, template.name);
+        void generate(babble.text, template.id);
       }
       // Clear the query parameter so refresh doesn't re-trigger
       setSearchParams({}, { replace: true });
@@ -68,8 +68,7 @@ export function BabblePage() {
       if (babble) {
         void generate(
           babble.text,
-          options.template.systemPrompt,
-          options.template.name,
+          options.template.id,
           options.promptFormat,
           options.allowEmojis
         );

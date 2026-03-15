@@ -12,8 +12,7 @@ export function usePromptGeneration() {
   const generate = useCallback(
     async (
       babbleText: string,
-      systemPrompt: string,
-      templateName?: string,
+      templateId: string,
       promptFormat: PromptFormat = 'text',
       allowEmojis: boolean = false
     ) => {
@@ -27,7 +26,7 @@ export function usePromptGeneration() {
       setError(null);
 
       try {
-        const stream = await api.generatePrompt(babbleText, systemPrompt, templateName, promptFormat, allowEmojis);
+        const stream = await api.generatePrompt(babbleText, templateId, promptFormat, allowEmojis);
         const reader = stream.getReader();
         const decoder = new TextDecoder();
 
