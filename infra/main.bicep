@@ -2,7 +2,7 @@ targetScope = 'subscription'
 
 @sys.description('Name of the environment which is used to generate a short unique hash used in all resources.')
 @minLength(1)
-@maxLength(40)
+@maxLength(34)
 param environmentName string
 
 @sys.description('Location for all resources.')
@@ -259,7 +259,6 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
     rg
-    containerAppsEnvironment
   ]
   params: {
     name: containerAppName
@@ -306,7 +305,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
           }
           {
             name: 'AzureAd__Instance'
-            value: 'https://login.microsoftonline.com/'
+            value: environment().authentication.loginEndpoint
           }
           {
             name: 'CORS__AllowedOrigins'
@@ -341,10 +340,6 @@ var containerAppFoundryRoleAssignments = [
 module containerAppFoundryRoles './core/security/role_foundry.bicep' = {
   name: 'container-app-foundry-roles-${resourceToken}'
   scope: az.resourceGroup(resourceGroupName)
-  dependsOn: [
-    foundryService
-    containerApp
-  ]
   params: {
     foundryName: foundryName
     roleAssignments: containerAppFoundryRoleAssignments
@@ -356,10 +351,6 @@ module containerAppFoundryRoles './core/security/role_foundry.bicep' = {
 module containerAppCosmosDbRoles 'br/public:avm/res/document-db/database-account:0.19.0' = {
   name: 'container-app-cosmos-roles-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
-  dependsOn: [
-    cosmosDbAccount
-    containerApp
-  ]
   params: {
     name: cosmosDbAccountName
     sqlRoleAssignments: [

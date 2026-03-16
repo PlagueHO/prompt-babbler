@@ -101,7 +101,7 @@ jobs:
     with:
       ENVIRONMENT: test
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
       AZURE_ENV_NAME: ${{ format('pbblr-{0}', github.run_id) }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -117,7 +117,7 @@ jobs:
     with:
       ENVIRONMENT: test
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
       AZURE_ENV_NAME: ${{ format('pbblr-{0}', github.run_id) }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
