@@ -198,7 +198,6 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
     ]
     disableLocalAuthentication: false
     disableKeyBasedMetadataWriteAccess: false
-    enableBurstCapacity: false
     zoneRedundant: false
     networkRestrictions: {
       publicNetworkAccess: enablePublicNetworkAccess ? 'Enabled' : 'Disabled'
