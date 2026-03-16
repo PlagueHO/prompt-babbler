@@ -36,6 +36,24 @@ public static class DependencyInjection
         services.AddSingleton<IPromptTemplateService, PromptTemplateService>();
         services.AddHostedService<BuiltInTemplateSeedingService>();
 
+        // Babble repository and service backed by Cosmos DB.
+        services.AddSingleton<IBabbleRepository>(sp =>
+        {
+            var cosmosClient = sp.GetRequiredService<CosmosClient>();
+            var logger = sp.GetRequiredService<ILogger<CosmosBabbleRepository>>();
+            return new CosmosBabbleRepository(cosmosClient, logger);
+        });
+        services.AddSingleton<IBabbleService, BabbleService>();
+
+        // Generated prompt repository and service backed by Cosmos DB.
+        services.AddSingleton<IGeneratedPromptRepository>(sp =>
+        {
+            var cosmosClient = sp.GetRequiredService<CosmosClient>();
+            var logger = sp.GetRequiredService<ILogger<CosmosGeneratedPromptRepository>>();
+            return new CosmosGeneratedPromptRepository(cosmosClient, logger);
+        });
+        services.AddSingleton<IGeneratedPromptService, GeneratedPromptService>();
+
         return services;
     }
 }

@@ -1,6 +1,6 @@
 # Prompt Babbler API Reference
 
-The Prompt Babbler service exposes a REST (and WebSocket) API for prompt generation, prompt template management, real-time audio transcription, and health status.
+The Prompt Babbler service exposes a REST (and WebSocket) API for babble management, generated prompt storage, prompt generation, prompt template management, real-time audio transcription, and health status.
 
 Base path: `/api`
 
@@ -184,6 +184,189 @@ Deletes a user template. Built-in templates cannot be deleted.
 |---|---|
 | `403 Forbidden` | Attempted to delete a built-in template. |
 | `404 Not Found` | Template does not exist. |
+
+---
+
+### Babbles
+
+Babbles store transcribed speech text. Each babble belongs to the authenticated user and can have one or more generated prompts.
+
+All babble endpoints require authentication. Responses are scoped to the current user — a user can only access their own babbles.
+
+#### `GET /api/babbles`
+
+Returns a paginated list of babbles for the current user, ordered by creation date (newest first).
+
+**Query Parameters**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `continuationToken` | `string` | `null` | Opaque token for fetching the next page. |
+| `pageSize` | `integer` | `20` | Number of items per page (1–100). |
+
+**Response** `200 OK`
+
+```json
+{
+  "items": [
+    {
+      "id": "abc-123",
+      "title": "Sort function request",
+      "text": "I want a function that sorts a list of numbers...",
+      "createdAt": "2025-01-15T10:30:00.0000000+00:00",
+      "updatedAt": "2025-01-15T10:30:00.0000000+00:00"
+    }
+  ],
+  "continuationToken": "eyJjb250..."
+}
+```
+
+When `continuationToken` is `null`, there are no more pages.
+
+#### `GET /api/babbles/{id}`
+
+Returns a single babble by ID.
+
+**Response** `200 OK` — babble object (same shape as items above).
+
+| Status | Condition |
+|---|---|
+| `404 Not Found` | Babble does not exist or does not belong to the current user. |
+
+#### `POST /api/babbles`
+
+Creates a new babble.
+
+**Request Body**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | Yes | 1–200 characters |
+| `text` | `string` | Yes | 1–50 000 characters |
+
+```json
+{
+  "title": "Sort function request",
+  "text": "I want a function that sorts a list of numbers..."
+}
+```
+
+**Response** `201 Created` — the created babble object with a `Location` header.
+
+| Status | Condition |
+|---|---|
+| `400 Bad Request` | Validation failure (see constraints above). |
+
+#### `PUT /api/babbles/{id}`
+
+Updates an existing babble.
+
+**Request Body** — same schema as `POST /api/babbles`.
+
+**Response** `200 OK` — the updated babble object.
+
+| Status | Condition |
+|---|---|
+| `400 Bad Request` | Validation failure. |
+| `404 Not Found` | Babble does not exist or does not belong to the current user. |
+
+#### `DELETE /api/babbles/{id}`
+
+Deletes a babble and all of its generated prompts (cascade delete).
+
+**Response** `204 No Content`
+
+| Status | Condition |
+|---|---|
+| `404 Not Found` | Babble does not exist or does not belong to the current user. |
+
+---
+
+### Generated Prompts
+
+Generated prompts are child resources of babbles. Each prompt stores the output of running a babble through a template. Generated prompts are **immutable** — they cannot be updated after creation.
+
+All generated prompt endpoints require authentication. The parent babble must belong to the current user.
+
+#### `GET /api/babbles/{babbleId}/prompts`
+
+Returns a paginated list of generated prompts for a babble, ordered by generation date (newest first).
+
+**Query Parameters**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `continuationToken` | `string` | `null` | Opaque token for fetching the next page. |
+| `pageSize` | `integer` | `20` | Number of items per page (1–100). |
+
+**Response** `200 OK`
+
+```json
+{
+  "items": [
+    {
+      "id": "def-456",
+      "babbleId": "abc-123",
+      "templateId": "builtin-general-assistant",
+      "templateName": "General Assistant",
+      "promptText": "Write a Python function that takes a list of numbers...",
+      "generatedAt": "2025-01-15T10:35:00.0000000+00:00"
+    }
+  ],
+  "continuationToken": null
+}
+```
+
+| Status | Condition |
+|---|---|
+| `404 Not Found` | Parent babble does not exist or does not belong to the current user. |
+
+#### `GET /api/babbles/{babbleId}/prompts/{id}`
+
+Returns a single generated prompt by ID.
+
+**Response** `200 OK` — generated prompt object (same shape as items above).
+
+| Status | Condition |
+|---|---|
+| `404 Not Found` | Prompt or parent babble does not exist, or babble does not belong to the current user. |
+
+#### `POST /api/babbles/{babbleId}/prompts`
+
+Creates a new generated prompt for a babble.
+
+**Request Body**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `templateId` | `string` | Yes | Non-empty |
+| `templateName` | `string` | Yes | 1–100 characters |
+| `promptText` | `string` | Yes | 1–50 000 characters |
+
+```json
+{
+  "templateId": "builtin-general-assistant",
+  "templateName": "General Assistant",
+  "promptText": "Write a Python function that takes a list of numbers..."
+}
+```
+
+**Response** `201 Created` — the created generated prompt object with a `Location` header.
+
+| Status | Condition |
+|---|---|
+| `400 Bad Request` | Validation failure (see constraints above). |
+| `404 Not Found` | Parent babble does not exist or does not belong to the current user. |
+
+#### `DELETE /api/babbles/{babbleId}/prompts/{id}`
+
+Deletes a generated prompt.
+
+**Response** `204 No Content`
+
+| Status | Condition |
+|---|---|
+| `404 Not Found` | Prompt or parent babble does not exist, or babble does not belong to the current user. |
 
 ---
 

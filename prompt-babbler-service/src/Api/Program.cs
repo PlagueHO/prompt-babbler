@@ -84,29 +84,42 @@ builder.Services.AddInfrastructure(
     speechRegion: builder.Configuration["Speech:Region"] ?? string.Empty,
     aiServicesEndpoint: aiServicesEndpoint);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"), jwtBearerScheme: JwtBearerDefaults.AuthenticationScheme, subscribeToJwtBearerMiddlewareDiagnosticsEvents: false);
-
-builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+var azureAdClientId = builder.Configuration["AzureAd:ClientId"];
+if (!string.IsNullOrEmpty(azureAdClientId))
 {
-    options.Events ??= new JwtBearerEvents();
-    var originalOnMessageReceived = options.Events.OnMessageReceived;
-    options.Events.OnMessageReceived = async context =>
-    {
-        // Extract access_token from query string for WebSocket connections (same pattern as SignalR).
-        var accessToken = context.Request.Query["access_token"];
-        var path = context.HttpContext.Request.Path;
-        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/transcribe"))
-        {
-            context.Token = accessToken;
-        }
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"), jwtBearerScheme: JwtBearerDefaults.AuthenticationScheme, subscribeToJwtBearerMiddlewareDiagnosticsEvents: false);
 
-        if (originalOnMessageReceived is not null)
+    builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.Events ??= new JwtBearerEvents();
+        var originalOnMessageReceived = options.Events.OnMessageReceived;
+        options.Events.OnMessageReceived = async context =>
         {
-            await originalOnMessageReceived(context);
-        }
-    };
-});
+            // Extract access_token from query string for WebSocket connections (same pattern as SignalR).
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/transcribe"))
+            {
+                context.Token = accessToken;
+            }
+
+            if (originalOnMessageReceived is not null)
+            {
+                await originalOnMessageReceived(context);
+            }
+        };
+    });
+}
+else
+{
+    // No Entra ID ClientId configured — register a basic JWT Bearer handler so the
+    // authentication middleware pipeline doesn't throw. Anonymous endpoints (status,
+    // health) will work normally; [Authorize] endpoints will return 401.
+    startupLogger.LogWarning("AzureAd:ClientId is not configured. Authentication is disabled — [Authorize] endpoints will return 401.");
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer();
+}
 
 builder.Services.AddAuthorization();
 

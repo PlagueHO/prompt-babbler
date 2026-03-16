@@ -29,6 +29,8 @@ public class NoAuthWebApplicationFactory : WebApplicationFactory<Program>
             ReplaceService<IPromptTemplateService>(services);
             ReplaceService<IPromptGenerationService>(services);
             ReplaceService<IRealtimeTranscriptionService>(services);
+            ReplaceService<IBabbleService>(services);
+            ReplaceService<IGeneratedPromptService>(services);
             ReplaceService<IChatClient>(services);
         });
     }
