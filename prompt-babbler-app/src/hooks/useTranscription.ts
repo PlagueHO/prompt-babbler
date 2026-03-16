@@ -29,7 +29,7 @@ export function useTranscription() {
     language: undefined,
     isActive: false,
   });
-  const reconnectRef = useRef<() => Promise<void>>();
+  const reconnectRef = useRef<() => Promise<void>>(undefined);
   const { instance, accounts } = useMsal();
 
   const acquireAccessToken = useCallback(async (): Promise<string | null> => {

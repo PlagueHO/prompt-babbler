@@ -88,7 +88,7 @@ export function usePromptGeneration() {
           }
         }
       } catch (err) {
-        if (controller.signal.aborted) return;
+        if (controller.signal.aborted) return { name: localName };
         setError(
           err instanceof Error ? err.message : 'Prompt generation failed'
         );
