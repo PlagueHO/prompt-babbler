@@ -23,7 +23,7 @@ export function BabblePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { updateBabble, deleteBabble } = useBabbles();
   const { templates } = useTemplates();
-  const { generatedText, generatedName, isGenerating, error: genError, generate } = usePromptGeneration();
+  const { generatedText, isGenerating, error: genError, generate } = usePromptGeneration();
 
   const [babble, setBabble] = useState<Babble | undefined>(() =>
     id ? getBabble(id) : undefined
@@ -39,12 +39,18 @@ export function BabblePage() {
       autoGenerateTriggered.current = true;
       const template = templates.find((t) => t.id === autoGenerateId);
       if (template) {
-        void generate(babble.text, template.id);
+        void generate(babble.text, template.id).then((result) => {
+          if (result?.name && babble.title.startsWith('Babble ')) {
+            const updated = { ...babble, title: result.name, updatedAt: new Date().toISOString() };
+            updateBabble(updated);
+            setBabble(updated);
+          }
+        });
       }
       // Clear the query parameter so refresh doesn't re-trigger
       setSearchParams({}, { replace: true });
     }
-  }, [searchParams, setSearchParams, babble, templates, generate]);
+  }, [searchParams, setSearchParams, babble, templates, generate, updateBabble]);
 
   const handleSave = useCallback(
     (updated: Babble) => {
@@ -72,20 +78,18 @@ export function BabblePage() {
           options.template.id,
           options.promptFormat,
           options.allowEmojis
-        );
+        ).then((result) => {
+          if (result?.name && babble.title.startsWith('Babble ')) {
+            const updated = { ...babble, title: result.name, updatedAt: new Date().toISOString() };
+            updateBabble(updated);
+            setBabble(updated);
+          }
+        });
       }
     },
-    [babble, generate]
+    [babble, generate, updateBabble]
   );
 
-  // Auto-rename babble when generation completes with a generated name
-  useEffect(() => {
-    if (!isGenerating && generatedName && babble && babble.title.startsWith('Babble ')) {
-      const updated = { ...babble, title: generatedName, updatedAt: new Date().toISOString() };
-      updateBabble(updated);
-      setBabble(updated);
-    }
-  }, [isGenerating, generatedName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!babble) {
     return (

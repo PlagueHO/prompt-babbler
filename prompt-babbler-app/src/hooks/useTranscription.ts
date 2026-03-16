@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import {
@@ -29,6 +29,7 @@ export function useTranscription() {
     language: undefined,
     isActive: false,
   });
+  const reconnectRef = useRef<() => Promise<void>>();
   const { instance, accounts } = useMsal();
 
   const acquireAccessToken = useCallback(async (): Promise<string | null> => {
@@ -87,10 +88,15 @@ export function useTranscription() {
     setIsConnected(true);
 
     tokenRefreshTimerRef.current = setTimeout(
-      () => void reconnectWithFreshToken(),
+      () => void reconnectRef.current?.(),
       TOKEN_REFRESH_MS,
     );
   }, [acquireAccessToken, handleMessage, handleError]);
+
+  // Keep reconnect ref in sync — must be in an effect, not during render
+  useEffect(() => {
+    reconnectRef.current = reconnectWithFreshToken;
+  }, [reconnectWithFreshToken]);
 
   const connect = useCallback(
     async (language?: string) => {
@@ -110,11 +116,11 @@ export function useTranscription() {
       setIsConnected(true);
 
       tokenRefreshTimerRef.current = setTimeout(
-        () => void reconnectWithFreshToken(),
+        () => void reconnectRef.current?.(),
         TOKEN_REFRESH_MS,
       );
     },
-    [acquireAccessToken, handleMessage, handleError, reconnectWithFreshToken],
+    [acquireAccessToken, handleMessage, handleError],
   );
 
   const sendAudio = useCallback((pcmBuffer: ArrayBuffer) => {
