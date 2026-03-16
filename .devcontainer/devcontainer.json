@@ -65,30 +65,56 @@
         "files.trimTrailingWhitespace": true
       },
       "extensions": [
-        // C# / .NET
+        "bierner.markdown-mermaid",
+        "bradlc.vscode-tailwindcss",
+        "christian-kohler.npm-intellisense",
+        "dbaeumer.vscode-eslint",
+        "editorconfig.editorconfig",
+        "esbenp.prettier-vscode",
+        "github.codespaces",
+        "github.copilot-chat",
+        "github.github-vscode-theme",
+        "github.remotehub",
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github",
+        "humao.rest-client",
+        "microsoft-aspire.aspire-vscode",
+        "mikestead.dotenv",
+        "ms-azure-load-testing.microsoft-testing",
+        "ms-azureaispeech.azure-ai-speech-toolkit",
+        "ms-azuretools.azure-dev",
+        "ms-azuretools.vscode-azure-github-copilot",
+        "ms-azuretools.vscode-azure-mcp-server",
+        "ms-azuretools.vscode-azureappservice",
+        "ms-azuretools.vscode-azurecontainerapps",
+        "ms-azuretools.vscode-azurefunctions",
+        "ms-azuretools.vscode-azureresourcegroups",
+        "ms-azuretools.vscode-azurestaticwebapps",
+        "ms-azuretools.vscode-azurestorage",
+        "ms-azuretools.vscode-azurevirtualmachines",
+        "ms-azuretools.vscode-bicep",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-cosmosdb",
+        "ms-azuretools.vscode-docker",
         "ms-dotnettools.csdevkit",
         "ms-dotnettools.csharp",
-        // JavaScript / TypeScript / React
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "bradlc.vscode-tailwindcss",
-        // Testing
+        "ms-dotnettools.vscode-dotnet-pack",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode.azure-repos",
+        "ms-vscode.powershell",
+        "ms-vscode.remote-repositories",
+        "ms-vscode.vscode-node-azure-pack",
+        "ms-windows-ai-studio.windows-ai-studio",
+        "orta.vscode-jest",
+        "redhat.vscode-yaml",
+        "teamsdevapp.vscode-ai-foundry",
         "vitest.explorer",
-        // Azure
-        "ms-azuretools.azure-dev",
-        "ms-azuretools.vscode-azurefunctions",
-        // Markdown
+        "vscode-icons-team.vscode-icons",
+        "xabikos.javascriptsnippets",
         "DavidAnson.vscode-markdownlint",
-        // Git
         "eamodio.gitlens",
-        // PowerShell
-        "ms-vscode.PowerShell",
-        // Containers
-        "ms-azuretools.vscode-docker",
-        // General
-        "EditorConfig.EditorConfig",
-        "GitHub.copilot",
-        "GitHub.copilot-chat"
+        "GitHub.copilot"
       ]
     }
   },
