@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.Resource;
+using PromptBabbler.Api.Extensions;
 using PromptBabbler.Api.Models.Requests;
 using PromptBabbler.Api.Models.Responses;
 using PromptBabbler.Domain.Interfaces;
@@ -29,8 +29,8 @@ public sealed class PromptTemplateController : ControllerBase
         [FromQuery] bool forceRefresh = false,
         CancellationToken cancellationToken = default)
     {
-        // Extract userId from the authenticated user's Entra ID object ID claim.
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        // Extract userId from the authenticated user's Entra ID object ID claim, or "_anonymous" in single-user mode.
+        var userId = User.GetUserIdOrAnonymous();
         var templates = await _templateService.GetTemplatesAsync(userId, forceRefresh, cancellationToken);
         return Ok(templates.Select(ToResponse));
     }
@@ -38,7 +38,7 @@ public sealed class PromptTemplateController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTemplate(string id, CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var template = await _templateService.GetByIdAsync(userId, id, cancellationToken);
         if (template is null)
         {
@@ -59,7 +59,7 @@ public sealed class PromptTemplateController : ControllerBase
         }
 
         var now = DateTimeOffset.UtcNow;
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var template = new PromptTemplate
         {
             Id = Guid.NewGuid().ToString(),
@@ -89,7 +89,7 @@ public sealed class PromptTemplateController : ControllerBase
             return BadRequest(validationError);
         }
 
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var existing = await _templateService.GetByIdAsync(userId, id, cancellationToken);
         if (existing is null)
         {
@@ -121,7 +121,7 @@ public sealed class PromptTemplateController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTemplate(string id, CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var existing = await _templateService.GetByIdAsync(userId, id, cancellationToken);
         if (existing is null)
         {

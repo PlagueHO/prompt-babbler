@@ -1,11 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useMsal } from '@azure/msal-react';
-import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import {
   TranscriptionStream,
   type TranscriptionMessage,
 } from '@/services/transcription-stream';
-import { loginRequest } from '@/auth/authConfig';
+import { useAuthToken } from '@/hooks/useAuthToken';
+import { isAuthConfigured } from '@/auth/authConfig';
 
 const TOKEN_REFRESH_MS = 55 * 60 * 1000; // Refresh 5 minutes before ~1 hour expiry
 
@@ -30,28 +29,7 @@ export function useTranscription() {
     isActive: false,
   });
   const reconnectRef = useRef<() => Promise<void>>(undefined);
-  const { instance, accounts } = useMsal();
-
-  const acquireAccessToken = useCallback(async (): Promise<string | null> => {
-    if (accounts.length === 0) return null;
-    try {
-      const response = await instance.acquireTokenSilent({
-        ...loginRequest,
-        account: accounts[0],
-      });
-      return response.accessToken;
-    } catch (err) {
-      if (err instanceof InteractionRequiredAuthError) {
-        try {
-          const response = await instance.acquireTokenPopup(loginRequest);
-          return response.accessToken;
-        } catch {
-          return null;
-        }
-      }
-      return null;
-    }
-  }, [instance, accounts]);
+  const acquireAccessToken = useAuthToken();
 
   const handleMessage = useCallback((msg: TranscriptionMessage) => {
     if (msg.isFinal) {
@@ -77,7 +55,7 @@ export function useTranscription() {
     streamRef.current = null;
 
     const newToken = await acquireAccessToken();
-    if (!newToken) {
+    if (isAuthConfigured && !newToken) {
       setError('Unable to refresh token for continued recording');
       return;
     }
@@ -105,7 +83,7 @@ export function useTranscription() {
       sessionStateRef.current = { language, isActive: true };
 
       const token = await acquireAccessToken();
-      if (!token) {
+      if (isAuthConfigured && !token) {
         setError('Failed to acquire access token');
         return;
       }

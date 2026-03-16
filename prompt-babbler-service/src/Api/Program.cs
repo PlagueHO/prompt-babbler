@@ -85,7 +85,12 @@ builder.Services.AddInfrastructure(
     aiServicesEndpoint: aiServicesEndpoint);
 
 var azureAdClientId = builder.Configuration["AzureAd:ClientId"];
-if (!string.IsNullOrEmpty(azureAdClientId))
+var isAuthEnabled = !string.IsNullOrEmpty(azureAdClientId);
+
+// Store auth mode in configuration so controllers/extensions can read it.
+builder.Configuration["AuthMode:Enabled"] = isAuthEnabled.ToString();
+
+if (isAuthEnabled)
 {
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"), jwtBearerScheme: JwtBearerDefaults.AuthenticationScheme, subscribeToJwtBearerMiddlewareDiagnosticsEvents: false);
@@ -110,18 +115,28 @@ if (!string.IsNullOrEmpty(azureAdClientId))
             }
         };
     });
+
+    builder.Services.AddAuthorization();
 }
 else
 {
-    // No Entra ID ClientId configured — register a basic JWT Bearer handler so the
-    // authentication middleware pipeline doesn't throw. Anonymous endpoints (status,
-    // health) will work normally; [Authorize] endpoints will return 401.
-    startupLogger.LogWarning("AzureAd:ClientId is not configured. Authentication is disabled — [Authorize] endpoints will return 401.");
+    // No Entra ID ClientId configured — run in anonymous single-user mode.
+    // All endpoints are accessible without authentication. Controllers use "_anonymous" as userId.
+    startupLogger.LogWarning("AzureAd:ClientId is not configured. Running in anonymous single-user mode.");
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer();
-}
 
-builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(options =>
+    {
+        // Override the default policy to allow anonymous access when auth is disabled.
+        options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+            .RequireAssertion(_ => true)
+            .Build();
+
+        // Override the fallback policy as well to allow anonymous access.
+        options.FallbackPolicy = null;
+    });
+}
 
 var corsAllowedOrigins = builder.Configuration["CORS:AllowedOrigins"] ?? "";
 
@@ -163,6 +178,26 @@ app.UseExceptionHandler();
 app.UseCors();
 app.UseWebSockets();
 app.UseAuthentication();
+
+// In anonymous single-user mode, inject a synthetic ClaimsPrincipal so that
+// [Authorize], [RequiredScope("access_as_user")], and User.GetObjectId() all
+// work without a real JWT token. The identity contains the minimum claims
+// needed: an object ID ("_anonymous") and the expected scope.
+if (!isAuthEnabled)
+{
+    app.Use(async (context, next) =>
+    {
+        var claims = new[]
+        {
+            new System.Security.Claims.Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", "_anonymous"),
+            new System.Security.Claims.Claim("scp", "access_as_user"),
+        };
+        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Anonymous");
+        context.User = new System.Security.Claims.ClaimsPrincipal(identity);
+        await next();
+    });
+}
+
 app.UseAuthorization();
 
 app.MapControllers();

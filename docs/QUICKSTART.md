@@ -54,15 +54,27 @@ dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>" \
   --project src/Orchestration/AppHost
 ```
 
-### Entra ID Authentication (optional for local dev)
+### Entra ID Authentication (optional)
 
-To enable Entra ID SSO authentication, create app registrations and configure user secrets:
+By default, the app runs in **anonymous single-user mode** with no sign-in
+required and all API endpoints accessible. To enable Entra ID SSO
+authentication for multi-user support:
 
-1. **Deploy infrastructure first** (creates app registrations via Bicep):
+1. **Enable the Entra ID preprovision hook** in your `azd` environment:
+
+   ```bash
+   azd env set ENABLE_ENTRA_AUTH true
+   ```
+
+1. **Provision infrastructure** (the preprovision hook creates the app registrations):
 
    ```bash
    azd up
    ```
+
+   > The deploying principal requires `Application.ReadWrite.All` Microsoft
+   > Graph permission. See the [CI/CD Setup Guide](CICD.md) for details.
+   > This step is idempotent — re-running `azd up` reuses existing registrations.
 
 1. **Retrieve client IDs** from the deployment outputs:
 
@@ -81,10 +93,8 @@ To enable Entra ID SSO authentication, create app registrations and configure us
      --project src/Orchestration/AppHost
    ```
 
-> **Note:** The deploying principal requires `Application.ReadWrite.All` Microsoft Graph
-> permission to create Entra ID app registrations. See the [CI/CD Setup Guide](CICD.md)
-> for full details. Without these secrets, the app starts without authentication
-> (all endpoints are accessible).
+> **Without these secrets**, the app starts in anonymous single-user mode —
+> all pages work without sign-in and the API uses `_anonymous` as the user ID.
 >
 > **Tip:** Find your subscription and tenant IDs with `az account show`.
 > The Azure region and other non-sensitive settings are already configured in

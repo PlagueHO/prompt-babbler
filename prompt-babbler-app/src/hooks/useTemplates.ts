@@ -1,39 +1,23 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useMsal } from '@azure/msal-react';
-import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import type { PromptTemplate } from '@/types';
 import * as api from '@/services/api-client';
-import { loginRequest } from '@/auth/authConfig';
+import { isAuthConfigured } from '@/auth/authConfig';
+import { useAuthToken, useAccountCount } from '@/hooks/useAuthToken';
 
 export function useTemplates() {
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { instance, accounts } = useMsal();
-
-  const getAuthToken = useCallback(async (): Promise<string | undefined> => {
-    if (accounts.length === 0) return undefined;
-    try {
-      const response = await instance.acquireTokenSilent({
-        ...loginRequest,
-        account: accounts[0],
-      });
-      return response.accessToken;
-    } catch (err) {
-      if (err instanceof InteractionRequiredAuthError) {
-        const response = await instance.acquireTokenPopup(loginRequest);
-        return response.accessToken;
-      }
-      throw err;
-    }
-  }, [instance, accounts]);
+  const getAuthToken = useAuthToken();
+  const accountCount = useAccountCount();
 
   const fetchTemplates = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       setError(null);
       const token = await getAuthToken();
-      if (!token) {
+      // In authenticated mode, skip fetch until user is signed in.
+      if (isAuthConfigured && !token) {
         setTemplates([]);
         return;
       }
@@ -47,13 +31,13 @@ export function useTemplates() {
   }, [getAuthToken]);
 
   useEffect(() => {
-    if (accounts.length > 0) {
-      fetchTemplates();
-    } else {
+    if (isAuthConfigured && accountCount === 0) {
       setTemplates([]);
       setLoading(false);
+    } else {
+      fetchTemplates();
     }
-  }, [fetchTemplates, accounts.length]);
+  }, [fetchTemplates, accountCount]);
 
   const createTemplate = useCallback(
     async (template: { name: string; description: string; systemPrompt: string }): Promise<PromptTemplate> => {

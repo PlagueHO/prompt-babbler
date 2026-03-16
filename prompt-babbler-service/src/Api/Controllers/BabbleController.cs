@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.Resource;
+using PromptBabbler.Api.Extensions;
 using PromptBabbler.Api.Models.Requests;
 using PromptBabbler.Api.Models.Responses;
 using PromptBabbler.Domain.Interfaces;
@@ -30,7 +30,7 @@ public sealed class BabbleController : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
 
         pageSize = Math.Clamp(pageSize, 1, 100);
 
@@ -46,7 +46,7 @@ public sealed class BabbleController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBabble(string id, CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var babble = await _babbleService.GetByIdAsync(userId, id, cancellationToken);
         if (babble is null)
         {
@@ -67,7 +67,7 @@ public sealed class BabbleController : ControllerBase
         }
 
         var now = DateTimeOffset.UtcNow;
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var babble = new Babble
         {
             Id = Guid.NewGuid().ToString(),
@@ -95,7 +95,7 @@ public sealed class BabbleController : ControllerBase
             return BadRequest(validationError);
         }
 
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var existing = await _babbleService.GetByIdAsync(userId, id, cancellationToken);
         if (existing is null)
         {
@@ -118,7 +118,7 @@ public sealed class BabbleController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBabble(string id, CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
         var existing = await _babbleService.GetByIdAsync(userId, id, cancellationToken);
         if (existing is null)
         {

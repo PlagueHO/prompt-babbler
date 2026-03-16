@@ -35,6 +35,12 @@ param principalIdType string = 'User'
 @sys.description('Whether to enable public network access to Azure resources.')
 param enablePublicNetworkAccess bool = true
 
+@sys.description('Entra ID API app registration client ID. Leave empty to disable authentication (single-user anonymous mode).')
+param apiClientId string = ''
+
+@sys.description('Entra ID SPA app registration client ID. Leave empty to disable authentication.')
+param spaClientId string = ''
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var modelDeployments = loadJsonContent('./model-deployments.json')
 
@@ -307,18 +313,20 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
             name: 'ConnectionStrings__cosmos'
             value: 'AccountEndpoint=${cosmosDbAccount.outputs.endpoint}'
           }
-          {
-            name: 'AzureAd__ClientId'
-            value: entraIdAppRegistrations.outputs.apiClientId
-          }
-          {
-            name: 'AzureAd__TenantId'
-            value: tenant().tenantId
-          }
-          {
-            name: 'AzureAd__Instance'
-            value: environment().authentication.loginEndpoint
-          }
+          ...(!empty(apiClientId) ? [
+            {
+              name: 'AzureAd__ClientId'
+              value: apiClientId
+            }
+            {
+              name: 'AzureAd__TenantId'
+              value: tenant().tenantId
+            }
+            {
+              name: 'AzureAd__Instance'
+              value: environment().authentication.loginEndpoint
+            }
+          ] : [])
           {
             name: 'CORS__AllowedOrigins'
             value: 'https://${staticWebApp.outputs.defaultHostname}'
@@ -409,19 +417,6 @@ module staticWebApp 'br/public:avm/res/web/static-site:0.7.0' = {
   }
 }
 
-// --------- ENTRA ID APP REGISTRATIONS ---------
-module entraIdAppRegistrations './entra-id/app-registrations.bicep' = {
-  name: 'entra-id-app-registrations-${resourceToken}'
-  scope: resourceGroup(resourceGroupName)
-  dependsOn: [
-    rg
-  ]
-  params: {
-    environmentName: environmentName
-    spaProductionRedirectUri: 'https://${staticWebAppName}.azurestaticapps.net'
-  }
-}
-
 // --------- OUTPUTS ---------
 output AZURE_RESOURCE_GROUP string = rg.outputs.name
 output AZURE_PRINCIPAL_ID string = principalId
@@ -454,7 +449,7 @@ output AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME string = staticWebApp.outputs.defau
 output COSMOS_DB_ACCOUNT_NAME string = cosmosDbAccount.outputs.name
 output COSMOS_DB_ENDPOINT string = cosmosDbAccount.outputs.endpoint
 
-// Entra ID
-output AZURE_AD_API_CLIENT_ID string = entraIdAppRegistrations.outputs.apiClientId
-output AZURE_AD_SPA_CLIENT_ID string = entraIdAppRegistrations.outputs.spaClientId
+// Entra ID (set via preprovision hook when ENABLE_ENTRA_AUTH=true)
+output AZURE_AD_API_CLIENT_ID string = apiClientId
+output AZURE_AD_SPA_CLIENT_ID string = spaClientId
 output AZURE_AD_TENANT_ID string = tenant().tenantId

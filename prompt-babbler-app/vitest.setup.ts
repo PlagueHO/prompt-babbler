@@ -38,4 +38,5 @@ vi.mock('@/auth/authConfig', () => ({
   loginRequest: {
     scopes: ['api://prompt-babbler-api/access_as_user'],
   },
+  isAuthConfigured: true,
 }))

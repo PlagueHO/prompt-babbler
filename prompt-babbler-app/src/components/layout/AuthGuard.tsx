@@ -2,7 +2,7 @@ import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-reac
 import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMsal } from '@azure/msal-react';
-import { loginRequest } from '@/auth/authConfig';
+import { isAuthConfigured, loginRequest } from '@/auth/authConfig';
 import type { ReactNode } from 'react';
 
 interface SignInPromptProps {
@@ -36,6 +36,11 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children, message }: AuthGuardProps) {
+  // When Entra ID is not configured, bypass auth — single-user anonymous mode.
+  if (!isAuthConfigured) {
+    return <>{children}</>;
+  }
+
   return (
     <>
       <AuthenticatedTemplate>{children}</AuthenticatedTemplate>

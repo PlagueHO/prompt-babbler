@@ -34,6 +34,10 @@ on:
 jobs:
   provision-infrastructure:
     name: Provision Infrastructure
+    # E2E tests provision without Entra ID (ENABLE_ENTRA_AUTH is NOT set).
+    # This avoids requiring Application.ReadWrite.All Graph permission for ephemeral
+    # test environments. The app runs in anonymous single-user mode.
+    # TODO: Add headless auth E2E tests when ROPC/client-credential flow is implemented.
     uses: ./.github/workflows/provision-infrastructure.yml
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}

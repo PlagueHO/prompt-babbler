@@ -21,8 +21,13 @@ var chatDeployment = foundry.AddDeployment(
 
 // Azure Cosmos DB — uses the emulator for local development.
 // See: https://aspire.dev/integrations/cloud/azure/azure-cosmos-db/azure-cosmos-db-host/
+#pragma warning disable ASPIRECOSMOSDB001
 var cosmos = builder.AddAzureCosmosDB("cosmos")
-    .RunAsEmulator();
+    .RunAsPreviewEmulator(emulator => 
+    {
+        emulator.WithDataExplorer();
+    });
+#pragma warning restore ASPIRECOSMOSDB001
 
 var cosmosDb = cosmos.AddCosmosDatabase("prompt-babbler");
 var promptTemplatesContainer = cosmosDb.AddContainer("prompt-templates", "/userId");

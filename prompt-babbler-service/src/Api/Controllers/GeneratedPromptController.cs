@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.Resource;
+using PromptBabbler.Api.Extensions;
 using PromptBabbler.Api.Models.Requests;
 using PromptBabbler.Api.Models.Responses;
 using PromptBabbler.Domain.Interfaces;
@@ -31,7 +31,7 @@ public sealed class GeneratedPromptController : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
 
         pageSize = Math.Clamp(pageSize, 1, 100);
 
@@ -57,7 +57,7 @@ public sealed class GeneratedPromptController : ControllerBase
         string id,
         CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
 
         try
         {
@@ -86,7 +86,7 @@ public sealed class GeneratedPromptController : ControllerBase
             return BadRequest(validationError);
         }
 
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
 
         var prompt = new GeneratedPrompt
         {
@@ -118,7 +118,7 @@ public sealed class GeneratedPromptController : ControllerBase
         string id,
         CancellationToken cancellationToken = default)
     {
-        var userId = User.GetObjectId() ?? throw new InvalidOperationException("User object ID claim is missing.");
+        var userId = User.GetUserIdOrAnonymous();
 
         try
         {

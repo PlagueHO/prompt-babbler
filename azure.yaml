@@ -2,6 +2,13 @@
 name: prompt-babbler
 metadata:
   template: prompt-babbler@0.0.1
+hooks:
+  preprovision:
+    shell: sh
+    run: ./infra/hooks/preprovision.sh
+    windows:
+      shell: pwsh
+      run: ./infra/hooks/preprovision.ps1
 services:
   api:
     host: containerapp

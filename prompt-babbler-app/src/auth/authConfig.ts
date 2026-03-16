@@ -7,6 +7,9 @@ declare const __MSAL_TENANT_ID__: string;
 const clientId = typeof __MSAL_CLIENT_ID__ !== 'undefined' ? __MSAL_CLIENT_ID__ : '';
 const tenantId = typeof __MSAL_TENANT_ID__ !== 'undefined' ? __MSAL_TENANT_ID__ : '';
 
+/** Whether Entra ID authentication is configured (client ID injected at build time). */
+export const isAuthConfigured = !!clientId;
+
 const msalConfig: Configuration = {
   auth: {
     clientId,

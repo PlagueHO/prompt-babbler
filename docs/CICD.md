@@ -175,12 +175,16 @@ az role assignment list \
   --output table
 ```
 
-## 3. Grant Microsoft Graph permissions
+## 3. Grant Microsoft Graph permissions (conditional)
 
-The Bicep templates deploy Entra ID app registrations using the Microsoft Graph
-Bicep extension (`Microsoft.Graph/applications@v1.0`). This requires the
-`Application.ReadWrite.All` Microsoft Graph **application permission** on the
-deploying identity.
+> **This step is only required when `ENABLE_ENTRA_AUTH=true`.** If you do not
+> need Entra ID SSO authentication, skip this section. The app will run in
+> anonymous single-user mode without these permissions.
+
+The `azd` preprovision hook deploys Entra ID app registrations using the
+Microsoft Graph Bicep extension (`Microsoft.Graph/applications@v1.0`). This
+requires the `Application.ReadWrite.All` Microsoft Graph **application
+permission** on the deploying identity.
 
 For managed identities, `az ad app permission add` does **not** work — you must
 grant the Graph app role directly via the Microsoft Graph API.
@@ -252,6 +256,7 @@ Actions → Repository secrets):
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `AZURE_LOCATION` | `eastus2` | Azure region for deployments |
+| `ENABLE_ENTRA_AUTH` | *(empty)* | Set to `true` to enable Entra ID app registration via preprovision hook. Requires Graph permission from [step 3](#3-grant-microsoft-graph-permissions-conditional). |
 
 ## 5. Verify the pipeline
 
@@ -266,7 +271,7 @@ Actions → Repository secrets):
 | Error | Cause | Fix |
 |-------|-------|-----|
 | `Burst Capacity is not supported for serverless accounts` | AVM module defaults `enableBurstCapacity` to `true` | Already fixed in `infra/main.bicep` — `enableBurstCapacity: false` |
-| `Insufficient privileges to complete the operation. Graph client request id...` | Missing `Application.ReadWrite.All` Graph permission | Complete [step 3](#3-grant-microsoft-graph-permissions) |
+| `Insufficient privileges to complete the operation. Graph client request id...` | Missing `Application.ReadWrite.All` Graph permission | Complete [step 3](#3-grant-microsoft-graph-permissions-conditional) |
 | `does not have permission to create role assignments` | Missing `User Access Administrator` on subscription | Complete [step 2](#2-assign-azure-rbac-roles) |
 | `AADSTS700024: Client assertion is not within its valid time range` | Clock skew or expired OIDC token | Re-run the workflow — transient issue |
 | `No federated identity credentials found` | Federated credential subject mismatch | Verify the federated credential subject matches the GitHub environment name |
@@ -280,4 +285,4 @@ identity:
 |------------|-------|------|---------|
 | Contributor | Subscription | Azure RBAC | Create/manage resources |
 | User Access Administrator | Subscription | Azure RBAC | Assign roles to deployed identities |
-| Application.ReadWrite.All | Tenant | Microsoft Graph App Role | Create Entra ID app registrations |
+| Application.ReadWrite.All | Tenant | Microsoft Graph App Role | Create Entra ID app registrations (**only when `ENABLE_ENTRA_AUTH=true`**) |
