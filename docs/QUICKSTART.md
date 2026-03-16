@@ -82,8 +82,9 @@ To enable Entra ID SSO authentication, create app registrations and configure us
    ```
 
 > **Note:** The deploying principal requires `Application.ReadWrite.All` Microsoft Graph
-> permission to create Entra ID app registrations. This is a one-time admin setup step.
-> Without these secrets, the app starts without authentication (all endpoints are accessible).
+> permission to create Entra ID app registrations. See the [CI/CD Setup Guide](CICD.md)
+> for full details. Without these secrets, the app starts without authentication
+> (all endpoints are accessible).
 >
 > **Tip:** Find your subscription and tenant IDs with `az account show`.
 > The Azure region and other non-sensitive settings are already configured in
@@ -92,7 +93,6 @@ To enable Entra ID SSO authentication, create app registrations and configure us
 ## 4. Run the app
 
 ```bash
-cd prompt-babbler-service
 aspire run
 ```
 
@@ -182,6 +182,7 @@ Open `Ctrl+Shift+P` → **Tasks: Run Task** for common workflows:
 
 ## Next steps
 
+- See the [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
 - Browse the [specs/](../specs/) folder for feature specifications and design documents
 - See [infra/README.md](../infra/README.md) for planned Azure deployment architecture
 - See [azure.yaml](../azure.yaml) for the Azure Developer CLI service manifest
