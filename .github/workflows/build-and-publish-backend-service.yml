@@ -76,6 +76,7 @@ jobs:
       - name: Run unit tests
         run: |
           dotnet test --solution PromptBabbler.slnx \
+            --filter TestCategory=Unit \
             --ignore-exit-code 8 \
             --configuration ${{ inputs.build_configuration || 'Debug' }} \
             --no-restore \

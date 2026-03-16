@@ -17,7 +17,7 @@ All API endpoints except `GET /api/status` require authentication via **JWT Bear
 
 **Headers:**
 
-```
+```http
 Authorization: Bearer {access_token}
 ```
 

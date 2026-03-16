@@ -608,7 +608,7 @@ With this in place, `TranscriptionWebSocketController` only needs the `[Authoriz
 
 **Finding:** Auth middleware should go **after** `UseWebSockets` and before `MapControllers`:
 
-```
+```text
 UseExceptionHandler → UseCors → UseWebSockets → UseAuthentication → UseAuthorization → MapControllers
 ```
 
@@ -1443,7 +1443,7 @@ A second factory (`NoAuthWebApplicationFactory`) omits the `TestAuthHandler` to 
 
 **5. File Structure**
 
-```
+```text
 Api.IntegrationTests/
 ├── PromptBabbler.Api.IntegrationTests.csproj   (existing, no changes)
 ├── Infrastructure/
