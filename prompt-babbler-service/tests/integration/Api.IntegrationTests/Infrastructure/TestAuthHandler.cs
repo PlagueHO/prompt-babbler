@@ -30,6 +30,7 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
             new Claim(ClaimTypes.NameIdentifier, TestUserId),
             new Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", TestUserId),
             new Claim("preferred_username", TestUsername),
+            new Claim("http://schemas.microsoft.com/identity/claims/scope", "access_as_user"),
         };
         var identity = new ClaimsIdentity(claims, SchemeName);
         var principal = new ClaimsPrincipal(identity);

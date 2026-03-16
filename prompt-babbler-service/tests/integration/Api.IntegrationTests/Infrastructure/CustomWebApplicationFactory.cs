@@ -22,7 +22,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
 
+            // Ensure the test scheme is used for all auth operations
+            services.Configure<AuthenticationOptions>(options =>
+            {
+                options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
+                options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
+                options.DefaultScheme = TestAuthHandler.SchemeName;
+            });
+
             // Replace domain services with NSubstitute mocks
+            ReplaceService<IPromptTemplateRepository>(services);
             ReplaceService<IPromptTemplateService>(services);
             ReplaceService<IPromptGenerationService>(services);
             ReplaceService<IRealtimeTranscriptionService>(services);

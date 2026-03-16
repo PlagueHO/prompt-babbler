@@ -3,12 +3,22 @@
     <RootNamespace>PromptBabbler.Api.IntegrationTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing" />
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Using Include="FluentAssertions" />
+    <Using Include="System.Net" />
+    <Using Include="System.Net.Http.Json" />
+    <Using Include="Aspire.Hosting.ApplicationModel" />
+    <Using Include="Aspire.Hosting.Testing" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\src\Api\PromptBabbler.Api.csproj" />
+    <ProjectReference Include="..\IntegrationTests.Shared\PromptBabbler.IntegrationTests.Shared.csproj" />
   </ItemGroup>
 </Project>

@@ -3,12 +3,24 @@
     <RootNamespace>PromptBabbler.Infrastructure.IntegrationTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing" />
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Using Include="FluentAssertions" />
+    <Using Include="System.Net" />
+    <Using Include="Aspire.Hosting.ApplicationModel" />
+    <Using Include="Aspire.Hosting.Testing" />
+    <Using Include="NSubstitute" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Orchestration\AppHost\PromptBabbler.AppHost.csproj" />
+    <ProjectReference Include="..\..\..\src\Domain\PromptBabbler.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Infrastructure\PromptBabbler.Infrastructure.csproj" />
+    <ProjectReference Include="..\IntegrationTests.Shared\PromptBabbler.IntegrationTests.Shared.csproj" />
   </ItemGroup>
 </Project>

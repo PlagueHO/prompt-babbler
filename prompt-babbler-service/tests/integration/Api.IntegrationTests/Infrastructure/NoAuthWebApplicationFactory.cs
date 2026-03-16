@@ -16,10 +16,16 @@ public class NoAuthWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Provide fake AzureAd config so JwtBearer middleware doesn't throw during initialization
+        builder.UseSetting("AzureAd:ClientId", "00000000-0000-0000-0000-000000000000");
+        builder.UseSetting("AzureAd:TenantId", "00000000-0000-0000-0000-000000000000");
+        builder.UseSetting("AzureAd:Instance", "https://login.microsoftonline.com/");
+
         builder.ConfigureServices(services =>
         {
             // Replace domain services with NSubstitute mocks (same as CustomWebApplicationFactory)
             // but do NOT replace authentication — use the real JWT Bearer middleware.
+            ReplaceService<IPromptTemplateRepository>(services);
             ReplaceService<IPromptTemplateService>(services);
             ReplaceService<IPromptGenerationService>(services);
             ReplaceService<IRealtimeTranscriptionService>(services);
