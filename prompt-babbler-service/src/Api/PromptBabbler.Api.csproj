@@ -1,6 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <RootNamespace>PromptBabbler.Api</RootNamespace>
+    <UserSecretsId>7d2d636e-b62c-41ee-a31b-0ebde928b6e4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.AI.OpenAI" />

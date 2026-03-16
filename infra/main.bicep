@@ -196,6 +196,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
     capabilitiesToAdd: [
       'EnableServerless'
     ]
+    enableBurstCapacity: false
     disableLocalAuthentication: false
     disableKeyBasedMetadataWriteAccess: false
     zoneRedundant: false

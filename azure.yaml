@@ -5,7 +5,11 @@ metadata:
 services:
   api:
     host: containerapp
-    image: ghcr.io/plagueho/prompt-babbler-api:latest
+    language: dotnet
+    project: ./prompt-babbler-service/src/Api
+    docker:
+      path: ./Dockerfile
+      context: ../../
   frontend:
     project: ./prompt-babbler-app
     language: js
