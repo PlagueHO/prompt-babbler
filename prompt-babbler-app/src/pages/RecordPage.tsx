@@ -18,6 +18,7 @@ import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { getSpeechLanguage } from '@/services/local-storage';
 import type { Babble } from '@/types';
+import { AuthGuard } from '@/components/layout/AuthGuard';
 import { Save, ChevronDown, Sparkles } from 'lucide-react';
 
 export function RecordPage() {
@@ -51,7 +52,7 @@ export function RecordPage() {
   });
 
   const handleStart = useCallback(async () => {
-    connect(language || undefined);
+    await connect(language || undefined);
     await startRecording();
   }, [connect, language, startRecording]);
 
@@ -122,6 +123,7 @@ export function RecordPage() {
     : transcribedText;
 
   return (
+    <AuthGuard message="Sign in with your organizational account to record babbles.">
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Record a Babble</h1>
@@ -196,5 +198,6 @@ export function RecordPage() {
         </div>
       </div>
     </div>
+    </AuthGuard>
   );
 }

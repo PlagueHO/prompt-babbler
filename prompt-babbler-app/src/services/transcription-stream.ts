@@ -45,12 +45,16 @@ export class TranscriptionStream {
     return this._isOpen;
   }
 
-  open(language?: string): void {
+  open(language?: string, accessToken?: string): void {
     if (this.ws) return;
 
     const base = getWsBaseUrl();
-    const params = language ? `?language=${encodeURIComponent(language)}` : '';
-    const url = `${base}/api/transcribe/stream${params}`;
+    const params = new URLSearchParams();
+    if (language) params.append('language', language);
+    if (accessToken) params.append('access_token', accessToken);
+
+    const queryString = params.toString();
+    const url = `${base}/api/transcribe/stream${queryString ? `?${queryString}` : ''}`;
 
     this.ws = new WebSocket(url);
     this.ws.binaryType = 'arraybuffer';

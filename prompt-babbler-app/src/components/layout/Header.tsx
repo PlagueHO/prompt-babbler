@@ -1,6 +1,9 @@
 import { NavLink } from 'react-router';
-import { Home, Mic, FileText, Settings } from 'lucide-react';
+import { Home, Mic, FileText, Settings, LogIn, LogOut } from 'lucide-react';
+import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { cn } from '@/lib/utils';
+import { loginRequest } from '@/auth/authConfig';
+import { Button } from '@/components/ui/button';
 
 const navItems = [
   { to: '/', label: 'Home', icon: Home },
@@ -10,6 +13,17 @@ const navItems = [
 ] as const;
 
 export function Header() {
+  const isAuthenticated = useIsAuthenticated();
+  const { instance, accounts } = useMsal();
+
+  const handleLogin = () => {
+    void instance.loginPopup(loginRequest);
+  };
+
+  const handleLogout = () => {
+    void instance.logoutPopup();
+  };
+
   return (
     <header className="border-b bg-background">
       <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
@@ -36,6 +50,24 @@ export function Header() {
             </NavLink>
           ))}
         </nav>
+        <div className="ml-auto flex items-center gap-2">
+          {isAuthenticated ? (
+            <>
+              <span className="text-sm text-muted-foreground">
+                {accounts[0]?.name ?? accounts[0]?.username ?? ''}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="size-4" />
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={handleLogin}>
+              <LogIn className="size-4" />
+              Sign in
+            </Button>
+          )}
+        </div>
       </div>
     </header>
   );

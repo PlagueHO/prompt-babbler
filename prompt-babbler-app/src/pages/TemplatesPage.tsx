@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { TemplateList } from '@/components/templates/TemplateList';
 import { TemplateEditor } from '@/components/templates/TemplateEditor';
+import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useTemplates } from '@/hooks/useTemplates';
 import type { PromptTemplate } from '@/types';
 
@@ -52,6 +53,7 @@ export function TemplatesPage() {
 
   if (selected || isCreating) {
     return (
+      <AuthGuard message="Sign in with your organizational account to manage templates.">
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">
           {isCreating
@@ -67,10 +69,12 @@ export function TemplatesPage() {
           onDelete={selected && !selected.isBuiltIn ? handleDelete : undefined}
         />
       </div>
+      </AuthGuard>
     );
   }
 
   return (
+    <AuthGuard message="Sign in with your organizational account to manage templates.">
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Templates</h1>
@@ -91,5 +95,6 @@ export function TemplatesPage() {
         />
       )}
     </div>
+    </AuthGuard>
   );
 }

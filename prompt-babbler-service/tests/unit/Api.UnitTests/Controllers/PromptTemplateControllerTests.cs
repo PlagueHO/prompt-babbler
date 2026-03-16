@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,8 @@ namespace PromptBabbler.Api.UnitTests.Controllers;
 [TestCategory("Unit")]
 public sealed class PromptTemplateControllerTests
 {
+    private const string TestUserId = "00000000-0000-0000-0000-000000000000";
+
     private readonly IPromptTemplateService _templateService = Substitute.For<IPromptTemplateService>();
     private readonly ILogger<PromptTemplateController> _logger = Substitute.For<ILogger<PromptTemplateController>>();
     private readonly PromptTemplateController _controller;
@@ -22,15 +25,23 @@ public sealed class PromptTemplateControllerTests
     public PromptTemplateControllerTests()
     {
         _controller = new PromptTemplateController(_templateService, _logger);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", TestUserId),
+            new Claim("preferred_username", "test@contoso.com"),
+        ], "TestAuth"));
+
         _controller.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext(),
+            HttpContext = httpContext,
         };
     }
 
     private static PromptTemplate CreateTemplate(
         string id = "test-id",
-        string userId = "_anonymous",
+        string userId = TestUserId,
         string name = "Test Template",
         bool isBuiltIn = false) => new()
         {
@@ -50,7 +61,7 @@ public sealed class PromptTemplateControllerTests
     public async Task GetTemplates_ReturnsAllTemplates()
     {
         var templates = new List<PromptTemplate> { CreateTemplate(), CreateTemplate("id2", name: "Second") };
-        _templateService.GetTemplatesAsync("_anonymous", false, Arg.Any<CancellationToken>())
+        _templateService.GetTemplatesAsync(TestUserId, false, Arg.Any<CancellationToken>())
             .Returns(templates);
 
         var result = await _controller.GetTemplates(cancellationToken: CancellationToken.None);
@@ -61,18 +72,18 @@ public sealed class PromptTemplateControllerTests
     [TestMethod]
     public async Task GetTemplates_WithForceRefresh_PassesFlagToService()
     {
-        _templateService.GetTemplatesAsync("_anonymous", true, Arg.Any<CancellationToken>())
+        _templateService.GetTemplatesAsync(TestUserId, true, Arg.Any<CancellationToken>())
             .Returns(new List<PromptTemplate>());
 
         await _controller.GetTemplates(forceRefresh: true, cancellationToken: CancellationToken.None);
 
-        await _templateService.Received(1).GetTemplatesAsync("_anonymous", true, Arg.Any<CancellationToken>());
+        await _templateService.Received(1).GetTemplatesAsync(TestUserId, true, Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
     public async Task GetTemplates_EmptyResult_ReturnsEmptyArray()
     {
-        _templateService.GetTemplatesAsync("_anonymous", false, Arg.Any<CancellationToken>())
+        _templateService.GetTemplatesAsync(TestUserId, false, Arg.Any<CancellationToken>())
             .Returns(new List<PromptTemplate>());
 
         var result = await _controller.GetTemplates(cancellationToken: CancellationToken.None);
@@ -87,7 +98,7 @@ public sealed class PromptTemplateControllerTests
     public async Task GetTemplate_ExistingId_ReturnsTemplate()
     {
         var template = CreateTemplate();
-        _templateService.GetByIdAsync("_anonymous", "test-id", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(template);
 
         var result = await _controller.GetTemplate("test-id", CancellationToken.None);
@@ -98,7 +109,7 @@ public sealed class PromptTemplateControllerTests
     [TestMethod]
     public async Task GetTemplate_NonExistentId_Returns404()
     {
-        _templateService.GetByIdAsync("_anonymous", "missing", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "missing", Arg.Any<CancellationToken>())
             .Returns((PromptTemplate?)null);
 
         var result = await _controller.GetTemplate("missing", CancellationToken.None);
@@ -208,7 +219,7 @@ public sealed class PromptTemplateControllerTests
     public async Task UpdateTemplate_ExistingUserTemplate_Returns200()
     {
         var existing = CreateTemplate();
-        _templateService.GetByIdAsync("_anonymous", "test-id", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(existing);
         _templateService.UpdateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
             .Returns(ci => ci.Arg<PromptTemplate>());
@@ -229,7 +240,7 @@ public sealed class PromptTemplateControllerTests
     public async Task UpdateTemplate_BuiltInTemplate_Returns403()
     {
         var existing = CreateTemplate(isBuiltIn: true, userId: "_builtin");
-        _templateService.GetByIdAsync("_anonymous", "test-id", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(existing);
 
         var request = new UpdatePromptTemplateRequest
@@ -248,7 +259,7 @@ public sealed class PromptTemplateControllerTests
     [TestMethod]
     public async Task UpdateTemplate_NonExistent_Returns404()
     {
-        _templateService.GetByIdAsync("_anonymous", "missing", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "missing", Arg.Any<CancellationToken>())
             .Returns((PromptTemplate?)null);
 
         var request = new UpdatePromptTemplateRequest
@@ -284,7 +295,7 @@ public sealed class PromptTemplateControllerTests
     public async Task DeleteTemplate_UserTemplate_Returns204()
     {
         var existing = CreateTemplate();
-        _templateService.GetByIdAsync("_anonymous", "test-id", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(existing);
 
         var result = await _controller.DeleteTemplate("test-id", CancellationToken.None);
@@ -297,7 +308,7 @@ public sealed class PromptTemplateControllerTests
     public async Task DeleteTemplate_BuiltInTemplate_Returns403()
     {
         var existing = CreateTemplate(isBuiltIn: true, userId: "_builtin");
-        _templateService.GetByIdAsync("_anonymous", "test-id", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(existing);
 
         var result = await _controller.DeleteTemplate("test-id", CancellationToken.None);
@@ -309,7 +320,7 @@ public sealed class PromptTemplateControllerTests
     [TestMethod]
     public async Task DeleteTemplate_NonExistent_Returns404()
     {
-        _templateService.GetByIdAsync("_anonymous", "missing", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "missing", Arg.Any<CancellationToken>())
             .Returns((PromptTemplate?)null);
 
         var result = await _controller.DeleteTemplate("missing", CancellationToken.None);

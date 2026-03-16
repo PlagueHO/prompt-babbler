@@ -9,6 +9,7 @@ import { DeleteBabbleDialog } from '@/components/babbles/DeleteBabbleDialog';
 import { PromptGenerator } from '@/components/prompts/PromptGenerator';
 import { PromptDisplay } from '@/components/prompts/PromptDisplay';
 import { CopyButton } from '@/components/prompts/CopyButton';
+import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { usePromptGeneration } from '@/hooks/usePromptGeneration';
@@ -98,6 +99,7 @@ export function BabblePage() {
   }
 
   return (
+    <AuthGuard message="Sign in with your organizational account to view babbles.">
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
@@ -172,5 +174,6 @@ export function BabblePage() {
         onConfirm={handleDelete}
       />
     </div>
+    </AuthGuard>
   );
 }

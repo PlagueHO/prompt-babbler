@@ -1,12 +1,16 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web.Resource;
 using PromptBabbler.Domain.Interfaces;
 
 namespace PromptBabbler.Api.Controllers;
 
 [ApiController]
+[Authorize]
+[RequiredScope("access_as_user")]
 [Route("api/transcribe")]
 public sealed class TranscriptionWebSocketController(
     IRealtimeTranscriptionService transcriptionService,

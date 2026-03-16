@@ -3,7 +3,6 @@ import {
   getBabbles,
   createBabble,
   deleteBabble,
-  getTemplates,
   getStorageUsage,
 } from '@/services/local-storage';
 import type { Babble } from '@/types';
@@ -44,12 +43,6 @@ describe('local-storage service', () => {
     const result = getBabbles();
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('b2');
-  });
-
-  it('getTemplates seeds defaults when empty', () => {
-    const templates = getTemplates();
-    expect(templates.length).toBeGreaterThanOrEqual(2);
-    expect(templates.every((t) => t.isBuiltIn)).toBe(true);
   });
 
   it('getStorageUsage returns usage info', () => {

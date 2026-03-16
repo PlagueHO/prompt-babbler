@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
+import { useMsal } from '@azure/msal-react';
+import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import * as api from '@/services/api-client';
+import { loginRequest } from '@/auth/authConfig';
 import type { PromptFormat } from '@/types';
 
 export function usePromptGeneration() {
@@ -8,6 +11,24 @@ export function usePromptGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const { instance, accounts } = useMsal();
+
+  const getAuthToken = useCallback(async (): Promise<string | undefined> => {
+    if (accounts.length === 0) return undefined;
+    try {
+      const response = await instance.acquireTokenSilent({
+        ...loginRequest,
+        account: accounts[0],
+      });
+      return response.accessToken;
+    } catch (err) {
+      if (err instanceof InteractionRequiredAuthError) {
+        const response = await instance.acquireTokenPopup(loginRequest);
+        return response.accessToken;
+      }
+      throw err;
+    }
+  }, [instance, accounts]);
 
   const generate = useCallback(
     async (
@@ -26,7 +47,8 @@ export function usePromptGeneration() {
       setError(null);
 
       try {
-        const stream = await api.generatePrompt(babbleText, templateId, promptFormat, allowEmojis);
+        const token = await getAuthToken();
+        const stream = await api.generatePrompt(babbleText, templateId, promptFormat, allowEmojis, token);
         const reader = stream.getReader();
         const decoder = new TextDecoder();
 
@@ -73,7 +95,7 @@ export function usePromptGeneration() {
         }
       }
     },
-    []
+    [getAuthToken]
   );
 
   return { generatedText, generatedName, isGenerating, error, generate };

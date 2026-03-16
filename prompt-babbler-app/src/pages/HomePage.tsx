@@ -3,13 +3,15 @@ import { Plus, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BabbleList } from '@/components/babbles/BabbleList';
 import { StorageWarning } from '@/components/layout/StorageWarning';
+import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useBabbles } from '@/hooks/useBabbles';
 
 export function HomePage() {
   const { babbles } = useBabbles();
 
   return (
-    <div className="space-y-6">
+    <AuthGuard message="Sign in with your organizational account to record babbles and generate prompts.">
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Your Babbles</h1>
@@ -50,6 +52,7 @@ export function HomePage() {
       ) : (
         <BabbleList babbles={babbles} />
       )}
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

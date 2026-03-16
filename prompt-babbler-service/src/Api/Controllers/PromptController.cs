@@ -1,10 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web.Resource;
 using PromptBabbler.Api.Models.Requests;
 using PromptBabbler.Domain.Interfaces;
 
 namespace PromptBabbler.Api.Controllers;
 
 [ApiController]
+[Authorize]
+[RequiredScope("access_as_user")]
 [Route("api/prompts")]
 public sealed class PromptController(
     IPromptGenerationService promptService,

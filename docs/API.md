@@ -6,7 +6,25 @@ Base path: `/api`
 
 ## Authentication
 
-Authentication is not yet implemented. All template operations use an internal anonymous identity (`_anonymous`).
+All API endpoints except `GET /api/status` require authentication via **JWT Bearer tokens** issued by Microsoft Entra ID.
+
+**Setup:**
+
+- The API validates tokens against the `AzureAd` configuration section (`Instance`, `TenantId`, `ClientId`, `Audience`)
+- Required scope: `access_as_user` (from `api://prompt-babbler-api/access_as_user`)
+- The SPA acquires tokens via MSAL.js (`@azure/msal-browser`) using Authorization Code with PKCE
+- WebSocket endpoints accept tokens via the `?access_token={token}` query parameter
+
+**Headers:**
+
+```
+Authorization: Bearer {access_token}
+```
+
+**Error Responses:**
+
+- `401 Unauthorized` — missing or invalid token
+- `403 Forbidden` — valid token but insufficient scope
 
 ## Endpoints
 

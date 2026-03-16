@@ -10,17 +10,26 @@ function getApiBaseUrl(): string {
   return typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : '';
 }
 
+function addAuthHeader(headers: HeadersInit = {}, accessToken?: string): HeadersInit {
+  if (!accessToken) return headers;
+  return { ...headers, Authorization: `Bearer ${accessToken}` };
+}
+
 async function fetchJson<T>(
   path: string,
-  init?: RequestInit
+  init?: RequestInit,
+  accessToken?: string,
 ): Promise<T> {
   const base = getApiBaseUrl();
   const res = await fetch(`${base}${path}`, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...init?.headers,
-    },
+    headers: addAuthHeader(
+      {
+        'Content-Type': 'application/json',
+        ...init?.headers,
+      },
+      accessToken,
+    ),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
@@ -35,41 +44,42 @@ export async function getStatus(): Promise<StatusResponse> {
 
 // Template APIs
 
-export async function getTemplates(forceRefresh = false): Promise<PromptTemplate[]> {
+export async function getTemplates(forceRefresh = false, accessToken?: string): Promise<PromptTemplate[]> {
   const query = forceRefresh ? '?forceRefresh=true' : '';
-  return fetchJson<PromptTemplate[]>(`/api/templates${query}`);
+  return fetchJson<PromptTemplate[]>(`/api/templates${query}`, undefined, accessToken);
 }
 
-export async function getTemplate(id: string): Promise<PromptTemplate> {
-  return fetchJson<PromptTemplate>(`/api/templates/${encodeURIComponent(id)}`);
+export async function getTemplate(id: string, accessToken?: string): Promise<PromptTemplate> {
+  return fetchJson<PromptTemplate>(`/api/templates/${encodeURIComponent(id)}`, undefined, accessToken);
 }
 
 export async function createTemplate(request: {
   name: string;
   description: string;
   systemPrompt: string;
-}): Promise<PromptTemplate> {
+}, accessToken?: string): Promise<PromptTemplate> {
   return fetchJson<PromptTemplate>('/api/templates', {
     method: 'POST',
     body: JSON.stringify(request),
-  });
+  }, accessToken);
 }
 
 export async function updateTemplate(
   id: string,
-  request: { name: string; description: string; systemPrompt: string }
+  request: { name: string; description: string; systemPrompt: string },
+  accessToken?: string,
 ): Promise<PromptTemplate> {
   return fetchJson<PromptTemplate>(`/api/templates/${encodeURIComponent(id)}`, {
     method: 'PUT',
     body: JSON.stringify(request),
-  });
+  }, accessToken);
 }
 
-export async function deleteTemplate(id: string): Promise<void> {
+export async function deleteTemplate(id: string, accessToken?: string): Promise<void> {
   const base = getApiBaseUrl();
   const res = await fetch(`${base}/api/templates/${encodeURIComponent(id)}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
@@ -81,12 +91,13 @@ export async function generatePrompt(
   babbleText: string,
   templateId: string,
   promptFormat: string = 'text',
-  allowEmojis: boolean = false
+  allowEmojis: boolean = false,
+  accessToken?: string,
 ): Promise<ReadableStream<Uint8Array>> {
   const base = getApiBaseUrl();
   const res = await fetch(`${base}/api/prompts/generate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
     body: JSON.stringify({ babbleText, templateId, promptFormat, allowEmojis }),
   });
   if (!res.ok) {

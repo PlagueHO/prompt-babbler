@@ -1,8 +1,10 @@
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Azure;
+using Microsoft.Identity.Web;
 using PromptBabbler.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -82,15 +84,61 @@ builder.Services.AddInfrastructure(
     speechRegion: builder.Configuration["Speech:Region"] ?? string.Empty,
     aiServicesEndpoint: aiServicesEndpoint);
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"), jwtBearerScheme: JwtBearerDefaults.AuthenticationScheme, subscribeToJwtBearerMiddlewareDiagnosticsEvents: false);
+
+builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    options.Events ??= new JwtBearerEvents();
+    var originalOnMessageReceived = options.Events.OnMessageReceived;
+    options.Events.OnMessageReceived = async context =>
+    {
+        // Extract access_token from query string for WebSocket connections (same pattern as SignalR).
+        var accessToken = context.Request.Query["access_token"];
+        var path = context.HttpContext.Request.Path;
+        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/transcribe"))
+        {
+            context.Token = accessToken;
+        }
+
+        if (originalOnMessageReceived is not null)
+        {
+            await originalOnMessageReceived(context);
+        }
+    };
+});
+
+builder.Services.AddAuthorization();
+
+var corsAllowedOrigins = builder.Configuration["CORS:AllowedOrigins"] ?? "";
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.SetIsOriginAllowed(origin =>
-               Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.Host is "localhost" or "127.0.0.1")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        static bool IsLocalOrigin(string origin) =>
+            Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.Host is "localhost" or "127.0.0.1";
+
+        if (string.IsNullOrEmpty(corsAllowedOrigins))
+        {
+            // Local dev: allow localhost only.
+            policy.SetIsOriginAllowed(IsLocalOrigin)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+            // Production: allow configured origins + localhost.
+            var allowedOrigins = corsAllowedOrigins
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            policy.SetIsOriginAllowed(origin =>
+                    IsLocalOrigin(origin) || allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
     });
 });
 
@@ -101,6 +149,8 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseCors();
 app.UseWebSockets();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 app.MapDefaultEndpoints();

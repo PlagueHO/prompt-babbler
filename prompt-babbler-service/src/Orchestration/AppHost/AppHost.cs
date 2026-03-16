@@ -30,6 +30,10 @@ var templatesContainer = cosmosDb.AddContainer("prompt-templates", "/userId");
 // Speech-to-text uses Azure AI Speech Service (part of the same AIServices resource)
 // instead of an OpenAI model deployment. No Aspire deployment needed — the Speech SDK
 // connects directly to the AIServices endpoint via SpeechConfig.
+var apiClientId = builder.Configuration["EntraAuth:ApiClientId"] ?? "";
+var spaClientId = builder.Configuration["EntraAuth:SpaClientId"] ?? "";
+var tenantId = builder.Configuration["Azure:TenantId"] ?? "";
+
 var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithReference(foundry)
     .WithReference(chatDeployment)
@@ -37,14 +41,19 @@ var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithReference(templatesContainer)
     .WaitFor(chatDeployment)
     .WaitFor(cosmos)
-    .WithEnvironment("Azure__TenantId", builder.Configuration["Azure:TenantId"])
-    .WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"])
-    .WithEnvironment("Speech__Region", builder.Configuration["Azure:Location"] ?? "");
+    .WithEnvironment("Azure__TenantId", tenantId)
+    .WithEnvironment("AZURE_TENANT_ID", tenantId)
+    .WithEnvironment("Speech__Region", builder.Configuration["Azure:Location"] ?? "")
+    .WithEnvironment("AzureAd__ClientId", apiClientId)
+    .WithEnvironment("AzureAd__TenantId", tenantId)
+    .WithEnvironment("AzureAd__Instance", "https://login.microsoftonline.com/");
 
 builder.AddViteApp("frontend", "../../../../prompt-babbler-app", "dev")
     .WithPnpm()
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
-    .WaitFor(apiService);
+    .WaitFor(apiService)
+    .WithEnvironment("MSAL_CLIENT_ID", spaClientId)
+    .WithEnvironment("MSAL_TENANT_ID", tenantId);
 
 builder.Build().Run();

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,11 @@ public sealed class PromptControllerTests
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.Body = new MemoryStream();
+        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", "00000000-0000-0000-0000-000000000000"),
+            new Claim("preferred_username", "test@contoso.com"),
+        ], "TestAuth"));
         _controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
     }
 

@@ -406,7 +406,7 @@ export default defineConfig({
 })
 ```
 
-2. **Extend `AppHost.cs`** (local dev):
+1. **Extend `AppHost.cs`** (local dev):
 
 ```csharp
 builder.AddViteApp("frontend", "../../../../prompt-babbler-app", "dev")
@@ -415,7 +415,7 @@ builder.AddViteApp("frontend", "../../../../prompt-babbler-app", "dev")
     // ... existing config
 ```
 
-3. **For production (`azd up`):** Use `azd` hooks (see Q4 below) to inject Bicep outputs as env vars before the frontend build.
+1. **For production (`azd up`):** Use `azd` hooks (see Q4 below) to inject Bicep outputs as env vars before the frontend build.
 
 **Risk:** **LOW** — Build-time injection is standard. Client ID and tenant ID are public values for SPAs.
 
@@ -917,10 +917,10 @@ Three options were evaluated:
 **Rationale for Option A:**
 
 1. **Minimal refactoring** — each function gains one optional parameter; no structural changes
-2. **Explicit** — function signatures show which calls need tokens
-3. **Portable** — functions remain callable outside React (scripts, tests, docs)
-4. **Works with all response types** — JSON, void, and streaming use the same pattern
-5. **Backward compatible** — `getStatus()` remains parameterless (unauthenticated)
+1. **Explicit** — function signatures show which calls need tokens
+1. **Portable** — functions remain callable outside React (scripts, tests, docs)
+1. **Works with all response types** — JSON, void, and streaming use the same pattern
+1. **Backward compatible** — `getStatus()` remains parameterless (unauthenticated)
 
 **Implementation pattern:**
 
@@ -1016,8 +1016,8 @@ const data = await api.getTemplates(forceRefresh, token);
 **Migration path:**
 
 1. **Phase 1:** Add `addAuthHeader()` utility + `accessToken?: string` to all authenticated functions (backward compatible, no consumers change)
-2. **Phase 2:** Update consuming hooks (`useTemplates`, `usePromptGeneration`) to acquire tokens via `useMsal()` and pass to API functions
-3. **Phase 3:** Verify `useSettings` still works without changes (calls `getStatus()` with no token)
+1. **Phase 2:** Update consuming hooks (`useTemplates`, `usePromptGeneration`) to acquire tokens via `useMsal()` and pass to API functions
+1. **Phase 3:** Verify `useSettings` still works without changes (calls `getStatus()` with no token)
 
 ---
 

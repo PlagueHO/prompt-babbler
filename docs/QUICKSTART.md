@@ -54,6 +54,37 @@ dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>" \
   --project src/Orchestration/AppHost
 ```
 
+### Entra ID Authentication (optional for local dev)
+
+To enable Entra ID SSO authentication, create app registrations and configure user secrets:
+
+1. **Deploy infrastructure first** (creates app registrations via Bicep):
+
+   ```bash
+   azd up
+   ```
+
+1. **Retrieve client IDs** from the deployment outputs:
+
+   ```bash
+   azd env get-value AZURE_AD_SPA_CLIENT_ID
+   azd env get-value AZURE_AD_API_CLIENT_ID
+   ```
+
+1. **Store in user secrets:**
+
+   ```bash
+   cd prompt-babbler-service
+   dotnet user-secrets set "EntraAuth:SpaClientId" "<spa-client-id>" \
+     --project src/Orchestration/AppHost
+   dotnet user-secrets set "EntraAuth:ApiClientId" "<api-client-id>" \
+     --project src/Orchestration/AppHost
+   ```
+
+> **Note:** The deploying principal requires `Application.ReadWrite.All` Microsoft Graph
+> permission to create Entra ID app registrations. This is a one-time admin setup step.
+> Without these secrets, the app starts without authentication (all endpoints are accessible).
+>
 > **Tip:** Find your subscription and tenant IDs with `az account show`.
 > The Azure region and other non-sensitive settings are already configured in
 > `launchSettings.json`.

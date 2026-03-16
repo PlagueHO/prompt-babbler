@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
@@ -25,11 +26,18 @@ public sealed class TranscriptionWebSocketControllerTests
         _controller = new TranscriptionWebSocketController(_transcriptionService, _logger);
     }
 
+    private static ClaimsPrincipal CreateTestUser() => new(new ClaimsIdentity(
+    [
+        new Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", "00000000-0000-0000-0000-000000000000"),
+        new Claim("preferred_username", "test@contoso.com"),
+    ], "TestAuth"));
+
     [TestMethod]
     public async Task StreamTranscription_NonWebSocket_Returns400()
     {
         // Arrange: simulate a normal HTTP request (not a WebSocket upgrade)
         var httpContext = new DefaultHttpContext();
+        httpContext.User = CreateTestUser();
         _controller.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext,
@@ -92,6 +100,7 @@ public sealed class TranscriptionWebSocketControllerTests
         httpContext.WebSockets.Returns(webSocketManager);
         httpContext.Response.Returns(Substitute.For<HttpResponse>());
         httpContext.RequestAborted.Returns(CancellationToken.None);
+        httpContext.User.Returns(CreateTestUser());
 
         _controller.ControllerContext = new ControllerContext
         {
