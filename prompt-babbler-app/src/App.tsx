@@ -26,6 +26,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/record" element={<RecordPage />} />
+              <Route path="/record/:babbleId" element={<RecordPage />} />
               <Route path="/babble/:id" element={<BabblePage />} />
               <Route path="/templates" element={<TemplatesPage />} />
               <Route path="/settings" element={<SettingsPage />} />

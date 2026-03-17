@@ -1,4 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { tracer, meter, endSpanWithDuration } from '@/telemetry';
+
+const audioInitHistogram = meter.createHistogram('recording.audio_init_ms', {
+  description: 'Time to initialize microphone, AudioContext, and AudioWorklet (ms)',
+  unit: 'ms',
+});
 
 /**
  * Audio recording hook that captures raw 16 kHz / 16-bit / mono PCM
@@ -25,6 +31,9 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
   }, [onPcmFrame]);
 
   const start = useCallback(async () => {
+    const initStart = performance.now();
+    const span = tracer.startSpan('recording.audio_init');
+
     // Capture mic at 16 kHz mono
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -39,6 +48,7 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
     const audioContext = new AudioContext({ sampleRate: 16000 });
     audioContextRef.current = audioContext;
     console.info('[AudioRecording] AudioContext created — actual sampleRate:', audioContext.sampleRate);
+    span.setAttribute('audio.actual_sample_rate', audioContext.sampleRate);
 
     await audioContext.audioWorklet.addModule('/pcm-processor.js');
     const source = audioContext.createMediaStreamSource(stream);
@@ -59,6 +69,10 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
     analyser.fftSize = 256;
     source.connect(analyser);
     analyserRef.current = analyser;
+
+    const initMs = performance.now() - initStart;
+    audioInitHistogram.record(initMs);
+    endSpanWithDuration(span, initStart);
 
     setIsRecording(true);
     setDuration(0);

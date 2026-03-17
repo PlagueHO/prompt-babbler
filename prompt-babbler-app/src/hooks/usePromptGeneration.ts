@@ -1,7 +1,18 @@
 import { useState, useCallback, useRef } from 'react';
+import { SpanStatusCode } from '@opentelemetry/api';
 import * as api from '@/services/api-client';
 import { useAuthToken } from '@/hooks/useAuthToken';
+import { tracer, meter } from '@/telemetry';
 import type { PromptFormat } from '@/types';
+
+const ttftHistogram = meter.createHistogram('prompt.ttft_ms', {
+  description: 'Time from generate() call to first SSE token (ms)',
+  unit: 'ms',
+});
+const durationHistogram = meter.createHistogram('prompt.duration_ms', {
+  description: 'Total prompt generation duration (ms)',
+  unit: 'ms',
+});
 
 export function usePromptGeneration() {
   const [generatedText, setGeneratedText] = useState('');
@@ -29,6 +40,16 @@ export function usePromptGeneration() {
 
       let localName: string | null = null;
       let localText = '';
+
+      const genStart = performance.now();
+      const span = tracer.startSpan('prompt.generate', {
+        attributes: {
+          'prompt.template_id': templateId,
+          'prompt.format': promptFormat,
+          'prompt.allow_emojis': allowEmojis,
+        },
+      });
+      let firstTokenRecorded = false;
 
       try {
         const token = await getAuthToken();
@@ -61,6 +82,12 @@ export function usePromptGeneration() {
                   localName = parsed.name;
                 }
                 if (parsed.text) {
+                  if (!firstTokenRecorded) {
+                    firstTokenRecorded = true;
+                    const ttftMs = performance.now() - genStart;
+                    ttftHistogram.record(ttftMs);
+                    span.setAttribute('prompt.ttft_ms', ttftMs);
+                  }
                   localText += parsed.text;
                   setGeneratedText((prev) => prev + parsed.text);
                 }
@@ -71,13 +98,22 @@ export function usePromptGeneration() {
           }
         }
       } catch (err) {
-        if (controller.signal.aborted) return { name: localName, text: localText };
-        setError(
-          err instanceof Error ? err.message : 'Prompt generation failed'
-        );
+        if (controller.signal.aborted) {
+          span.setAttribute('cancelled', true);
+          span.end();
+          return { name: localName, text: localText };
+        }
+        const message = err instanceof Error ? err.message : 'Prompt generation failed';
+        setError(message);
+        span.setStatus({ code: SpanStatusCode.ERROR, message });
       } finally {
         if (!controller.signal.aborted) {
           setIsGenerating(false);
+          const durationMs = performance.now() - genStart;
+          durationHistogram.record(durationMs);
+          span.setAttribute('prompt.duration_ms', durationMs);
+          span.setAttribute('prompt.output_length', localText.length);
+          span.end();
         }
       }
 

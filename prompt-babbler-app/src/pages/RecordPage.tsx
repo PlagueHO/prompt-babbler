@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams, Link } from 'react-router';
 import { toast } from 'sonner';
 import { RecordButton } from '@/components/recording/RecordButton';
 import { RecordingIndicator } from '@/components/recording/RecordingIndicator';
@@ -20,10 +20,12 @@ import { useTemplates } from '@/hooks/useTemplates';
 import { getSpeechLanguage } from '@/services/local-storage';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { Save, ChevronDown, Sparkles, Loader2, Trash2 } from 'lucide-react';
+import type { Babble } from '@/types';
 
 export function RecordPage() {
+  const { babbleId } = useParams<{ babbleId: string }>();
   const navigate = useNavigate();
-  const { createBabble } = useBabbles();
+  const { createBabble, updateBabble, getBabble } = useBabbles();
   const { templates } = useTemplates();
   const {
     transcribedText,
@@ -37,6 +39,33 @@ export function RecordPage() {
   } = useTranscription();
   const [title, setTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Append mode: load existing babble when babbleId is provided
+  const isAppendMode = !!babbleId;
+  const [existingBabble, setExistingBabble] = useState<Babble | null>(null);
+  const [babbleLoading, setBabbleLoading] = useState(isAppendMode);
+  const [babbleNotFound, setBabbleNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!babbleId) return;
+    let cancelled = false;
+    getBabble(babbleId).then((result) => {
+      if (cancelled) return;
+      if (result) {
+        setExistingBabble(result);
+        setTitle(result.title);
+      } else {
+        setBabbleNotFound(true);
+      }
+      setBabbleLoading(false);
+    }).catch(() => {
+      if (!cancelled) {
+        setBabbleNotFound(true);
+        setBabbleLoading(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [babbleId, getBabble]);
 
   const language = getSpeechLanguage();
 
@@ -86,12 +115,23 @@ export function RecordPage() {
   }, []);
 
   const saveBabble = useCallback(async () => {
+    if (isAppendMode && existingBabble && babbleId) {
+      // Append mode: concatenate existing text with new transcription
+      const combinedText = existingBabble.text
+        ? `${existingBabble.text}\n\n${transcribedText}`
+        : transcribedText;
+      const updated = await updateBabble(babbleId, {
+        title: title.trim() || existingBabble.title,
+        text: combinedText,
+      });
+      return updated;
+    }
     const babble = await createBabble({
       title: title.trim() || `Babble ${new Date().toLocaleDateString()}`,
       text: transcribedText,
     });
     return babble;
-  }, [title, transcribedText, createBabble]);
+  }, [title, transcribedText, createBabble, updateBabble, isAppendMode, existingBabble, babbleId]);
 
   const handleSave = async () => {
     if (!transcribedText.trim()) {
@@ -101,10 +141,10 @@ export function RecordPage() {
     try {
       setIsSaving(true);
       const babble = await saveBabble();
-      toast.success('Babble saved!');
+      toast.success(isAppendMode ? 'Babble updated!' : 'Babble saved!');
       void navigate(`/babble/${babble.id}`);
     } catch {
-      toast.error('Failed to save babble');
+      toast.error(isAppendMode ? 'Failed to update babble' : 'Failed to save babble');
     } finally {
       setIsSaving(false);
     }
@@ -118,10 +158,10 @@ export function RecordPage() {
     try {
       setIsSaving(true);
       const babble = await saveBabble();
-      toast.success('Babble saved!');
+      toast.success(isAppendMode ? 'Babble updated!' : 'Babble saved!');
       void navigate(`/babble/${babble.id}?autoGenerate=${encodeURIComponent(templateId)}`);
     } catch {
-      toast.error('Failed to save babble');
+      toast.error(isAppendMode ? 'Failed to update babble' : 'Failed to save babble');
     } finally {
       setIsSaving(false);
     }
@@ -130,19 +170,48 @@ export function RecordPage() {
   const transcriptionDone = !isRecording && !isConnected;
 
   const handleClear = useCallback(() => {
-    if (window.confirm('Clear the entire transcript? This cannot be undone.')) {
+    const message = isAppendMode
+      ? 'Clear the new transcript? The existing babble text will not be affected.'
+      : 'Clear the entire transcript? This cannot be undone.';
+    if (window.confirm(message)) {
       reset();
-      setTitle('');
+      if (!isAppendMode) {
+        setTitle('');
+      }
     }
-  }, [reset]);
+  }, [reset, isAppendMode]);
+
+  if (babbleLoading) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-12 text-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Loading babble…</p>
+      </div>
+    );
+  }
+
+  if (babbleNotFound) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-12 text-center">
+        <h1 className="text-xl font-semibold">Babble not found</h1>
+        <Button asChild variant="outline">
+          <Link to="/">Go home</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <AuthGuard message="Sign in with your organizational account to record babbles.">
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Record a Babble</h1>
+        <h1 className="text-2xl font-bold">
+          {isAppendMode ? 'Continue Babble' : 'Record a Babble'}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Speak your thoughts freely. We&apos;ll transcribe them for you.
+          {isAppendMode
+            ? 'Continue recording to add more to this babble.'
+            : 'Speak your thoughts freely. We\u0027ll transcribe them for you.'}
         </p>
       </div>
 
@@ -150,7 +219,7 @@ export function RecordPage() {
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Give your babble a title (optional)"
+          placeholder={isAppendMode ? 'Babble title' : 'Give your babble a title (optional)'}
         />
 
         <div className="flex items-center gap-4 rounded-lg border px-4 py-3">
@@ -162,6 +231,7 @@ export function RecordPage() {
           <RecordingIndicator
             isRecording={isRecording}
             duration={duration}
+            hasTranscription={!!(transcribedText || existingBabble?.text)}
           />
           <WaveformVisualizer
             analyserRef={analyserRef}
@@ -170,7 +240,9 @@ export function RecordPage() {
         </div>
 
         <TranscriptPreview
-          finalText={transcribedText}
+          finalText={isAppendMode && existingBabble?.text
+            ? (transcribedText ? `${existingBabble.text}\n\n${transcribedText}` : existingBabble.text)
+            : transcribedText}
           partialText={partialText}
           isTranscribing={isConnected}
         />
@@ -189,7 +261,7 @@ export function RecordPage() {
             ) : (
               <Save className="size-4" />
             )}
-            Save Babble
+            {isAppendMode ? 'Update Babble' : 'Save Babble'}
           </Button>
 
           <div className="flex">
@@ -200,7 +272,7 @@ export function RecordPage() {
                   disabled={!transcribedText.trim() || !transcriptionDone || isSaving}
                 >
                   <Sparkles className="size-4" />
-                  Save &amp; Generate Prompt
+                  {isAppendMode ? 'Update & Generate Prompt' : 'Save & Generate Prompt'}
                   <ChevronDown className="size-3" />
                 </Button>
               </DropdownMenuTrigger>

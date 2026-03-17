@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router';
 import { toast } from 'sonner';
-import { Edit, Trash2, Mic, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Mic, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BabbleEditor } from '@/components/babbles/BabbleEditor';
@@ -212,10 +212,10 @@ export function BabblePage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link to="/record">
+          <Button asChild size="sm">
+            <Link to={`/record/${babble.id}`}>
               <Mic className="size-4" />
-              Record More
+              Continue Babble
             </Link>
           </Button>
           <Button
@@ -223,8 +223,8 @@ export function BabblePage() {
             variant="outline"
             onClick={() => setIsEditing(true)}
           >
-            <Edit className="size-4" />
-            Edit
+            <Pencil className="size-4" />
+            Edit Text
           </Button>
           <Button
             size="sm"
@@ -255,19 +255,21 @@ export function BabblePage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Generate Prompt</h2>
-        <PromptGenerator
-          templates={templates}
-          isGenerating={isGenerating}
-          onGenerate={handleGenerate}
-          disabled={!babble.text.trim()}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <PromptGenerator
+            templates={templates}
+            isGenerating={isGenerating}
+            onGenerate={handleGenerate}
+            disabled={!babble.text.trim()}
+          />
+          {generatedText && !isGenerating && (
+            <CopyButton text={generatedText} />
+          )}
+        </div>
         {genError && (
           <p className="text-sm text-destructive">{genError}</p>
         )}
         <PromptDisplay text={generatedText} isGenerating={isGenerating} />
-        {generatedText && !isGenerating && (
-          <CopyButton text={generatedText} />
-        )}
       </div>
 
       <Separator />

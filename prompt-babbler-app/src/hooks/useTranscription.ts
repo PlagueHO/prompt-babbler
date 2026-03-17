@@ -1,12 +1,23 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { SpanStatusCode, type Span } from '@opentelemetry/api';
 import {
   TranscriptionStream,
   type TranscriptionMessage,
 } from '@/services/transcription-stream';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import { isAuthConfigured } from '@/auth/authConfig';
+import { tracer, meter } from '@/telemetry';
 
 const TOKEN_REFRESH_MS = 55 * 60 * 1000; // Refresh 5 minutes before ~1 hour expiry
+
+const ttfwHistogram = meter.createHistogram('transcription.ttfw_ms', {
+  description: 'Time from connect() to first transcription word (ms)',
+  unit: 'ms',
+});
+const wsConnectHistogram = meter.createHistogram('transcription.ws_connect_ms', {
+  description: 'WebSocket connection establishment time (ms)',
+  unit: 'ms',
+});
 
 /**
  * Hook that manages a real-time WebSocket transcription session.
@@ -32,7 +43,26 @@ export function useTranscription() {
   const partialTextRef = useRef('');
   const acquireAccessToken = useAuthToken();
 
+  // OTEL tracing refs
+  const sessionSpanRef = useRef<Span | null>(null);
+  const ttfwSpanRef = useRef<Span | null>(null);
+  const connectStartRef = useRef(0);
+  const firstWordReceivedRef = useRef(false);
+
   const handleMessage = useCallback((msg: TranscriptionMessage) => {
+    // Record TTFW on the very first transcription message (partial or final)
+    if (!firstWordReceivedRef.current && connectStartRef.current > 0) {
+      firstWordReceivedRef.current = true;
+      const ttfwMs = performance.now() - connectStartRef.current;
+      ttfwHistogram.record(ttfwMs);
+      if (ttfwSpanRef.current) {
+        ttfwSpanRef.current.setAttribute('ttfw_ms', ttfwMs);
+        ttfwSpanRef.current.setAttribute('first_text', msg.text.slice(0, 80));
+        ttfwSpanRef.current.end();
+        ttfwSpanRef.current = null;
+      }
+    }
+
     if (msg.isFinal) {
       setTranscribedText((prev) =>
         prev ? `${prev} ${msg.text}` : msg.text,
@@ -82,16 +112,36 @@ export function useTranscription() {
       if (streamRef.current) return;
       setError(null);
       sessionStateRef.current = { language, isActive: true };
+      firstWordReceivedRef.current = false;
+      connectStartRef.current = performance.now();
+
+      // Start OTEL spans for the transcription session and TTFW measurement
+      const sessionSpan = tracer.startSpan('transcription.session', {
+        attributes: { 'transcription.language': language ?? 'default' },
+      });
+      sessionSpanRef.current = sessionSpan;
+      ttfwSpanRef.current = tracer.startSpan('transcription.time-to-first-word', {
+        attributes: { 'transcription.language': language ?? 'default' },
+      });
 
       const token = await acquireAccessToken();
       if (isAuthConfigured && !token) {
         setError('Failed to acquire access token');
+        sessionSpan.setStatus({ code: SpanStatusCode.ERROR, message: 'Token acquisition failed' });
+        sessionSpan.end();
+        ttfwSpanRef.current?.end();
+        ttfwSpanRef.current = null;
+        sessionSpanRef.current = null;
         return;
       }
 
+      const wsStart = performance.now();
       const stream = new TranscriptionStream(handleMessage, handleError);
       streamRef.current = stream;
       await stream.open(language, token);
+      const wsConnectMs = performance.now() - wsStart;
+      wsConnectHistogram.record(wsConnectMs);
+      sessionSpan.setAttribute('ws_connect_ms', wsConnectMs);
       setIsConnected(true);
 
       tokenRefreshTimerRef.current = setTimeout(
@@ -111,6 +161,23 @@ export function useTranscription() {
     streamRef.current?.close();
     streamRef.current = null;
     setIsConnected(false);
+
+    // End any open OTEL spans
+    if (ttfwSpanRef.current) {
+      ttfwSpanRef.current.setAttribute('cancelled', true);
+      ttfwSpanRef.current.end();
+      ttfwSpanRef.current = null;
+    }
+    if (sessionSpanRef.current) {
+      if (connectStartRef.current > 0) {
+        sessionSpanRef.current.setAttribute(
+          'session_duration_ms',
+          performance.now() - connectStartRef.current,
+        );
+      }
+      sessionSpanRef.current.end();
+      sessionSpanRef.current = null;
+    }
 
     // Promote any pending partial text to final before clearing
     if (partialTextRef.current) {

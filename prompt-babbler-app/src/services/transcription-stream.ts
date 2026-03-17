@@ -5,6 +5,9 @@
  * sends binary PCM audio frames, and receives JSON transcription events.
  */
 
+import { SpanStatusCode } from '@opentelemetry/api';
+import { tracer } from '@/telemetry';
+
 // Injected by Vite from Aspire service discovery at build/dev time
 declare const __API_BASE_URL__: string;
 
@@ -73,6 +76,10 @@ export class TranscriptionStream {
 
     console.debug('[TranscriptionStream] Opening WebSocket to', url);
 
+    const span = tracer.startSpan('transcription.ws_connect', {
+      attributes: { 'ws.url': url },
+    });
+
     return new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(url);
       ws.binaryType = 'arraybuffer';
@@ -82,6 +89,8 @@ export class TranscriptionStream {
         if (!this._isOpen) {
           const msg = 'WebSocket connection timed out';
           console.error('[TranscriptionStream]', msg);
+          span.setStatus({ code: SpanStatusCode.ERROR, message: msg });
+          span.end();
           ws.close();
           this.ws = null;
           reject(new Error(msg));
@@ -92,6 +101,7 @@ export class TranscriptionStream {
         clearTimeout(timer);
         this._isOpen = true;
         console.debug('[TranscriptionStream] WebSocket opened');
+        span.end();
         this._flushBufferedFrames();
         resolve();
       };
@@ -113,6 +123,8 @@ export class TranscriptionStream {
         console.error('[TranscriptionStream] WebSocket error:', event);
         this.#onError?.(event);
         if (!this._isOpen) {
+          span.setStatus({ code: SpanStatusCode.ERROR, message: 'WebSocket connection failed' });
+          span.end();
           this.ws = null;
           reject(new Error('WebSocket connection failed'));
         }

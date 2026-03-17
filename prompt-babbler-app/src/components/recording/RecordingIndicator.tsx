@@ -1,6 +1,7 @@
 interface RecordingIndicatorProps {
   isRecording: boolean;
   duration: number;
+  hasTranscription?: boolean;
 }
 
 function formatDuration(seconds: number): string {
@@ -12,11 +13,12 @@ function formatDuration(seconds: number): string {
 export function RecordingIndicator({
   isRecording,
   duration,
+  hasTranscription,
 }: RecordingIndicatorProps) {
   if (!isRecording) {
     return (
       <span className="text-sm text-muted-foreground">
-        Press to start recording
+        {hasTranscription ? 'Press to continue recording' : 'Press to start recording'}
       </span>
     );
   }

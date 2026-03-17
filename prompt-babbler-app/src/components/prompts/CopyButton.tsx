@@ -24,7 +24,6 @@ export function CopyButton({ text, disabled = false }: CopyButtonProps) {
 
   return (
     <Button
-      size="sm"
       variant="outline"
       disabled={disabled || !text}
       onClick={() => void handleCopy()}
