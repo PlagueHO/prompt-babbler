@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { LanguageSelector } from '@/components/settings/LanguageSelector';
+import { ThemeSelector } from '@/components/settings/ThemeSelector';
 import { Separator } from '@/components/ui/separator';
 import { useSettings } from '@/hooks/useSettings';
+import { useTheme } from '@/hooks/useTheme';
 import { CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +13,7 @@ import {
 
 export function SettingsPage() {
   const { isConnected, isLoading, error, refresh } = useSettings();
+  const { theme, setTheme } = useTheme();
   const [language, setLanguage] = useState(() => getSpeechLanguage());
 
   const handleLanguageChange = (value: string) => {
@@ -24,9 +27,16 @@ export function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          Speech settings and backend status.
+          Appearance, speech settings, and backend status.
         </p>
       </div>
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Appearance</h2>
+        <ThemeSelector value={theme} onChange={setTheme} />
+      </div>
+
+      <Separator />
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Backend Status</h2>

@@ -37,15 +37,15 @@
         "type": "http",
         "url": "https://mcp.ai.azure.com"
     },
-    "react-docs": {
+    "react/repo": {
       "url": "https://gitmcp.io/facebook/react",
       "type": "sse"
     },
-    "typescript-docs": {
+    "typescript/repo": {
       "url": "https://gitmcp.io/microsoft/TypeScript",
       "type": "sse"
     },
-    "nodejs-docs": {
+    "nodejs/repo": {
       "url": "https://gitmcp.io/nodejs/node",
       "type": "sse"
     },
@@ -65,7 +65,7 @@
         "run-test-mcp-server"
       ]
     },
-    "shadcnui-docs": {
+    "shadcnui/repo": {
       "url": "https://gitmcp.io/shadcn-ui/ui",
       "type": "sse"
     }

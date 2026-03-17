@@ -1,5 +1,6 @@
 const KEYS = {
   speechLang: 'prompt-babbler:settings:speechLang',
+  theme: 'prompt-babbler:settings:theme',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -23,4 +24,13 @@ export function getSpeechLanguage(): string {
 
 export function setSpeechLanguage(lang: string): void {
   write(KEYS.speechLang, lang);
+}
+
+// Theme mode
+export function getThemeMode(): string {
+  return read<string>(KEYS.theme, 'system');
+}
+
+export function setThemeMode(mode: string): void {
+  write(KEYS.theme, mode);
 }

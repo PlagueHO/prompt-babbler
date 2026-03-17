@@ -36,6 +36,8 @@ export interface StatusResponse {
 
 export type PromptFormat = 'text' | 'markdown';
 
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 export interface PromptOptions {
   promptFormat: PromptFormat;
   allowEmojis: boolean;
