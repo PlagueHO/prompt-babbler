@@ -249,6 +249,12 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
               '/babbleId'
             ]
           }
+          {
+            name: 'users'
+            paths: [
+              '/userId'
+            ]
+          }
         ]
       }
     ]

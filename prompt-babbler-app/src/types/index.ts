@@ -34,6 +34,20 @@ export interface StatusResponse {
   status: string;
 }
 
+export interface UserSettings {
+  theme: ThemeMode;
+  speechLanguage: string;
+}
+
+export interface UserProfile {
+  id: string;
+  displayName: string | null;
+  email: string | null;
+  settings: UserSettings;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type PromptFormat = 'text' | 'markdown';
 
 export type ThemeMode = 'light' | 'dark' | 'system';

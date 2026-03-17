@@ -128,7 +128,9 @@ public sealed class TranscriptionWebSocketControllerTests
 
     /// <summary>
     /// Minimal in-memory WebSocket for unit testing.
-    /// Receives one binary message (the audio data), then a close message.
+    /// Yields one binary frame (the audio data) on the first receive, then
+    /// returns a close message on every subsequent receive. Thread-safe so
+    /// pre-buffer and main reader tasks can call concurrently.
     /// Records text messages sent by the controller.
     /// </summary>
     private sealed class FakeWebSocket : WebSocket
@@ -165,15 +167,15 @@ public sealed class TranscriptionWebSocketControllerTests
         public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer,
             CancellationToken cancellationToken)
         {
-            _receiveCall++;
-            if (_receiveCall == 1)
+            var call = Interlocked.Increment(ref _receiveCall);
+            if (call == 1)
             {
                 _audioData.CopyTo(buffer.Array!, buffer.Offset);
                 return Task.FromResult(new WebSocketReceiveResult(
                     _audioData.Length, WebSocketMessageType.Binary, true));
             }
 
-            // Second call: return close message — keep State as Open so the
+            // All subsequent calls: return close message — keep State as Open so the
             // writer task can still send pending events before the graceful close.
             return Task.FromResult(new WebSocketReceiveResult(
                 0, WebSocketMessageType.Close, true, WebSocketCloseStatus.NormalClosure, "done"));

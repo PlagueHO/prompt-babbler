@@ -54,6 +54,15 @@ public static class DependencyInjection
         });
         services.AddSingleton<IGeneratedPromptService, GeneratedPromptService>();
 
+        // User profile repository and service backed by Cosmos DB.
+        services.AddSingleton<IUserRepository>(sp =>
+        {
+            var cosmosClient = sp.GetRequiredService<CosmosClient>();
+            var logger = sp.GetRequiredService<ILogger<CosmosUserRepository>>();
+            return new CosmosUserRepository(cosmosClient, logger);
+        });
+        services.AddSingleton<IUserService, UserService>();
+
         return services;
     }
 }

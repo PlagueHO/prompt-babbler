@@ -52,8 +52,12 @@ export function RecordPage() {
   });
 
   const handleStart = useCallback(async () => {
-    await connect(language || undefined);
-    await startRecording();
+    // Start audio capture and WebSocket connection in parallel.
+    // Frames arriving before the WebSocket is open are buffered by TranscriptionStream.
+    await Promise.all([
+      connect(language || undefined),
+      startRecording(),
+    ]);
   }, [connect, language, startRecording]);
 
   const handleStop = useCallback(() => {

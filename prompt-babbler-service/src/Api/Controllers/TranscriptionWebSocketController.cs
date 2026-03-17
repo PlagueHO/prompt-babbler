@@ -43,6 +43,50 @@ public sealed class TranscriptionWebSocketController(
         using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
         logger.LogInformation("WebSocket accepted, starting transcription session");
 
+        // Start reading audio frames immediately while the transcription session
+        // is being created. This prevents the WebSocket kernel buffer from
+        // accumulating stale audio during the (potentially slow) backend startup
+        // (AAD token + STS exchange + Speech SDK connection).
+        var preBuffer = new List<byte[]>();
+        var preBufferReady = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var preBufferTask = Task.Run(async () =>
+        {
+            var buffer = new byte[8192];
+            try
+            {
+                while (webSocket.State == WebSocketState.Open)
+                {
+                    var result = await webSocket.ReceiveAsync(buffer, cancellationToken);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        logger.LogInformation("WebSocket client sent Close during pre-buffer phase");
+                        preBufferReady.TrySetResult(false);
+                        return;
+                    }
+
+                    if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
+                    {
+                        var frame = new byte[result.Count];
+                        Buffer.BlockCopy(buffer, 0, frame, 0, result.Count);
+                        preBuffer.Add(frame);
+                    }
+
+                    // Check if the session is ready
+                    if (preBufferReady.Task.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Session startup finished or request cancelled — either way, stop buffering
+            }
+        }, cancellationToken);
+
         TranscriptionSession session;
         try
         {
@@ -51,6 +95,7 @@ public sealed class TranscriptionWebSocketController(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to start transcription session");
+            preBufferReady.TrySetResult(false);
 
             if (webSocket.State == WebSocketState.Open)
             {
@@ -64,7 +109,13 @@ public sealed class TranscriptionWebSocketController(
             return;
         }
 
-        logger.LogInformation("Transcription session started successfully");
+        // Signal the pre-buffer task to stop and wait for it
+        preBufferReady.TrySetResult(true);
+        await preBufferTask;
+
+        logger.LogInformation(
+            "Transcription session started successfully (pre-buffered {FrameCount} audio frames)",
+            preBuffer.Count);
         await using var _ = session;
 
         // Writer task: read transcription events from the channel and send them to the WebSocket client.
@@ -110,10 +161,22 @@ public sealed class TranscriptionWebSocketController(
         }, cancellationToken);
 
         // Reader loop: read binary audio frames from the WebSocket client and feed them to the session.
+        // First, flush any frames that were buffered during session startup.
         var buffer = new byte[8192];
         var frameCount = 0;
         try
         {
+            foreach (var frame in preBuffer)
+            {
+                frameCount++;
+                await session.WriteAudioAsync(new ReadOnlyMemory<byte>(frame), cancellationToken);
+            }
+
+            if (frameCount > 0)
+            {
+                logger.LogDebug("Flushed {Count} pre-buffered audio frames to session", frameCount);
+            }
+
             while (webSocket.State == WebSocketState.Open)
             {
                 var result = await webSocket.ReceiveAsync(buffer, cancellationToken);

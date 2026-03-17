@@ -27,9 +27,20 @@ export interface TranscriptionMessage {
 export type TranscriptionCallback = (msg: TranscriptionMessage) => void;
 export type ErrorCallback = (error: Event | string) => void;
 
+/** Connection timeout in milliseconds. */
+const OPEN_TIMEOUT_MS = 10_000;
+
+/**
+ * Maximum number of PCM frames to buffer while waiting for the WebSocket
+ * to open. At 16 kHz / 16-bit mono the worklet fires ~62.5 frames/sec
+ * (128 samples each), so 320 frames ≈ 5 seconds of audio ≈ 160 KB.
+ */
+const MAX_BUFFERED_FRAMES = 320;
+
 export class TranscriptionStream {
   private ws: WebSocket | null = null;
   private _isOpen = false;
+  private _pendingFrames: ArrayBuffer[] = [];
   #onMessage: TranscriptionCallback;
   #onError?: ErrorCallback;
 
@@ -45,8 +56,12 @@ export class TranscriptionStream {
     return this._isOpen;
   }
 
-  open(language?: string, accessToken?: string): void {
-    if (this.ws) return;
+  /**
+   * Open the WebSocket connection. Returns a Promise that resolves once the
+   * connection is established, or rejects on error / timeout.
+   */
+  open(language?: string, accessToken?: string): Promise<void> {
+    if (this.ws) return Promise.resolve();
 
     const base = getWsBaseUrl();
     const params = new URLSearchParams();
@@ -58,39 +73,76 @@ export class TranscriptionStream {
 
     console.debug('[TranscriptionStream] Opening WebSocket to', url);
 
-    this.ws = new WebSocket(url);
-    this.ws.binaryType = 'arraybuffer';
+    return new Promise<void>((resolve, reject) => {
+      const ws = new WebSocket(url);
+      ws.binaryType = 'arraybuffer';
+      this.ws = ws;
 
-    this.ws.onopen = () => {
-      this._isOpen = true;
-      console.debug('[TranscriptionStream] WebSocket opened');
-    };
-
-    this.ws.onmessage = (event: MessageEvent) => {
-      if (typeof event.data === 'string') {
-        try {
-          const msg = JSON.parse(event.data) as TranscriptionMessage;
-          console.debug('[TranscriptionStream] Received:', msg.isFinal ? 'FINAL' : 'partial', JSON.stringify(msg.text).slice(0, 80));
-          this.#onMessage(msg);
-        } catch {
-          console.warn('[TranscriptionStream] Malformed JSON:', event.data);
+      const timer = setTimeout(() => {
+        if (!this._isOpen) {
+          const msg = 'WebSocket connection timed out';
+          console.error('[TranscriptionStream]', msg);
+          ws.close();
+          this.ws = null;
+          reject(new Error(msg));
         }
-      }
-    };
+      }, OPEN_TIMEOUT_MS);
 
-    this.ws.onerror = (event) => {
-      console.error('[TranscriptionStream] WebSocket error:', event);
-      this.#onError?.(event);
-    };
+      ws.onopen = () => {
+        clearTimeout(timer);
+        this._isOpen = true;
+        console.debug('[TranscriptionStream] WebSocket opened');
+        this._flushBufferedFrames();
+        resolve();
+      };
 
-    this.ws.onclose = (event) => {
-      console.debug('[TranscriptionStream] WebSocket closed — code:', event.code, 'reason:', event.reason);
-      this._isOpen = false;
-      this.ws = null;
-    };
+      ws.onmessage = (event: MessageEvent) => {
+        if (typeof event.data === 'string') {
+          try {
+            const msg = JSON.parse(event.data) as TranscriptionMessage;
+            console.debug('[TranscriptionStream] Received:', msg.isFinal ? 'FINAL' : 'partial', JSON.stringify(msg.text).slice(0, 80));
+            this.#onMessage(msg);
+          } catch {
+            console.warn('[TranscriptionStream] Malformed JSON:', event.data);
+          }
+        }
+      };
+
+      ws.onerror = (event) => {
+        clearTimeout(timer);
+        console.error('[TranscriptionStream] WebSocket error:', event);
+        this.#onError?.(event);
+        if (!this._isOpen) {
+          this.ws = null;
+          reject(new Error('WebSocket connection failed'));
+        }
+      };
+
+      ws.onclose = (event) => {
+        clearTimeout(timer);
+        console.debug('[TranscriptionStream] WebSocket closed — code:', event.code, 'reason:', event.reason);
+        this._isOpen = false;
+        this.ws = null;
+        if (!this._isOpen) {
+          // If we never opened, reject the promise
+          reject(new Error(`WebSocket closed before open (code: ${event.code})`));
+        }
+      };
+    });
   }
 
   private _framesSent = 0;
+
+  /** Flush any PCM frames that were buffered while the WebSocket was connecting. */
+  private _flushBufferedFrames(): void {
+    if (this._pendingFrames.length === 0) return;
+    console.debug(`[TranscriptionStream] Flushing ${this._pendingFrames.length} buffered audio frames`);
+    for (const frame of this._pendingFrames) {
+      this.ws!.send(frame);
+      this._framesSent++;
+    }
+    this._pendingFrames = [];
+  }
 
   /** Send raw PCM audio data (Int16 LE) as a binary WebSocket frame. */
   sendAudio(pcmBuffer: ArrayBuffer): void {
@@ -100,15 +152,19 @@ export class TranscriptionStream {
       if (this._framesSent === 1 || this._framesSent % 100 === 0) {
         console.debug(`[TranscriptionStream] Audio frames sent: ${this._framesSent}, last size: ${pcmBuffer.byteLength}B`);
       }
-    } else if (this._framesSent === 0) {
-      console.debug('[TranscriptionStream] sendAudio called but WebSocket not open (readyState:', this.ws?.readyState, ')');
+    } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+      // Buffer frames while the WebSocket handshake is in progress
+      if (this._pendingFrames.length < MAX_BUFFERED_FRAMES) {
+        this._pendingFrames.push(pcmBuffer);
+      }
     }
   }
 
   /** Gracefully close the WebSocket connection. */
   close(): void {
+    this._pendingFrames = [];
     if (this.ws) {
-      if (this.ws.readyState === WebSocket.OPEN) {
+      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
         this.ws.close(1000, 'done');
       }
       this.ws = null;

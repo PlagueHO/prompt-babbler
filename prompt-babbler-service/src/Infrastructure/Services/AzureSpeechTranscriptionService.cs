@@ -18,6 +18,12 @@ public sealed class AzureSpeechTranscriptionService(
 
     private static readonly HttpClient s_httpClient = new();
 
+    // STS tokens are valid for 10 minutes; cache with a 1-minute safety margin.
+    private static readonly TimeSpan StsTokenSafetyMargin = TimeSpan.FromMinutes(1);
+    private readonly SemaphoreSlim _stsTokenLock = new(1, 1);
+    private string? _cachedStsToken;
+    private DateTimeOffset _stsTokenExpiry = DateTimeOffset.MinValue;
+
     public async Task<TranscriptionSession> StartSessionAsync(
         string? language = null,
         CancellationToken cancellationToken = default)
@@ -120,7 +126,7 @@ public sealed class AzureSpeechTranscriptionService(
         logger.LogInformation(
             "Starting continuous recognition (region={Region}, language={Language})",
             region, sessionConfig.SpeechRecognitionLanguage);
-        _ = recognizer.StartContinuousRecognitionAsync();
+        await recognizer.StartContinuousRecognitionAsync();
 
         var session = new TranscriptionSession(
             results: channel.Reader,
@@ -185,10 +191,48 @@ public sealed class AzureSpeechTranscriptionService(
 
         // Exchange the AAD token for a short-lived Cognitive Services token via the STS endpoint.
         // The Speech SDK's FromAuthorizationToken does not accept raw AAD bearer tokens.
-        var speechToken = await ExchangeForSpeechTokenAsync(accessToken.Token, cancellationToken);
+        // STS tokens are valid for 10 minutes — reuse a cached token when possible.
+        var speechToken = await GetOrRefreshStsTokenAsync(accessToken.Token, cancellationToken);
 
         var speechConfig = SpeechConfig.FromAuthorizationToken(speechToken, region);
         return speechConfig;
+    }
+
+    /// <summary>
+    /// Returns a cached STS token if still valid, otherwise exchanges the AAD token for a new one.
+    /// Thread-safe via <see cref="_stsTokenLock"/>.
+    /// </summary>
+    private async Task<string> GetOrRefreshStsTokenAsync(string aadToken, CancellationToken cancellationToken)
+    {
+        // Fast path: token is still valid (no lock needed for the read — worst case we refresh slightly early).
+        if (_cachedStsToken is not null && DateTimeOffset.UtcNow < _stsTokenExpiry)
+        {
+            logger.LogDebug("Reusing cached STS token (expires {Expiry})", _stsTokenExpiry);
+            return _cachedStsToken;
+        }
+
+        await _stsTokenLock.WaitAsync(cancellationToken);
+        try
+        {
+            // Double-check after acquiring the lock.
+            if (_cachedStsToken is not null && DateTimeOffset.UtcNow < _stsTokenExpiry)
+            {
+                return _cachedStsToken;
+            }
+
+            var token = await ExchangeForSpeechTokenAsync(aadToken, cancellationToken);
+
+            // STS tokens are valid for 10 minutes; subtract a safety margin.
+            _cachedStsToken = token;
+            _stsTokenExpiry = DateTimeOffset.UtcNow.AddMinutes(10) - StsTokenSafetyMargin;
+
+            logger.LogDebug("Cached new STS token (expires {Expiry})", _stsTokenExpiry);
+            return token;
+        }
+        finally
+        {
+            _stsTokenLock.Release();
+        }
     }
 
     /// <summary>

@@ -65,7 +65,7 @@ export function useTranscription() {
 
     const stream = new TranscriptionStream(handleMessage, handleError);
     streamRef.current = stream;
-      await stream.open(sessionStateRef.current.language, newToken);
+    await stream.open(sessionStateRef.current.language, newToken);
     tokenRefreshTimerRef.current = setTimeout(
       () => void reconnectRef.current?.(),
       TOKEN_REFRESH_MS,

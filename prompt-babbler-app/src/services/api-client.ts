@@ -4,6 +4,7 @@ import type {
   PagedResponse,
   PromptTemplate,
   StatusResponse,
+  UserProfile,
 } from '@/types';
 
 // Injected by Vite from Aspire service discovery env vars at build/dev time
@@ -215,4 +216,20 @@ export async function deleteGeneratedPrompt(
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`API error ${res.status}: ${text}`);
   }
+}
+
+// User Profile APIs
+
+export async function getUserProfile(accessToken?: string): Promise<UserProfile> {
+  return fetchJson<UserProfile>('/api/user', undefined, accessToken);
+}
+
+export async function updateUserSettings(
+  settings: { theme: string; speechLanguage: string },
+  accessToken?: string,
+): Promise<UserProfile> {
+  return fetchJson<UserProfile>('/api/user/settings', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  }, accessToken);
 }
