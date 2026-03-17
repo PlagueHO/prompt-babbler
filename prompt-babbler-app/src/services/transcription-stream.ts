@@ -56,38 +56,52 @@ export class TranscriptionStream {
     const queryString = params.toString();
     const url = `${base}/api/transcribe/stream${queryString ? `?${queryString}` : ''}`;
 
+    console.debug('[TranscriptionStream] Opening WebSocket to', url);
+
     this.ws = new WebSocket(url);
     this.ws.binaryType = 'arraybuffer';
 
     this.ws.onopen = () => {
       this._isOpen = true;
+      console.debug('[TranscriptionStream] WebSocket opened');
     };
 
     this.ws.onmessage = (event: MessageEvent) => {
       if (typeof event.data === 'string') {
         try {
           const msg = JSON.parse(event.data) as TranscriptionMessage;
+          console.debug('[TranscriptionStream] Received:', msg.isFinal ? 'FINAL' : 'partial', JSON.stringify(msg.text).slice(0, 80));
           this.#onMessage(msg);
         } catch {
-          // Ignore malformed JSON
+          console.warn('[TranscriptionStream] Malformed JSON:', event.data);
         }
       }
     };
 
     this.ws.onerror = (event) => {
+      console.error('[TranscriptionStream] WebSocket error:', event);
       this.#onError?.(event);
     };
 
-    this.ws.onclose = () => {
+    this.ws.onclose = (event) => {
+      console.debug('[TranscriptionStream] WebSocket closed — code:', event.code, 'reason:', event.reason);
       this._isOpen = false;
       this.ws = null;
     };
   }
 
+  private _framesSent = 0;
+
   /** Send raw PCM audio data (Int16 LE) as a binary WebSocket frame. */
   sendAudio(pcmBuffer: ArrayBuffer): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(pcmBuffer);
+      this._framesSent++;
+      if (this._framesSent === 1 || this._framesSent % 100 === 0) {
+        console.debug(`[TranscriptionStream] Audio frames sent: ${this._framesSent}, last size: ${pcmBuffer.byteLength}B`);
+      }
+    } else if (this._framesSent === 0) {
+      console.debug('[TranscriptionStream] sendAudio called but WebSocket not open (readyState:', this.ws?.readyState, ')');
     }
   }
 

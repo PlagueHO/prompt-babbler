@@ -38,20 +38,53 @@ public sealed class TranscriptionWebSocketController(
             return;
         }
 
+        logger.LogInformation("WebSocket transcription request received (language={Language})", language ?? "(default)");
+
         using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        await using var session = await transcriptionService.StartSessionAsync(language, cancellationToken);
+        logger.LogInformation("WebSocket accepted, starting transcription session");
+
+        TranscriptionSession session;
+        try
+        {
+            session = await transcriptionService.StartSessionAsync(language, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to start transcription session");
+
+            if (webSocket.State == WebSocketState.Open)
+            {
+                var errorJson = JsonSerializer.Serialize(new { error = "Failed to start transcription session." }, JsonOptions);
+                var errorBytes = Encoding.UTF8.GetBytes(errorJson);
+                await webSocket.SendAsync(errorBytes, WebSocketMessageType.Text, true, CancellationToken.None);
+                await webSocket.CloseAsync(
+                    WebSocketCloseStatus.InternalServerError, "Transcription session failed", CancellationToken.None);
+            }
+
+            return;
+        }
+
+        logger.LogInformation("Transcription session started successfully");
+        await using var _ = session;
 
         // Writer task: read transcription events from the channel and send them to the WebSocket client.
         var writerTask = Task.Run(async () =>
         {
+            var eventCount = 0;
             try
             {
                 await foreach (var evt in session.Results.ReadAllAsync(cancellationToken))
                 {
                     if (webSocket.State != WebSocketState.Open)
                     {
+                        logger.LogWarning("WebSocket no longer open, stopping writer (sent {Count} events)", eventCount);
                         break;
                     }
+
+                    eventCount++;
+                    logger.LogDebug(
+                        "Sending transcription event #{Count}: isFinal={IsFinal}, text=\"{Text}\"",
+                        eventCount, evt.IsFinal, evt.Text.Length > 60 ? evt.Text[..60] + "…" : evt.Text);
 
                     var json = JsonSerializer.Serialize(new TranscriptionMessage
                     {
@@ -63,19 +96,22 @@ public sealed class TranscriptionWebSocketController(
                     await webSocket.SendAsync(
                         bytes, WebSocketMessageType.Text, true, cancellationToken);
                 }
+
+                logger.LogInformation("Transcription writer finished — sent {Count} events total", eventCount);
             }
             catch (OperationCanceledException)
             {
-                // Client disconnected — expected.
+                logger.LogInformation("Transcription writer cancelled (sent {Count} events)", eventCount);
             }
             catch (WebSocketException ex)
             {
-                logger.LogWarning(ex, "WebSocket send error during transcription");
+                logger.LogWarning(ex, "WebSocket send error during transcription (after {Count} events)", eventCount);
             }
         }, cancellationToken);
 
         // Reader loop: read binary audio frames from the WebSocket client and feed them to the session.
         var buffer = new byte[8192];
+        var frameCount = 0;
         try
         {
             while (webSocket.State == WebSocketState.Open)
@@ -84,11 +120,20 @@ public sealed class TranscriptionWebSocketController(
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
+                    logger.LogInformation("WebSocket client sent Close after {FrameCount} audio frames", frameCount);
                     break;
                 }
 
                 if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
                 {
+                    frameCount++;
+                    if (frameCount == 1 || frameCount % 100 == 0)
+                    {
+                        logger.LogDebug(
+                            "Received audio frame #{Count}, size={Size}B",
+                            frameCount, result.Count);
+                    }
+
                     await session.WriteAudioAsync(
                         new ReadOnlyMemory<byte>(buffer, 0, result.Count), cancellationToken);
                 }
@@ -96,12 +141,14 @@ public sealed class TranscriptionWebSocketController(
         }
         catch (OperationCanceledException)
         {
-            // Expected on client disconnect.
+            logger.LogInformation("WebSocket reader cancelled after {FrameCount} audio frames", frameCount);
         }
         catch (WebSocketException ex)
         {
-            logger.LogWarning(ex, "WebSocket receive error during transcription");
+            logger.LogWarning(ex, "WebSocket receive error during transcription (after {FrameCount} frames)", frameCount);
         }
+
+        logger.LogInformation("Completing transcription session (received {FrameCount} audio frames)", frameCount);
 
         // Signal end-of-audio and wait for the writer to finish.
         await session.CompleteAsync();

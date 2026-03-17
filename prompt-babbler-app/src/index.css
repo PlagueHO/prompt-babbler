@@ -40,6 +40,24 @@
   --radius: 0.5rem;
 }
 
+@keyframes fade-in-word {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes blink-cursor {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

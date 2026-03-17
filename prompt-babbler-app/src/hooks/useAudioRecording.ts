@@ -17,6 +17,7 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
   const onPcmFrameRef = useRef(onPcmFrame);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
 
     const audioContext = new AudioContext({ sampleRate: 16000 });
     audioContextRef.current = audioContext;
+    console.info('[AudioRecording] AudioContext created — actual sampleRate:', audioContext.sampleRate);
 
     await audioContext.audioWorklet.addModule('/pcm-processor.js');
     const source = audioContext.createMediaStreamSource(stream);
@@ -47,7 +49,16 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
     };
 
     source.connect(workletNode);
-    workletNode.connect(audioContext.destination);
+    // Do NOT connect workletNode to destination — it causes echo/feedback.
+    // The worklet only needs to process audio, not play it back.
+    // workletNode.connect(audioContext.destination);
+
+    // Create an AnalyserNode for waveform visualization.
+    // Connect source → analyser (parallel to the worklet path).
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    analyserRef.current = analyser;
 
     setIsRecording(true);
     setDuration(0);
@@ -61,6 +72,7 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    analyserRef.current = null;
     if (audioContextRef.current) {
       void audioContextRef.current.close();
       audioContextRef.current = null;
@@ -85,5 +97,5 @@ export function useAudioRecording(options: UseAudioRecordingOptions = {}) {
     };
   }, []);
 
-  return { isRecording, duration, start, stop };
+  return { isRecording, duration, start, stop, analyserRef };
 }

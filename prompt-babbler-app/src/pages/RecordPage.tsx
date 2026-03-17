@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { RecordButton } from '@/components/recording/RecordButton';
 import { RecordingIndicator } from '@/components/recording/RecordingIndicator';
 import { TranscriptPreview } from '@/components/recording/TranscriptPreview';
+import { WaveformVisualizer } from '@/components/recording/WaveformVisualizer';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,9 +18,8 @@ import { useTranscription } from '@/hooks/useTranscription';
 import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { getSpeechLanguage } from '@/services/local-storage';
-import type { Babble } from '@/types';
 import { AuthGuard } from '@/components/layout/AuthGuard';
-import { Save, ChevronDown, Sparkles } from 'lucide-react';
+import { Save, ChevronDown, Sparkles, Loader2, Trash2 } from 'lucide-react';
 
 export function RecordPage() {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export function RecordPage() {
     reset,
   } = useTranscription();
   const [title, setTitle] = useState('');
-  const [babbleId] = useState(() => crypto.randomUUID());
+  const [isSaving, setIsSaving] = useState(false);
 
   const language = getSpeechLanguage();
 
@@ -47,7 +47,7 @@ export function RecordPage() {
     [sendAudio],
   );
 
-  const { isRecording, duration, start: startRecording, stop: stopRecording } = useAudioRecording({
+  const { isRecording, duration, start: startRecording, stop: stopRecording, analyserRef } = useAudioRecording({
     onPcmFrame,
   });
 
@@ -81,46 +81,56 @@ export function RecordPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const saveBabble = useCallback(() => {
-    const now = new Date().toISOString();
-    const babble: Babble = {
-      id: babbleId,
+  const saveBabble = useCallback(async () => {
+    const babble = await createBabble({
       title: title.trim() || `Babble ${new Date().toLocaleDateString()}`,
       text: transcribedText,
-      createdAt: now,
-      updatedAt: now,
-      lastGeneratedPrompt: null,
-    };
-    createBabble(babble);
+    });
     return babble;
-  }, [babbleId, title, transcribedText, createBabble]);
+  }, [title, transcribedText, createBabble]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!transcribedText.trim()) {
       toast.error('Nothing to save. Record something first.');
       return;
     }
-    const babble = saveBabble();
-    toast.success('Babble saved!');
-    void navigate(`/babble/${babble.id}`);
+    try {
+      setIsSaving(true);
+      const babble = await saveBabble();
+      toast.success('Babble saved!');
+      void navigate(`/babble/${babble.id}`);
+    } catch {
+      toast.error('Failed to save babble');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSaveAndGenerate = (templateId: string) => {
+  const handleSaveAndGenerate = async (templateId: string) => {
     if (!transcribedText.trim()) {
       toast.error('Nothing to save. Record something first.');
       return;
     }
-    const babble = saveBabble();
-    toast.success('Babble saved!');
-    void navigate(`/babble/${babble.id}?autoGenerate=${encodeURIComponent(templateId)}`);
+    try {
+      setIsSaving(true);
+      const babble = await saveBabble();
+      toast.success('Babble saved!');
+      void navigate(`/babble/${babble.id}?autoGenerate=${encodeURIComponent(templateId)}`);
+    } catch {
+      toast.error('Failed to save babble');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const transcriptionDone = !isRecording && !isConnected;
 
-  // Display text: final text + partial result
-  const displayText = partialText
-    ? transcribedText ? `${transcribedText} ${partialText}` : partialText
-    : transcribedText;
+  const handleClear = useCallback(() => {
+    if (window.confirm('Clear the entire transcript? This cannot be undone.')) {
+      reset();
+      setTitle('');
+    }
+  }, [reset]);
 
   return (
     <AuthGuard message="Sign in with your organizational account to record babbles.">
@@ -148,13 +158,16 @@ export function RecordPage() {
           <RecordingIndicator
             isRecording={isRecording}
             duration={duration}
-            onStart={handleStart}
-            onStop={handleStop}
+          />
+          <WaveformVisualizer
+            analyserRef={analyserRef}
+            isRecording={isRecording}
           />
         </div>
 
         <TranscriptPreview
-          text={displayText}
+          finalText={transcribedText}
+          partialText={partialText}
           isTranscribing={isConnected}
         />
 
@@ -164,10 +177,14 @@ export function RecordPage() {
 
         <div className="flex gap-2">
           <Button
-            onClick={handleSave}
-            disabled={!transcribedText.trim() || !transcriptionDone}
+            onClick={() => void handleSave()}
+            disabled={!transcribedText.trim() || !transcriptionDone || isSaving}
           >
-            <Save className="size-4" />
+            {isSaving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
             Save Babble
           </Button>
 
@@ -176,7 +193,7 @@ export function RecordPage() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="secondary"
-                  disabled={!transcribedText.trim() || !transcriptionDone}
+                  disabled={!transcribedText.trim() || !transcriptionDone || isSaving}
                 >
                   <Sparkles className="size-4" />
                   Save &amp; Generate Prompt
@@ -187,7 +204,7 @@ export function RecordPage() {
                 {templates.map((t) => (
                   <DropdownMenuItem
                     key={t.id}
-                    onClick={() => handleSaveAndGenerate(t.id)}
+                    onClick={() => void handleSaveAndGenerate(t.id)}
                   >
                     {t.name}
                   </DropdownMenuItem>
@@ -195,6 +212,15 @@ export function RecordPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          <Button
+            variant="ghost"
+            onClick={handleClear}
+            disabled={!transcribedText.trim() || !transcriptionDone}
+          >
+            <Trash2 className="size-4" />
+            Clear
+          </Button>
         </div>
       </div>
     </div>

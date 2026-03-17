@@ -39,7 +39,11 @@ builder.AddAzureOpenAIClient("ai-foundry", configureClientBuilder: clientBuilder
     if (!string.IsNullOrEmpty(tenantId))
     {
         clientBuilder.WithCredential(new DefaultAzureCredential(
-            new DefaultAzureCredentialOptions { TenantId = tenantId }));
+            new DefaultAzureCredentialOptions
+            {
+                TenantId = tenantId,
+                ExcludeManagedIdentityCredential = true,
+            }));
     }
 });
 
@@ -55,7 +59,11 @@ builder.Services.AddSingleton<IChatClient>(sp =>
 builder.Services.AddSingleton<TokenCredential>(sp =>
 {
     return !string.IsNullOrEmpty(tenantId)
-        ? new DefaultAzureCredential(new DefaultAzureCredentialOptions { TenantId = tenantId })
+        ? new DefaultAzureCredential(new DefaultAzureCredentialOptions
+        {
+            TenantId = tenantId,
+            ExcludeManagedIdentityCredential = true,
+        })
         : new DefaultAzureCredential();
 });
 

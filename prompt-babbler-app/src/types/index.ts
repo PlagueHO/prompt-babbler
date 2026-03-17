@@ -4,7 +4,6 @@ export interface Babble {
   text: string;
   createdAt: string;
   updatedAt: string;
-  lastGeneratedPrompt: GeneratedPrompt | null;
 }
 
 export interface PromptTemplate {
@@ -24,6 +23,11 @@ export interface GeneratedPrompt {
   templateName: string;
   promptText: string;
   generatedAt: string;
+}
+
+export interface PagedResponse<T> {
+  items: T[];
+  continuationToken: string | null;
 }
 
 export interface StatusResponse {

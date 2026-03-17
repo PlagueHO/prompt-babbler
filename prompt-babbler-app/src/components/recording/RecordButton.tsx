@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic } from 'lucide-react';
+import { Mic, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -39,11 +39,11 @@ export function RecordButton({
         disabled={disabled}
         onClick={() => void handleClick()}
         className={cn(
-          'size-10 rounded-full transition-all',
+          'size-12 rounded-full transition-all',
           isRecording && 'animate-pulse'
         )}
       >
-        <Mic className="size-5" />
+        {isRecording ? <Square className="size-5" /> : <Mic className="size-5" />}
       </Button>
       {permissionDenied && (
         <p className="text-sm text-destructive">

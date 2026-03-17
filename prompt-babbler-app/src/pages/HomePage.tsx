@@ -1,13 +1,12 @@
 import { Link } from 'react-router';
-import { Plus, Mic } from 'lucide-react';
+import { Plus, Mic, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BabbleList } from '@/components/babbles/BabbleList';
-import { StorageWarning } from '@/components/layout/StorageWarning';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useBabbles } from '@/hooks/useBabbles';
 
 export function HomePage() {
-  const { babbles } = useBabbles();
+  const { babbles, loading, error, hasMore, loadMore, refresh } = useBabbles();
 
   return (
     <AuthGuard message="Sign in with your organizational account to record babbles and generate prompts.">
@@ -29,9 +28,23 @@ export function HomePage() {
         </div>
       </div>
 
-      <StorageWarning />
+      {error && (
+        <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+          <AlertCircle className="size-4 shrink-0 text-destructive" />
+          <span className="flex-1 text-sm text-destructive">{error}</span>
+          <Button size="sm" variant="outline" onClick={() => void refresh()}>
+            <RefreshCw className="size-4" />
+            Retry
+          </Button>
+        </div>
+      )}
 
-      {babbles.length === 0 ? (
+      {loading && babbles.length === 0 ? (
+        <div className="flex flex-col items-center gap-4 py-12 text-center">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Loading babbles…</p>
+        </div>
+      ) : !error && babbles.length === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed p-12 text-center">
           <div className="rounded-full bg-muted p-4">
             <Mic className="size-8 text-muted-foreground" />
@@ -50,7 +63,12 @@ export function HomePage() {
           </Button>
         </div>
       ) : (
-        <BabbleList babbles={babbles} />
+        <BabbleList
+          babbles={babbles}
+          hasMore={hasMore}
+          loading={loading}
+          onLoadMore={loadMore}
+        />
       )}
       </div>
     </AuthGuard>

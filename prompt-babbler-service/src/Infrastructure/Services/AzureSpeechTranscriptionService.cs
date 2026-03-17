@@ -29,6 +29,15 @@ public sealed class AzureSpeechTranscriptionService(
             ? language
             : "en-US";
 
+        // For continuous recognition of a live stream, increase the end-of-speech
+        // silence timeout so the service doesn't prematurely end the turn when
+        // the speaker pauses. Default is ~2-5 seconds which is too short for
+        // live dictation. Set to 30 seconds of silence before ending a phrase.
+        sessionConfig.SetProperty(
+            PropertyId.Speech_SegmentationSilenceTimeoutMs, "3000");
+        sessionConfig.SetProperty(
+            PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, "30000");
+
         var audioFormat = AudioStreamFormat.GetWaveFormatPCM(
             samplesPerSecond: 16000, bitsPerSample: 16, channels: 1);
         var pushStream = AudioInputStream.CreatePushStream(audioFormat);
@@ -45,6 +54,7 @@ public sealed class AzureSpeechTranscriptionService(
         {
             if (!string.IsNullOrEmpty(e.Result.Text))
             {
+                logger.LogDebug("Speech recognizing (partial): \"{Text}\"", e.Result.Text.Length > 60 ? e.Result.Text[..60] + "…" : e.Result.Text);
                 channel.Writer.TryWrite(new TranscriptionEvent
                 {
                     Text = e.Result.Text,
@@ -60,6 +70,7 @@ public sealed class AzureSpeechTranscriptionService(
             if (e.Result.Reason == ResultReason.RecognizedSpeech &&
                 !string.IsNullOrEmpty(e.Result.Text))
             {
+                logger.LogInformation("Speech recognized (final): \"{Text}\"", e.Result.Text.Length > 80 ? e.Result.Text[..80] + "…" : e.Result.Text);
                 channel.Writer.TryWrite(new TranscriptionEvent
                 {
                     Text = e.Result.Text,
@@ -67,6 +78,10 @@ public sealed class AzureSpeechTranscriptionService(
                     Offset = TimeSpan.FromTicks(e.Result.OffsetInTicks),
                     Duration = e.Result.Duration,
                 });
+            }
+            else if (e.Result.Reason == ResultReason.NoMatch)
+            {
+                logger.LogDebug("Speech recognition NoMatch — no speech detected in audio segment");
             }
         };
 
@@ -82,26 +97,38 @@ public sealed class AzureSpeechTranscriptionService(
             }
             else
             {
+                logger.LogInformation("Speech recognition canceled (reason={Reason})", e.Reason);
                 channel.Writer.TryComplete();
             }
 
             sessionStopped.TrySetResult(0);
         };
 
+        recognizer.SessionStarted += (_, _) =>
+        {
+            logger.LogInformation("Speech SDK session started");
+        };
+
         recognizer.SessionStopped += (_, _) =>
         {
+            logger.LogInformation("Speech SDK session stopped");
             channel.Writer.TryComplete();
             sessionStopped.TrySetResult(0);
         };
 
         // Fire-and-forget continuous recognition start; we await in the session lifecycle.
+        logger.LogInformation(
+            "Starting continuous recognition (region={Region}, language={Language})",
+            region, sessionConfig.SpeechRecognitionLanguage);
         _ = recognizer.StartContinuousRecognitionAsync();
 
         var session = new TranscriptionSession(
             results: channel.Reader,
             writeAudio: (pcmData, _) =>
             {
+                var size = pcmData.Length;
                 pushStream.Write(pcmData.ToArray());
+                logger.LogTrace("PushStream.Write: {Size}B", size);
                 return Task.CompletedTask;
             },
             complete: async () =>

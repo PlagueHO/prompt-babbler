@@ -17,7 +17,7 @@ export function usePromptGeneration() {
       templateId: string,
       promptFormat: PromptFormat = 'text',
       allowEmojis: boolean = false
-    ): Promise<{ name: string | null }> => {
+    ): Promise<{ name: string | null; text: string }> => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -28,6 +28,7 @@ export function usePromptGeneration() {
       setError(null);
 
       let localName: string | null = null;
+      let localText = '';
 
       try {
         const token = await getAuthToken();
@@ -60,6 +61,7 @@ export function usePromptGeneration() {
                   localName = parsed.name;
                 }
                 if (parsed.text) {
+                  localText += parsed.text;
                   setGeneratedText((prev) => prev + parsed.text);
                 }
               } catch {
@@ -69,7 +71,7 @@ export function usePromptGeneration() {
           }
         }
       } catch (err) {
-        if (controller.signal.aborted) return { name: localName };
+        if (controller.signal.aborted) return { name: localName, text: localText };
         setError(
           err instanceof Error ? err.message : 'Prompt generation failed'
         );
@@ -79,7 +81,7 @@ export function usePromptGeneration() {
         }
       }
 
-      return { name: localName };
+      return { name: localName, text: localText };
     },
     [getAuthToken]
   );

@@ -1,4 +1,7 @@
 import type {
+  Babble,
+  GeneratedPrompt,
+  PagedResponse,
   PromptTemplate,
   StatusResponse,
 } from '@/types';
@@ -108,4 +111,108 @@ export async function generatePrompt(
     throw new Error('No response body for streaming');
   }
   return res.body;
+}
+
+// Babble APIs
+
+export async function getBabbles(
+  continuationToken?: string | null,
+  pageSize = 20,
+  accessToken?: string,
+): Promise<PagedResponse<Babble>> {
+  const params = new URLSearchParams();
+  if (continuationToken) params.set('continuationToken', continuationToken);
+  params.set('pageSize', String(pageSize));
+  const query = params.toString();
+  return fetchJson<PagedResponse<Babble>>(`/api/babbles?${query}`, undefined, accessToken);
+}
+
+export async function getBabble(id: string, accessToken?: string): Promise<Babble> {
+  return fetchJson<Babble>(`/api/babbles/${encodeURIComponent(id)}`, undefined, accessToken);
+}
+
+export async function createBabble(
+  request: { title: string; text: string },
+  accessToken?: string,
+): Promise<Babble> {
+  return fetchJson<Babble>('/api/babbles', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  }, accessToken);
+}
+
+export async function updateBabble(
+  id: string,
+  request: { title: string; text: string },
+  accessToken?: string,
+): Promise<Babble> {
+  return fetchJson<Babble>(`/api/babbles/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  }, accessToken);
+}
+
+export async function deleteBabble(id: string, accessToken?: string): Promise<void> {
+  const base = getApiBaseUrl();
+  const res = await fetch(`${base}/api/babbles/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+}
+
+// Generated Prompt APIs
+
+export async function getGeneratedPrompts(
+  babbleId: string,
+  continuationToken?: string | null,
+  pageSize = 20,
+  accessToken?: string,
+): Promise<PagedResponse<GeneratedPrompt>> {
+  const params = new URLSearchParams();
+  if (continuationToken) params.set('continuationToken', continuationToken);
+  params.set('pageSize', String(pageSize));
+  const query = params.toString();
+  return fetchJson<PagedResponse<GeneratedPrompt>>(
+    `/api/babbles/${encodeURIComponent(babbleId)}/prompts?${query}`,
+    undefined,
+    accessToken,
+  );
+}
+
+export async function createGeneratedPrompt(
+  babbleId: string,
+  request: { templateId: string; templateName: string; promptText: string },
+  accessToken?: string,
+): Promise<GeneratedPrompt> {
+  return fetchJson<GeneratedPrompt>(
+    `/api/babbles/${encodeURIComponent(babbleId)}/prompts`,
+    {
+      method: 'POST',
+      body: JSON.stringify(request),
+    },
+    accessToken,
+  );
+}
+
+export async function deleteGeneratedPrompt(
+  babbleId: string,
+  id: string,
+  accessToken?: string,
+): Promise<void> {
+  const base = getApiBaseUrl();
+  const res = await fetch(
+    `${base}/api/babbles/${encodeURIComponent(babbleId)}/prompts/${encodeURIComponent(id)}`,
+    {
+      method: 'DELETE',
+      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+    },
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
 }

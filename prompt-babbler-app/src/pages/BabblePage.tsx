@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router';
 import { toast } from 'sonner';
-import { Edit, Trash2, Mic } from 'lucide-react';
+import { Edit, Trash2, Mic, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BabbleEditor } from '@/components/babbles/BabbleEditor';
@@ -9,28 +9,56 @@ import { DeleteBabbleDialog } from '@/components/babbles/DeleteBabbleDialog';
 import { PromptGenerator } from '@/components/prompts/PromptGenerator';
 import { PromptDisplay } from '@/components/prompts/PromptDisplay';
 import { CopyButton } from '@/components/prompts/CopyButton';
+import { PromptHistoryList } from '@/components/prompts/PromptHistoryList';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { usePromptGeneration } from '@/hooks/usePromptGeneration';
-import { getBabble } from '@/services/local-storage';
-import type { Babble } from '@/types';
+import { useGeneratedPrompts } from '@/hooks/useGeneratedPrompts';
+import type { Babble, GeneratedPrompt } from '@/types';
 import type { PromptGenerateOptions } from '@/components/prompts/PromptGenerator';
 
 export function BabblePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { updateBabble, deleteBabble } = useBabbles();
+  const { updateBabble, deleteBabble, getBabble } = useBabbles();
   const { templates } = useTemplates();
   const { generatedText, isGenerating, error: genError, generate } = usePromptGeneration();
+  const {
+    prompts,
+    loading: promptsLoading,
+    error: promptsError,
+    hasMore: promptsHasMore,
+    loadMore: promptsLoadMore,
+    createPrompt,
+    deletePrompt,
+  } = useGeneratedPrompts(id);
 
-  const [babble, setBabble] = useState<Babble | undefined>(() =>
-    id ? getBabble(id) : undefined
-  );
+  const [babble, setBabble] = useState<Babble | undefined>(undefined);
+  const [babbleLoading, setBabbleLoading] = useState(!!id);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const autoGenerateTriggered = useRef(false);
+  // Track the template used for the current generation so we can auto-save.
+  const currentGenRef = useRef<{ templateId: string; templateName: string } | null>(null);
+
+  // Fetch babble from API on mount.
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    getBabble(id).then((result) => {
+      if (!cancelled) {
+        setBabble(result ?? undefined);
+        setBabbleLoading(false);
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setBabbleLoading(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [id, getBabble]);
 
   // Auto-generate prompt when navigated with ?autoGenerate=templateId
   useEffect(() => {
@@ -39,57 +67,128 @@ export function BabblePage() {
       autoGenerateTriggered.current = true;
       const template = templates.find((t) => t.id === autoGenerateId);
       if (template) {
-        void generate(babble.text, template.id).then((result) => {
+        currentGenRef.current = { templateId: template.id, templateName: template.name };
+        void generate(babble.text, template.id).then(async (result) => {
           if (result?.name && babble.title.startsWith('Babble ')) {
-            const updated = { ...babble, title: result.name, updatedAt: new Date().toISOString() };
-            updateBabble(updated);
+            const updated = await updateBabble(babble.id, { title: result.name, text: babble.text });
             setBabble(updated);
           }
+          // Auto-save the generated prompt.
+          if (result?.text) {
+            try {
+              await createPrompt({
+                templateId: template.id,
+                templateName: template.name,
+                promptText: result.text,
+              });
+            } catch {
+              // Non-critical — user can still copy the text.
+            }
+          }
+          currentGenRef.current = null;
         });
       }
       // Clear the query parameter so refresh doesn't re-trigger
       setSearchParams({}, { replace: true });
     }
-  }, [searchParams, setSearchParams, babble, templates, generate, updateBabble]);
+  }, [searchParams, setSearchParams, babble, templates, generate, updateBabble, createPrompt]);
 
   const handleSave = useCallback(
-    (updated: Babble) => {
-      updateBabble(updated);
-      setBabble(updated);
-      setIsEditing(false);
-      toast.success('Babble updated');
+    async (updated: Babble) => {
+      try {
+        const result = await updateBabble(updated.id, { title: updated.title, text: updated.text });
+        setBabble(result);
+        setIsEditing(false);
+        toast.success('Babble updated');
+      } catch {
+        toast.error('Failed to update babble');
+      }
     },
-    [updateBabble]
+    [updateBabble],
   );
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     if (babble) {
-      deleteBabble(babble.id);
-      toast.success('Babble deleted');
-      void navigate('/');
+      try {
+        await deleteBabble(babble.id);
+        toast.success('Babble deleted');
+        void navigate('/');
+      } catch {
+        toast.error('Failed to delete babble');
+      }
     }
   }, [babble, deleteBabble, navigate]);
 
   const handleGenerate = useCallback(
     (options: PromptGenerateOptions) => {
       if (babble) {
+        currentGenRef.current = { templateId: options.template.id, templateName: options.template.name };
         void generate(
           babble.text,
           options.template.id,
           options.promptFormat,
-          options.allowEmojis
-        ).then((result) => {
+          options.allowEmojis,
+        ).then(async (result) => {
           if (result?.name && babble.title.startsWith('Babble ')) {
-            const updated = { ...babble, title: result.name, updatedAt: new Date().toISOString() };
-            updateBabble(updated);
+            const updated = await updateBabble(babble.id, { title: result.name, text: babble.text });
             setBabble(updated);
           }
+          // Auto-save the generated prompt.
+          if (result?.text) {
+            try {
+              await createPrompt({
+                templateId: options.template.id,
+                templateName: options.template.name,
+                promptText: result.text,
+              });
+            } catch {
+              // Non-critical
+            }
+          }
+          currentGenRef.current = null;
         });
       }
     },
-    [babble, generate, updateBabble]
+    [babble, generate, updateBabble, createPrompt],
   );
 
+  const handleRegenerate = useCallback(
+    (prompt: GeneratedPrompt) => {
+      if (!babble) return;
+      const template = templates.find((t) => t.id === prompt.templateId);
+      if (template) {
+        handleGenerate({
+          template,
+          promptFormat: 'text',
+          allowEmojis: false,
+        });
+      } else {
+        toast.error('Template no longer available');
+      }
+    },
+    [babble, templates, handleGenerate],
+  );
+
+  const handleDeletePrompt = useCallback(
+    async (promptId: string) => {
+      try {
+        await deletePrompt(promptId);
+        toast.success('Prompt deleted');
+      } catch {
+        toast.error('Failed to delete prompt');
+      }
+    },
+    [deletePrompt],
+  );
+
+  if (babbleLoading) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-12 text-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Loading babble…</p>
+      </div>
+    );
+  }
 
   if (!babble) {
     return (
@@ -141,7 +240,7 @@ export function BabblePage() {
       {isEditing ? (
         <BabbleEditor
           babble={babble}
-          onSave={handleSave}
+          onSave={(updated) => void handleSave(updated)}
           onCancel={() => setIsEditing(false)}
         />
       ) : (
@@ -171,11 +270,23 @@ export function BabblePage() {
         )}
       </div>
 
+      <Separator />
+
+      <PromptHistoryList
+        prompts={prompts}
+        loading={promptsLoading}
+        error={promptsError}
+        hasMore={promptsHasMore}
+        onLoadMore={promptsLoadMore}
+        onDelete={(promptId) => void handleDeletePrompt(promptId)}
+        onRegenerate={handleRegenerate}
+      />
+
       <DeleteBabbleDialog
         babble={babble}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleDelete}
+        onConfirm={() => void handleDelete()}
       />
     </div>
     </AuthGuard>

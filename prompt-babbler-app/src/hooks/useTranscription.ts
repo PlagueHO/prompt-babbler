@@ -29,6 +29,7 @@ export function useTranscription() {
     isActive: false,
   });
   const reconnectRef = useRef<() => Promise<void>>(undefined);
+  const partialTextRef = useRef('');
   const acquireAccessToken = useAuthToken();
 
   const handleMessage = useCallback((msg: TranscriptionMessage) => {
@@ -37,8 +38,10 @@ export function useTranscription() {
         prev ? `${prev} ${msg.text}` : msg.text,
       );
       setPartialText('');
+      partialTextRef.current = '';
     } else {
       setPartialText(msg.text);
+      partialTextRef.current = msg.text;
     }
   }, []);
 
@@ -62,9 +65,7 @@ export function useTranscription() {
 
     const stream = new TranscriptionStream(handleMessage, handleError);
     streamRef.current = stream;
-    stream.open(sessionStateRef.current.language, newToken);
-    setIsConnected(true);
-
+      await stream.open(sessionStateRef.current.language, newToken);
     tokenRefreshTimerRef.current = setTimeout(
       () => void reconnectRef.current?.(),
       TOKEN_REFRESH_MS,
@@ -90,7 +91,7 @@ export function useTranscription() {
 
       const stream = new TranscriptionStream(handleMessage, handleError);
       streamRef.current = stream;
-      stream.open(language, token);
+      await stream.open(language, token);
       setIsConnected(true);
 
       tokenRefreshTimerRef.current = setTimeout(
@@ -110,7 +111,17 @@ export function useTranscription() {
     streamRef.current?.close();
     streamRef.current = null;
     setIsConnected(false);
+
+    // Promote any pending partial text to final before clearing
+    if (partialTextRef.current) {
+      const pending = partialTextRef.current;
+      setTranscribedText((prev) =>
+        prev ? `${prev} ${pending}` : pending,
+      );
+      partialTextRef.current = '';
+    }
     setPartialText('');
+
     if (tokenRefreshTimerRef.current) {
       clearTimeout(tokenRefreshTimerRef.current);
       tokenRefreshTimerRef.current = null;
