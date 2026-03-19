@@ -193,7 +193,6 @@ describe('TranscriptionStream', () => {
     it('clears pending frames and closes the WebSocket', async () => {
       const stream = new TranscriptionStream(vi.fn());
       const openPromise = stream.open();
-      const ws = MockWebSocket.instances[0];
 
       // Buffer a frame
       stream.sendAudio(new ArrayBuffer(64));

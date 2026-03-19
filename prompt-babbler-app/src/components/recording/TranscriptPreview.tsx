@@ -17,12 +17,13 @@ export function TranscriptPreview({
   const [fadeKey, setFadeKey] = useState(0);
 
   // Track when new final words arrive so we can fade them in
-  useEffect(() => {
-    if (finalText.length > prevFinalLength) {
-      setFadeKey((k) => k + 1);
-    }
+  // Uses React's "adjusting state during rendering" pattern
+  if (finalText.length > prevFinalLength) {
+    setFadeKey((k) => k + 1);
     setPrevFinalLength(finalText.length);
-  }, [finalText, prevFinalLength]);
+  } else if (finalText.length !== prevFinalLength) {
+    setPrevFinalLength(finalText.length);
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
