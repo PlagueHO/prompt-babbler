@@ -23,7 +23,7 @@ var chatDeployment = foundry.AddDeployment(
 // See: https://aspire.dev/integrations/cloud/azure/azure-cosmos-db/azure-cosmos-db-host/
 #pragma warning disable ASPIRECOSMOSDB001
 var cosmos = builder.AddAzureCosmosDB("cosmos")
-    .RunAsPreviewEmulator(emulator => 
+    .RunAsPreviewEmulator(emulator =>
     {
         emulator.WithDataExplorer();
     });
