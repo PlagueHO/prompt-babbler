@@ -19,22 +19,37 @@ function addAuthHeader(headers: HeadersInit = {}, accessToken?: string): Headers
   return { ...headers, Authorization: `Bearer ${accessToken}` };
 }
 
+function isHtmlResponse(res: Response): boolean {
+  const ct = res.headers.get('content-type') ?? '';
+  return ct.includes('text/html');
+}
+
+const BACKEND_UNAVAILABLE_MSG = 'Backend service is not available. Please start the backend and try again.';
+
 async function fetchJson<T>(
   path: string,
   init?: RequestInit,
   accessToken?: string,
 ): Promise<T> {
   const base = getApiBaseUrl();
-  const res = await fetch(`${base}${path}`, {
-    ...init,
-    headers: addAuthHeader(
-      {
-        'Content-Type': 'application/json',
-        ...init?.headers,
-      },
-      accessToken,
-    ),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${base}${path}`, {
+      ...init,
+      headers: addAuthHeader(
+        {
+          'Content-Type': 'application/json',
+          ...init?.headers,
+        },
+        accessToken,
+      ),
+    });
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`API error ${res.status}: ${text}`);
@@ -81,10 +96,18 @@ export async function updateTemplate(
 
 export async function deleteTemplate(id: string, accessToken?: string): Promise<void> {
   const base = getApiBaseUrl();
-  const res = await fetch(`${base}/api/templates/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-    headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/templates/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+    });
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`API error ${res.status}: ${text}`);
@@ -99,11 +122,19 @@ export async function generatePrompt(
   accessToken?: string,
 ): Promise<ReadableStream<Uint8Array>> {
   const base = getApiBaseUrl();
-  const res = await fetch(`${base}/api/prompts/generate`, {
-    method: 'POST',
-    headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
-    body: JSON.stringify({ babbleText, templateId, promptFormat, allowEmojis }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/prompts/generate`, {
+      method: 'POST',
+      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+      body: JSON.stringify({ babbleText, templateId, promptFormat, allowEmojis }),
+    });
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`Generation error ${res.status}: ${text}`);
@@ -155,10 +186,18 @@ export async function updateBabble(
 
 export async function deleteBabble(id: string, accessToken?: string): Promise<void> {
   const base = getApiBaseUrl();
-  const res = await fetch(`${base}/api/babbles/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-    headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/babbles/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+    });
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`API error ${res.status}: ${text}`);
@@ -205,13 +244,21 @@ export async function deleteGeneratedPrompt(
   accessToken?: string,
 ): Promise<void> {
   const base = getApiBaseUrl();
-  const res = await fetch(
-    `${base}/api/babbles/${encodeURIComponent(babbleId)}/prompts/${encodeURIComponent(id)}`,
-    {
-      method: 'DELETE',
-      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
-    },
-  );
+  let res: Response;
+  try {
+    res = await fetch(
+      `${base}/api/babbles/${encodeURIComponent(babbleId)}/prompts/${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+      },
+    );
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`API error ${res.status}: ${text}`);
