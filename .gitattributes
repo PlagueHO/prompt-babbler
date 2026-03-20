@@ -4,3 +4,8 @@
 # Optionally, set specific rules for certain file types
 *.sh text eol=lf
 *.ps1 text eol=crlf
+# Squad: union merge for append-only team state files
+.squad/decisions.md merge=union
+.squad/agents/*/history.md merge=union
+.squad/log/** merge=union
+.squad/orchestration-log/** merge=union
