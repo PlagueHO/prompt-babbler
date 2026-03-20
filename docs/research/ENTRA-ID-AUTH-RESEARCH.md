@@ -126,7 +126,7 @@ Microsoft Graph Bicep extension (`Microsoft.Graph/applications@v1.0`) **does sup
 **Difficulty: LOW | Risk: LOW**
 
 - Update `docs/API.md` (currently says auth not implemented).
-- Update `docs/QUICKSTART.md` with app registration setup steps.
+- Update `docs/QUICKSTART-AZURE.md` with app registration setup steps.
 - Update `README.md`.
 
 ## Difficulty & Risk Summary
@@ -206,7 +206,7 @@ Microsoft Graph Bicep extension (`Microsoft.Graph/applications@v1.0`) **does sup
 
 - For **developer local deployments**: The developer's own Entra identity needs `Application.ReadWrite.All` (delegated). This is a privileged permission — requires an Entra admin to consent.
 - For **CI/CD pipelines**: The service principal used by `azd` needs `Application.ReadWrite.OwnedBy` (application permission, least privilege) or `Application.ReadWrite.All`. Must be granted admin consent.
-- **Pre-deployment step**: Add to `QUICKSTART.md` — run `az ad app permission add` and `az ad app permission admin-consent` before first `azd up`.
+- **Pre-deployment step**: Add to `QUICKSTART-AZURE.md` — run `az ad app permission add` and `az ad app permission admin-consent` before first `azd up`.
 
 **Risk mitigation:** Document this as a one-time setup step. If the deploying identity lacks permissions, the Bicep deployment will fail with a clear 403 error on the `Microsoft.Graph/applications` resource.
 
@@ -1506,7 +1506,7 @@ dotnet test --solution PromptBabbler.slnx --filter "TestCategory=Integration&Cla
 
 1. **Graph Bicep extension is in preview** (`0.2.0-preview`) — potential for breaking changes before GA. Mitigate by pinning the extension version in `bicepconfig.json`.
 1. **`preAuthorizedApplications` cross-reference in single Bicep deployment** — needs practical validation. If it fails, fall back to a post-deployment `az ad app update` command.
-1. **Deployment permissions** — one-time admin setup required for `Application.ReadWrite.All`. Document clearly in QUICKSTART.md.
+1. **Deployment permissions** — one-time admin setup required for `Application.ReadWrite.All`. Document clearly in QUICKSTART-AZURE.md.
 1. **SPA redirect URI determinism** — Static Web App hostname may include a random hash suffix. If deterministic naming proves unreliable, use the post-deployment script fallback documented in R6.
 1. **`azd` hooks platform specificity** — PostProvision hooks require platform-specific scripts (PowerShell on Windows, Bash on CI/Linux). Document both variants.
 

@@ -1,7 +1,7 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Azure AI Foundry resource — Aspire provisions in your Azure subscription.
-// Azure:SubscriptionId and Azure:TenantId are REQUIRED — set via dotnet user-secrets (see QUICKSTART.md).
+// Azure:SubscriptionId and Azure:TenantId are REQUIRED — set via dotnet user-secrets (see QUICKSTART-LOCAL.md).
 // Azure:Location and Azure:CredentialSource are set in launchSettings.json.
 // See: https://aspire.dev/integrations/cloud/azure/azure-ai-foundry/azure-ai-foundry-host/
 var foundry = builder.AddAzureAIFoundry("ai-foundry");

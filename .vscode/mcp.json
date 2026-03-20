@@ -17,6 +17,14 @@
       "url": "https://api.githubcopilot.com/mcp/",
       "type": "http"
     },
+    "github-agentic-workflows": {
+      "command": "gh",
+      "args": [
+        "aw",
+        "mcp-server"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
     "microsoft-aspire": {
       "type": "stdio",
       "command": "aspire",

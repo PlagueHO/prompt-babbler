@@ -6,113 +6,44 @@
 [![Azure][azure-shield]][azure-url]
 [![IaC][iac-shield]][iac-url]
 
-A speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Azure AI Foundry, and generates structured prompts for target systems like GitHub Copilot.
-
-## Architecture
-
-![Architecture](docs/images/architecture.svg)
-
-### API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/babbles` | GET, POST | List/create babbles |
-| `/api/babbles/{id}` | GET, PUT, DELETE | Read/update/delete babble |
-| `/api/babbles/{id}/prompts` | GET, POST | List/create generated prompts |
-| `/api/babbles/{id}/prompts/{promptId}` | GET, DELETE | Read/delete generated prompt |
-| `/api/templates` | GET, POST | List/create prompt templates |
-| `/api/templates/{id}` | GET, PUT, DELETE | Read/update/delete template |
-| `/api/user` | GET | Get user profile |
-| `/api/user/settings` | PUT | Update user settings |
-| `/api/babbles/{id}/generate` | POST | Generate prompt (SSE streaming) |
-| `/api/babbles/{id}/generate-title` | POST | Generate babble title |
-| `/api/transcribe/stream` | WebSocket | Real-time speech transcription |
-| `/api/status` | GET | Health check |
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 19, TypeScript 5.9, Vite 8, Shadcn/UI, TailwindCSS v4, React Router 7 |
-| Backend | .NET 10, ASP.NET Core, Clean Architecture |
-| AI Services | Azure AI Foundry (LLM chat + Speech STT via Aspire integration) |
-| Data | Azure Cosmos DB (serverless, NoSQL) |
-| Orchestration | .NET Aspire (Azure AI Foundry + Cosmos DB provisioning) |
-| Networking | Azure VNET with private endpoints for Cosmos DB and AI Foundry |
-| Infrastructure | Azure Bicep with Azure Verified Modules (AVM) |
-| Auth | Microsoft Entra ID (MSAL + JWT), single-user anonymous mode |
-| Testing | Vitest + Testing Library (frontend), MSTest SDK + FluentAssertions + NSubstitute (backend) |
-| CI/CD | GitHub Actions (12 workflows: CI, CD, IaC validation, linting, E2E) |
+💬 Prompt Babbler is a speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Azure AI Foundry, and generates structured prompts for target systems like GitHub Copilot. It can run locally with a Cosmos DB emulator or be deployed to Azure with a fully managed Cosmos DB instance and Azure AI Foundry resources. The app is built with a React frontend and a .NET backend, orchestrated by .NET Aspire for seamless local and cloud development.
 
 ## Quick Start
 
-See [docs/QUICKSTART.md](docs/QUICKSTART.md) for detailed setup instructions.
+For full setup instructions including prerequisite installation, see [docs/QUICKSTART-LOCAL.md](docs/QUICKSTART-LOCAL.md). To deploy to Azure, see [docs/QUICKSTART-AZURE.md](docs/QUICKSTART-AZURE.md).
 
-### Prerequisites
+### Prerequisites to run Locally
 
-- .NET SDK 10.0.100+
-- Node.js 22.x LTS
-- pnpm 10.x
-- Azure CLI (for Azure authentication)
-- Azure subscription with Contributor access
+- An [Azure Account](https://azure.microsoft.com/free/) with **Contributor** access to allow Aspire to provision Azure AI Foundry resources for the app
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) to orchestrate the components
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) to authenticate and allow Aspire to provision Azure AI Foundry resources in your subscription
+- Install [Docker Desktop](https://docs.docker.com/desktop/) to host Cosmos DB emulator (Windows/Linux/Mac)
 
 ### Run Locally
 
 ```bash
-# Install dependencies
-cd prompt-babbler-app && pnpm install && cd ..
-cd prompt-babbler-service && dotnet restore PromptBabbler.slnx && cd ..
+git clone https://github.com/PlagueHO/prompt-babbler.git
+cd prompt-babbler
 
-# Configure Azure credentials (one-time setup — see docs/QUICKSTART.md for details)
+# Sign in to Azure (one-time — Aspire provisions cloud AI resources)
 az login --tenant <your-tenant-id>
-cd prompt-babbler-service
-dotnet user-secrets set "Azure:SubscriptionId" "<your-subscription-id>" --project src/Orchestration/AppHost
-dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>" --project src/Orchestration/AppHost
 
-# Start via Aspire (starts both backend and frontend)
-cd prompt-babbler-service
-dotnet run --project src/Orchestration/AppHost/PromptBabbler.AppHost.csproj
+# Start everything via Aspire
+aspire run
 ```
 
-> **Note:** On first run, Aspire automatically provisions an Azure resource group
-> and Azure AI Foundry resources (chat + STT model deployments) in your subscription.
-> This takes several minutes. Subsequent runs reuse existing resources.
+Aspire handles all dependency installation, builds, and orchestration automatically. On first run it provisions Azure AI Foundry resources and starts a Cosmos DB emulator in Docker — this takes several minutes. Subsequent runs start quickly.
 
-### Run Tests
+## Documentation
 
-```bash
-# Backend — all tests
-cd prompt-babbler-service
-dotnet test --solution PromptBabbler.slnx
-
-# Backend — unit tests only
-dotnet test --solution PromptBabbler.slnx --filter "TestCategory=Unit"
-
-# Frontend
-cd prompt-babbler-app
-pnpm test
-```
-
-## Project Structure
-
-```text
-prompt-babbler/
-├── prompt-babbler-service/     # .NET backend (Clean Architecture)
-│   ├── src/Api/                # ASP.NET Core API controllers
-│   ├── src/Domain/             # Business models & interfaces
-│   ├── src/Infrastructure/     # Azure OpenAI SDK, file settings
-│   ├── src/Orchestration/      # Aspire AppHost + ServiceDefaults
-│   └── tests/                  # Unit + integration tests
-├── prompt-babbler-app/         # React frontend
-│   ├── src/components/         # UI components
-│   ├── src/hooks/              # Custom React hooks
-│   ├── src/services/           # API client, transcription stream
-│   ├── src/pages/              # Page components
-│   └── tests/                  # Vitest tests
-├── .github/workflows/          # CI/CD pipelines (12 workflows)
-├── specs/                      # Feature specifications
-└── infra/                      # Azure Bicep infrastructure (VNET, Cosmos DB, AI Foundry, RBAC)
-```
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | Tech stack, project structure, API endpoints, data model, infrastructure |
+| [Local Development](docs/QUICKSTART-LOCAL.md) | Run locally with .NET Aspire |
+| [Deploy to Azure](docs/QUICKSTART-AZURE.md) | Deploy to Azure with Azure Developer CLI |
+| [API Reference](docs/API.md) | Full API reference with request/response schemas |
+| [CI/CD Setup](docs/CICD.md) | GitHub Actions pipeline configuration |
+| [Infrastructure](infra/README.md) | Azure Bicep infrastructure details |
 
 ## License
 

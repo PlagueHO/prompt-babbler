@@ -1,0 +1,5 @@
+{
+    "appHost": {
+        "path": "prompt-babbler-service\\src\\Orchestration\\AppHost\\PromptBabbler.AppHost.csproj"
+    }
+}

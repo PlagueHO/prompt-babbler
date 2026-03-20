@@ -127,7 +127,7 @@ function AnonymousUserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled
-          title="Enable Entra ID SSO to sign in. See QUICKSTART.md for setup instructions."
+          title="Enable Entra ID SSO to sign in. See QUICKSTART-AZURE.md for setup instructions."
         >
           <LogIn className="size-4" />
           Sign in
