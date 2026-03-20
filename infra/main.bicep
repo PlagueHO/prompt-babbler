@@ -62,6 +62,11 @@ var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environment
 var containerAppName = '${abbrs.appContainerApps}${environmentName}-api'
 var staticWebAppName = '${abbrs.webStaticSites}${environmentName}'
 var cosmosDbAccountName = '${abbrs.cosmosDBAccounts}${resourceToken}'
+var vnetName = '${abbrs.networkVirtualNetworks}${environmentName}'
+var acaSubnetName = '${abbrs.networkVirtualNetworksSubnets}${environmentName}-aca'
+var privateEndpointSubnetName = '${abbrs.networkVirtualNetworksSubnets}${environmentName}-pe'
+var cosmosDbPrivateEndpointName = '${abbrs.networkPrivateEndpoints}${environmentName}-cosmosdb'
+var foundryPrivateEndpointName = '${abbrs.networkPrivateEndpoints}${environmentName}-foundry'
 
 // The application resources that are deployed into the application resource group
 module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
@@ -70,6 +75,95 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
     name: resourceGroupName
     location: location
     tags: tags
+  }
+}
+
+// --------- NETWORKING RESOURCES ---------
+// Virtual Network with subnets for Container Apps Environment and Private Endpoints
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.5' = {
+  name: 'virtual-network-deployment-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    rg
+  ]
+  params: {
+    name: vnetName
+    location: location
+    tags: tags
+    addressPrefixes: [
+      '10.0.0.0/16'
+    ]
+    subnets: [
+      {
+        name: acaSubnetName
+        addressPrefix: '10.0.0.0/23'
+        // NOTE: ACA Consumption environments DO NOT require subnet delegation to Microsoft.App/environments
+        // The delegation is only for Workload Profiles environments
+      }
+      {
+        name: privateEndpointSubnetName
+        addressPrefix: '10.0.2.0/24'
+        // Disable network policies to allow private endpoints
+        privateEndpointNetworkPolicies: 'Disabled'
+      }
+    ]
+  }
+}
+
+// Private DNS Zone for Cosmos DB
+module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+  name: 'cosmos-db-private-dns-zone-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    rg
+  ]
+  params: {
+    name: 'privatelink.documents.azure.com'
+    location: 'global'
+    tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
+  }
+}
+
+// Private DNS Zones for Azure AI Foundry / Cognitive Services
+module foundryPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+  name: 'foundry-private-dns-zone-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    rg
+  ]
+  params: {
+    name: 'privatelink.cognitiveservices.azure.com'
+    location: 'global'
+    tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
+  }
+}
+
+// Private DNS Zone for OpenAI endpoint access
+module openAiPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+  name: 'openai-private-dns-zone-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    rg
+  ]
+  params: {
+    name: 'privatelink.openai.azure.com'
+    location: 'global'
+    tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetwork.outputs.resourceId
+      }
+    ]
   }
 }
 
@@ -137,6 +231,23 @@ module foundryService './cognitive-services/accounts/main.bicep' = {
       systemAssigned: true
     }
     publicNetworkAccess: enablePublicNetworkAccess ? 'Enabled' : 'Disabled'
+    privateEndpoints: [
+      {
+        name: foundryPrivateEndpointName
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[1] // privateEndpointSubnet
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              privateDnsZoneResourceId: foundryPrivateDnsZone.outputs.resourceId
+            }
+            {
+              privateDnsZoneResourceId: openAiPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+        service: 'account'
+      }
+    ]
     sku: 'S0'
     deployments: modelDeployments
     defaultProject: defaultProjectName
@@ -209,6 +320,20 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
     networkRestrictions: {
       publicNetworkAccess: enablePublicNetworkAccess ? 'Enabled' : 'Disabled'
     }
+    privateEndpoints: [
+      {
+        name: cosmosDbPrivateEndpointName
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[1] // privateEndpointSubnet
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              privateDnsZoneResourceId: cosmosDbPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+        service: 'Sql'
+      }
+    ]
     diagnosticSettings: [
       {
         name: 'send-to-log-analytics'
@@ -274,6 +399,10 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.10.
     tags: tags
     logAnalyticsWorkspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
     zoneRedundant: false
+    // VNET integration - attach to the ACA subnet
+    infrastructureSubnetId: virtualNetwork.outputs.subnetResourceIds[0] // acaSubnet
+    // internal: false means the environment remains publicly accessible (external ingress)
+    internal: false
   }
 }
 
@@ -459,3 +588,9 @@ output COSMOS_DB_ENDPOINT string = cosmosDbAccount.outputs.endpoint
 output AZURE_AD_API_CLIENT_ID string = apiClientId
 output AZURE_AD_SPA_CLIENT_ID string = spaClientId
 output AZURE_AD_TENANT_ID string = tenant().tenantId
+
+// Networking
+output VNET_NAME string = virtualNetwork.outputs.name
+output VNET_RESOURCE_ID string = virtualNetwork.outputs.resourceId
+output ACA_SUBNET_RESOURCE_ID string = virtualNetwork.outputs.subnetResourceIds[0]
+output PRIVATE_ENDPOINT_SUBNET_RESOURCE_ID string = virtualNetwork.outputs.subnetResourceIds[1]

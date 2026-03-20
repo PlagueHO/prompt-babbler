@@ -87,6 +87,7 @@
     "networkPrivateLinkServices": "pl-",
     "networkPublicIPAddresses": "pip-",
     "networkPublicIPPrefixes": "ippre-",
+    "networkPrivateEndpoints": "pe-",
     "networkRouteFilters": "rf-",
     "networkRouteTables": "rt-",
     "networkRouteTablesRoutes": "udr-",

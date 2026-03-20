@@ -10,23 +10,23 @@ A speech-to-prompt web application that captures stream-of-consciousness speech,
 
 ## Architecture
 
-```text
-┌─────────────────────────┐     ┌──────────────────────────────────┐
-│   React Frontend        │     │    .NET Backend API              │
-│   (Vite + TS)           │────▶│    (ASP.NET Core)                │
-│                         │     │                                  │
-│  • Record speech        │     │  • POST /api/transcribe          │
-│  • Manage babbles       │     │  • POST /api/prompts/generate    │
-│  • Generate prompts     │     │  • GET/PUT /api/settings         │
-│  • Manage templates     │     │  • POST /api/settings/test       │
-│                         │     │                                  │
-│  localStorage:          │     │  Azure AI Foundry:               │
-│  babbles, templates     │     │  STT (gpt-4o-transcribe) + LLM   │
-└─────────────────────────┘     └──────────────────────────────────┘
-                  ▲                              │
-                  │         .NET Aspire          │
-                  └──────── (orchestration) ─────┘
-```
+![Architecture](docs/images/architecture.svg)
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/babbles` | GET, POST | List/create babbles |
+| `/api/babbles/{id}` | GET, PUT, DELETE | Read/update/delete babble |
+| `/api/babbles/{id}/prompts` | GET, POST | List/create generated prompts |
+| `/api/babbles/{id}/prompts/{promptId}` | GET, DELETE | Read/delete generated prompt |
+| `/api/templates` | GET, POST | List/create prompt templates |
+| `/api/templates/{id}` | GET, PUT, DELETE | Read/update/delete template |
+| `/api/user` | GET | Get user profile |
+| `/api/user/settings` | PUT | Update user settings |
+| `/api/prompts/generate` | POST | Generate prompt (SSE streaming) |
+| `/api/transcribe/stream` | WebSocket | Real-time speech transcription |
+| `/api/status` | GET | Health check |
 
 ## Tech Stack
 
@@ -34,9 +34,12 @@ A speech-to-prompt web application that captures stream-of-consciousness speech,
 |-------|------------|
 | Frontend | React 19, TypeScript 5.9, Vite 8, Shadcn/UI, TailwindCSS v4, React Router 7 |
 | Backend | .NET 10, ASP.NET Core, Clean Architecture |
-| AI Services | Azure AI Foundry (LLM chat + speech-to-text via Aspire integration) |
-| Orchestration | .NET Aspire (Azure AI Foundry provisioning via Aspire hosting integration) |
-| Infrastructure | Azure Bicep (Cognitive Services, RBAC) |
+| AI Services | Azure AI Foundry (LLM chat + Speech STT via Aspire integration) |
+| Data | Azure Cosmos DB (serverless, NoSQL) |
+| Orchestration | .NET Aspire (Azure AI Foundry + Cosmos DB provisioning) |
+| Networking | Azure VNET with private endpoints for Cosmos DB and AI Foundry |
+| Infrastructure | Azure Bicep with Azure Verified Modules (AVM) |
+| Auth | Microsoft Entra ID (MSAL + JWT), single-user anonymous mode |
 | Testing | Vitest + Testing Library (frontend), MSTest SDK + FluentAssertions + NSubstitute (backend) |
 | CI/CD | GitHub Actions (12 workflows: CI, CD, IaC validation, linting, E2E) |
 
@@ -102,12 +105,12 @@ prompt-babbler/
 ├── prompt-babbler-app/         # React frontend
 │   ├── src/components/         # UI components
 │   ├── src/hooks/              # Custom React hooks
-│   ├── src/services/           # API client, localStorage
+│   ├── src/services/           # API client, transcription stream
 │   ├── src/pages/              # Page components
 │   └── tests/                  # Vitest tests
 ├── .github/workflows/          # CI/CD pipelines (12 workflows)
 ├── specs/                      # Feature specifications
-└── infra/                      # Azure Bicep infrastructure (Cognitive Services, RBAC)
+└── infra/                      # Azure Bicep infrastructure (VNET, Cosmos DB, AI Foundry, RBAC)
 ```
 
 ## License

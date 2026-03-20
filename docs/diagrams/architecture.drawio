@@ -1,0 +1,121 @@
+<mxfile host="65bd71144e">
+    <diagram id="prompt-babbler-architecture" name="System Architecture">
+        <mxGraphModel dx="931" dy="599" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="&lt;font style=&quot;font-size: 22px;&quot;&gt;&lt;b&gt;Prompt Babbler — System Architecture&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="10" width="500" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="browser" value="&lt;b&gt;User Browser&lt;/b&gt;&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;React 19 SPA&lt;br&gt;TypeScript 5.9 &amp;bull; Vite 8&lt;br&gt;shadcn/ui &amp;bull; TailwindCSS v4&lt;br&gt;React Router 7&lt;br&gt;&lt;br&gt;&lt;i&gt;Azure Static Web App&lt;br&gt;(production)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=10;verticalAlign=top;align=center;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="60" width="260" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="entra" value="&lt;b&gt;Microsoft Entra ID&lt;/b&gt;&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;MSAL Authentication&lt;br&gt;JWT Bearer Tokens&lt;br&gt;&lt;i&gt;access_as_user&lt;/i&gt; scope" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=10;verticalAlign=top;align=center;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="550" y="60" width="370" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="rg" value="&lt;b&gt;Azure Resource Group&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#0078D4;strokeWidth=2;dashed=1;dashPattern=5 5;verticalAlign=top;align=left;spacingLeft=10;fontSize=13;fontColor=#0078D4;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="270" width="1270" height="440" as="geometry"/>
+                </mxCell>
+                <mxCell id="vnet" value="&lt;b&gt;Virtual Network&lt;/b&gt; (10.0.0.0/16)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;strokeWidth=2;dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontSize=12;fontColor=#2E7D32;arcSize=5;opacity=50;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="310" width="880" height="380" as="geometry"/>
+                </mxCell>
+                <mxCell id="aca-subnet" value="&lt;b&gt;ACA Subnet&lt;/b&gt; (10.0.0.0/23)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FF9800;strokeWidth=1;dashed=1;dashPattern=4 4;verticalAlign=top;align=left;spacingLeft=8;fontSize=11;fontColor=#E65100;arcSize=5;opacity=60;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="350" width="440" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="aca-env" value="&lt;b&gt;Container Apps Environment&lt;/b&gt;&lt;br&gt;&lt;i&gt;(Consumption plan)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#7B1FA2;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=8;fontSize=11;fontColor=#7B1FA2;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="95" y="385" width="410" height="270" as="geometry"/>
+                </mxCell>
+                <mxCell id="api" value="&lt;b style=&quot;font-size:13px;&quot;&gt;prompt-babbler-api&lt;/b&gt;&lt;br&gt;&lt;i&gt;ASP.NET Core &amp;bull; .NET 10&lt;/i&gt;&lt;br&gt;Clean Architecture&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;b&gt;REST APIs:&lt;/b&gt;&lt;br&gt;/api/babbles (CRUD)&lt;br&gt;/api/babbles/{id}/prompts (CRUD)&lt;br&gt;/api/templates (CRUD)&lt;br&gt;/api/user &amp;bull; /api/user/settings&lt;br&gt;/api/status (health)&lt;br&gt;&lt;b&gt;Streaming:&lt;/b&gt;&lt;br&gt;SSE: /api/prompts/generate&lt;br&gt;WebSocket: /api/transcribe/stream" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;arcSize=8;verticalAlign=top;align=left;spacingLeft=10;spacingRight=10;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="110" y="430" width="380" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="pe-subnet" value="&lt;b&gt;Private Endpoint Subnet&lt;/b&gt; (10.0.2.0/24)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#9C27B0;strokeWidth=1;dashed=1;dashPattern=4 4;verticalAlign=top;align=left;spacingLeft=8;fontSize=11;fontColor=#6A1B9A;arcSize=5;opacity=60;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="350" width="360" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="cosmos-pe" value="&lt;b&gt;Cosmos DB&lt;br&gt;Private Endpoint&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C62828;arcSize=10;verticalAlign=middle;align=center;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="415" width="300" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="foundry-pe" value="&lt;b&gt;Azure AI Foundry&lt;br&gt;Private Endpoint&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;arcSize=10;verticalAlign=middle;align=center;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="507.5" width="300" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="dns-zones" value="&lt;b&gt;Private DNS Zones&lt;/b&gt;&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;privatelink.documents.azure.com&lt;br&gt;privatelink.cognitiveservices.azure.com&lt;br&gt;privatelink.openai.azure.com" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingLeft=8;fillColor=#F5F5F5;strokeColor=#999999;fontSize=10;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="580" width="300" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="cosmos" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Azure Cosmos DB&lt;/b&gt;&lt;br&gt;&lt;i&gt;(Serverless, NoSQL)&lt;/i&gt;&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;Database: &lt;b&gt;prompt-babbler&lt;/b&gt;&lt;br&gt;• babbles &lt;i&gt;(pk: /userId)&lt;/i&gt;&lt;br&gt;• generated-prompts &lt;i&gt;(pk: /babbleId)&lt;/i&gt;&lt;br&gt;• prompt-templates &lt;i&gt;(pk: /userId)&lt;/i&gt;&lt;br&gt;• users &lt;i&gt;(pk: /userId)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C62828;arcSize=8;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="310" width="290" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="foundry" value="&lt;b style=&quot;font-size:13px;&quot;&gt;Azure AI Foundry&lt;/b&gt;&lt;br&gt;&lt;i&gt;(Cognitive Services)&lt;/i&gt;&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;• &lt;b&gt;Chat Model&lt;/b&gt; — LLM&lt;br&gt;&amp;nbsp;&amp;nbsp;Prompt generation (streaming)&lt;br&gt;• &lt;b&gt;Speech Service&lt;/b&gt; — STT&lt;br&gt;&amp;nbsp;&amp;nbsp;Real-time transcription" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;arcSize=8;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="510" width="290" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="aspire" value="&lt;b&gt;Microsoft Aspire&lt;/b&gt; — Local Development Orchestration&lt;br&gt;&lt;i&gt;Provisions Azure resources, runs API + Vite dev server, injects config via environment variables&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#999999;arcSize=10;verticalAlign=middle;align=center;fontSize=12;fontStyle=0;" parent="1" vertex="1">
+                    <mxGeometry x="375" y="750" width="600" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-browser-api" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0078D4;strokeWidth=2;fontSize=11;fontColor=#0078D4;" parent="1" source="browser" target="api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-browser-api-label" value="&lt;b&gt;HTTPS / WSS&lt;/b&gt;&lt;br&gt;(public ingress)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#0078D4;" parent="e-browser-api" vertex="1" connectable="0">
+                    <mxGeometry x="-0.2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-browser-entra" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#D6B656;strokeWidth=1;dashed=1;dashPattern=5 5;fontSize=11;" parent="1" source="browser" target="entra" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-browser-entra-label" value="&lt;i&gt;MSAL Auth&lt;/i&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#D6B656;" parent="e-browser-entra" vertex="1" connectable="0">
+                    <mxGeometry x="-0.1" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-api-entra" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#D6B656;strokeWidth=1;dashed=1;dashPattern=5 5;fontSize=11;" parent="1" target="entra" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="470" y="430"/>
+                            <mxPoint x="470" y="190"/>
+                        </Array>
+                        <mxPoint x="470" y="430" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-api-entra-label" value="&lt;i&gt;JWT Validation&lt;/i&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#D6B656;" parent="e-api-entra" vertex="1" connectable="0">
+                    <mxGeometry x="-0.3" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-api-cosmospe" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#C62828;strokeWidth=1;fontSize=11;" parent="1" source="api" target="cosmos-pe" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-api-foundtype" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1565C0;strokeWidth=1;fontSize=11;" parent="1" source="api" target="foundry-pe" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-cosmospe-cosmos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#C62828;strokeWidth=2;fontSize=11;" parent="1" source="cosmos-pe" target="cosmos" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-cosmospe-cosmos-label" value="&lt;b&gt;Private Link&lt;/b&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#C62828;" parent="e-cosmospe-cosmos" vertex="1" connectable="0">
+                    <mxGeometry x="-0.1" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-foundrype-foundry" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1565C0;strokeWidth=2;fontSize=11;" parent="1" source="foundry-pe" target="foundry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-foundrype-foundry-label" value="&lt;b&gt;Private Link&lt;/b&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#1565C0;" parent="e-foundrype-foundry" vertex="1" connectable="0">
+                    <mxGeometry x="-0.1" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e-aspire" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#999999;strokeWidth=1;dashed=1;dashPattern=8 4;fontSize=11;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="aspire" target="rg" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-aspire-label" value="&lt;i&gt;Orchestrates (local dev)&lt;/i&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#999999;" parent="e-aspire" vertex="1" connectable="0">
+                    <mxGeometry x="-0.2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;── Public traffic (HTTPS/WSS)&lt;br&gt;╌╌ Authentication flow&lt;br&gt;── Private link connection&lt;br&gt;╌╌ Orchestration (local dev)" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingLeft=8;fillColor=#FFFDE7;strokeColor=#F9A825;fontSize=10;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="730" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="deploy-note" value="&lt;b&gt;Deployment Modes&lt;/b&gt;&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;b&gt;Single-user:&lt;/b&gt; No auth, _anonymous identity&lt;br&gt;&lt;b&gt;Entra ID:&lt;/b&gt; Multi-user, MSAL + JWT tokens" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingLeft=8;fillColor=#FFFDE7;strokeColor=#F9A825;fontSize=10;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="1020" y="60" width="290" height="70" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
