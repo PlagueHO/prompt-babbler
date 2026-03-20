@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Mic, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Mic, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BabbleEditor } from '@/components/babbles/BabbleEditor';
@@ -15,6 +15,8 @@ import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { usePromptGeneration } from '@/hooks/usePromptGeneration';
 import { useGeneratedPrompts } from '@/hooks/useGeneratedPrompts';
+import { useAuthToken } from '@/hooks/useAuthToken';
+import * as api from '@/services/api-client';
 import type { Babble, GeneratedPrompt } from '@/types';
 import type { PromptGenerateOptions } from '@/components/prompts/PromptGenerator';
 
@@ -31,17 +33,17 @@ export function BabblePage() {
     error: promptsError,
     hasMore: promptsHasMore,
     loadMore: promptsLoadMore,
-    createPrompt,
     deletePrompt,
+    refresh: refreshPrompts,
   } = useGeneratedPrompts(id);
+  const getAuthToken = useAuthToken();
 
   const [babble, setBabble] = useState<Babble | undefined>(undefined);
   const [babbleLoading, setBabbleLoading] = useState(!!id);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const autoGenerateTriggered = useRef(false);
-  // Track the template used for the current generation so we can auto-save.
-  const currentGenRef = useRef<{ templateId: string; templateName: string } | null>(null);
 
   // Fetch babble from API on mount.
   useEffect(() => {
@@ -67,31 +69,14 @@ export function BabblePage() {
       autoGenerateTriggered.current = true;
       const template = templates.find((t) => t.id === autoGenerateId);
       if (template) {
-        currentGenRef.current = { templateId: template.id, templateName: template.name };
-        void generate(babble.text, template.id).then(async (result) => {
-          if (result?.name && babble.title.startsWith('Babble ')) {
-            const updated = await updateBabble(babble.id, { title: result.name, text: babble.text });
-            setBabble(updated);
-          }
-          // Auto-save the generated prompt.
-          if (result?.text) {
-            try {
-              await createPrompt({
-                templateId: template.id,
-                templateName: template.name,
-                promptText: result.text,
-              });
-            } catch {
-              // Non-critical — user can still copy the text.
-            }
-          }
-          currentGenRef.current = null;
+        void generate(babble.id, template.id).then(() => {
+          void refreshPrompts();
         });
       }
       // Clear the query parameter so refresh doesn't re-trigger
       setSearchParams({}, { replace: true });
     }
-  }, [searchParams, setSearchParams, babble, templates, generate, updateBabble, createPrompt]);
+  }, [searchParams, setSearchParams, babble, templates, generate, refreshPrompts]);
 
   const handleSave = useCallback(
     async (updated: Babble) => {
@@ -122,35 +107,33 @@ export function BabblePage() {
   const handleGenerate = useCallback(
     (options: PromptGenerateOptions) => {
       if (babble) {
-        currentGenRef.current = { templateId: options.template.id, templateName: options.template.name };
         void generate(
-          babble.text,
+          babble.id,
           options.template.id,
           options.promptFormat,
           options.allowEmojis,
-        ).then(async (result) => {
-          if (result?.name && babble.title.startsWith('Babble ')) {
-            const updated = await updateBabble(babble.id, { title: result.name, text: babble.text });
-            setBabble(updated);
-          }
-          // Auto-save the generated prompt.
-          if (result?.text) {
-            try {
-              await createPrompt({
-                templateId: options.template.id,
-                templateName: options.template.name,
-                promptText: result.text,
-              });
-            } catch {
-              // Non-critical
-            }
-          }
-          currentGenRef.current = null;
+        ).then(() => {
+          void refreshPrompts();
         });
       }
     },
-    [babble, generate, updateBabble, createPrompt],
+    [babble, generate, refreshPrompts],
   );
+
+  const handleGenerateTitle = useCallback(async () => {
+    if (!babble) return;
+    try {
+      setIsGeneratingTitle(true);
+      const token = await getAuthToken();
+      const updated = await api.generateTitle(babble.id, token);
+      setBabble(updated);
+      toast.success('Title generated');
+    } catch {
+      toast.error('Failed to generate title');
+    } finally {
+      setIsGeneratingTitle(false);
+    }
+  }, [babble, getAuthToken]);
 
   const handleRegenerate = useCallback(
     (prompt: GeneratedPrompt) => {
@@ -206,7 +189,23 @@ export function BabblePage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{babble.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{babble.title}</h1>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-7"
+              onClick={() => void handleGenerateTitle()}
+              disabled={isGeneratingTitle || !babble.text.trim()}
+              title="Generate title from babble text"
+            >
+              {isGeneratingTitle ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground">
             {new Date(babble.updatedAt).toLocaleString()}
           </p>

@@ -24,7 +24,8 @@ A speech-to-prompt web application that captures stream-of-consciousness speech,
 | `/api/templates/{id}` | GET, PUT, DELETE | Read/update/delete template |
 | `/api/user` | GET | Get user profile |
 | `/api/user/settings` | PUT | Update user settings |
-| `/api/prompts/generate` | POST | Generate prompt (SSE streaming) |
+| `/api/babbles/{id}/generate` | POST | Generate prompt (SSE streaming) |
+| `/api/babbles/{id}/generate-title` | POST | Generate babble title |
 | `/api/transcribe/stream` | WebSocket | Real-time speech transcription |
 | `/api/status` | GET | Health check |
 

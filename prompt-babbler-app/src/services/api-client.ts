@@ -115,7 +115,7 @@ export async function deleteTemplate(id: string, accessToken?: string): Promise<
 }
 
 export async function generatePrompt(
-  babbleText: string,
+  babbleId: string,
   templateId: string,
   promptFormat: string = 'text',
   allowEmojis: boolean = false,
@@ -124,10 +124,10 @@ export async function generatePrompt(
   const base = getApiBaseUrl();
   let res: Response;
   try {
-    res = await fetch(`${base}/api/prompts/generate`, {
+    res = await fetch(`${base}/api/babbles/${encodeURIComponent(babbleId)}/generate`, {
       method: 'POST',
       headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
-      body: JSON.stringify({ babbleText, templateId, promptFormat, allowEmojis }),
+      body: JSON.stringify({ templateId, promptFormat, allowEmojis }),
     });
   } catch {
     throw new Error(BACKEND_UNAVAILABLE_MSG);
@@ -143,6 +143,15 @@ export async function generatePrompt(
     throw new Error('No response body for streaming');
   }
   return res.body;
+}
+
+export async function generateTitle(
+  babbleId: string,
+  accessToken?: string,
+): Promise<Babble> {
+  return fetchJson<Babble>(`/api/babbles/${encodeURIComponent(babbleId)}/generate-title`, {
+    method: 'POST',
+  }, accessToken);
 }
 
 // Babble APIs

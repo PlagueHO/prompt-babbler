@@ -44,54 +44,6 @@ Returns the current health status of the API.
 
 ---
 
-### Prompt Generation
-
-#### `POST /api/prompts/generate`
-
-Generates a prompt from transcribed babble text using Azure OpenAI. The response is streamed as **Server-Sent Events** (SSE).
-
-The API looks up the system prompt and template name from the prompt template repository using the provided `templateId`.
-
-**Request Body**
-
-| Field | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `babbleText` | `string` | Yes | | The transcribed text to generate a prompt from. |
-| `templateId` | `string` | Yes | | The ID of the prompt template to use for generation. |
-| `promptFormat` | `string` | No | `"text"` | Desired output format (e.g., `"text"`, `"markdown"`). |
-| `allowEmojis` | `boolean` | No | `false` | Whether emojis are permitted in the generated prompt. |
-
-```json
-{
-  "babbleText": "I want a function that sorts a list",
-  "templateId": "builtin-general-assistant",
-  "promptFormat": "text",
-  "allowEmojis": false
-}
-```
-
-**Response** — `200 OK` (`text/event-stream`)
-
-Each chunk is sent as an SSE `data:` line containing a JSON object.
-
-A `name` event is sent first, followed by the full prompt text.
-
-```text
-data: {"name":"My Template"}
-
-data: {"text":"Generated prompt content..."}
-
-data: [DONE]
-```
-
-**Error Responses**
-
-| Status | Condition |
-|---|---|
-| `400 Bad Request` | `babbleText` or `templateId` is missing or empty. |
-| `404 Not Found` | No template found with the given `templateId`. |
-| `502 Bad Gateway` | Azure OpenAI communication failure. |
-
 ---
 
 ### Prompt Templates
@@ -279,6 +231,75 @@ Deletes a babble and all of its generated prompts (cascade delete).
 | Status | Condition |
 |---|---|
 | `404 Not Found` | Babble does not exist or does not belong to the current user. |
+
+#### `POST /api/babbles/{id}/generate`
+
+Generates a prompt from a babble's text using Azure OpenAI. The response is streamed as **Server-Sent Events** (SSE) with incremental text chunks. The generated prompt is automatically persisted as a child resource of the babble.
+
+**Request Body**
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `templateId` | `string` | Yes | | The ID of the prompt template to use for generation. |
+| `promptFormat` | `string` | No | `"text"` | Desired output format (e.g., `"text"`, `"markdown"`). |
+| `allowEmojis` | `boolean` | No | `false` | Whether emojis are permitted in the generated prompt. |
+
+```json
+{
+  "templateId": "builtin-general-assistant",
+  "promptFormat": "text",
+  "allowEmojis": false
+}
+```
+
+**Response** — `200 OK` (`text/event-stream`)
+
+Text is streamed as incremental SSE `data:` chunks. After generation completes, the prompt is auto-persisted and its ID is sent.
+
+```text
+data: {"text":"Write a Python"}
+
+data: {"text":" function that takes"}
+
+data: {"text":" a list of numbers..."}
+
+data: {"promptId":"def-456"}
+
+data: [DONE]
+```
+
+**Error Responses**
+
+| Status | Condition |
+|---|---|
+| `400 Bad Request` | `templateId` is missing or empty. |
+| `404 Not Found` | Babble or template not found. |
+| `502 Bad Gateway` | Azure OpenAI communication failure. |
+
+#### `POST /api/babbles/{id}/generate-title`
+
+Generates a short descriptive title for a babble using Azure OpenAI and auto-saves it.
+
+**Request Body** — none.
+
+**Response** `200 OK` — the updated babble object.
+
+```json
+{
+  "id": "abc-123",
+  "title": "Sort Function Request",
+  "text": "I want a function that sorts a list of numbers...",
+  "createdAt": "2025-01-15T10:30:00.0000000+00:00",
+  "updatedAt": "2025-01-15T10:35:00.0000000+00:00"
+}
+```
+
+**Error Responses**
+
+| Status | Condition |
+|---|---|
+| `404 Not Found` | Babble does not exist or does not belong to the current user. |
+| `502 Bad Gateway` | Azure OpenAI communication failure. |
 
 ---
 

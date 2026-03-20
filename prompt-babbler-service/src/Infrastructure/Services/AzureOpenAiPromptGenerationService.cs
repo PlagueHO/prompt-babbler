@@ -1,13 +1,10 @@
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.AI;
 using PromptBabbler.Domain.Interfaces;
-using PromptBabbler.Domain.Models;
 
 namespace PromptBabbler.Infrastructure.Services;
 
-public sealed partial class AzureOpenAiPromptGenerationService(IChatClient chatClient) : IPromptGenerationService
+public sealed class AzureOpenAiPromptGenerationService(IChatClient chatClient) : IPromptGenerationService
 {
     private static readonly string[] AllowedFormats = ["text", "markdown"];
 
@@ -53,54 +50,17 @@ public sealed partial class AzureOpenAiPromptGenerationService(IChatClient chatC
         }
     }
 
-    public async Task<StructuredPromptResult> GenerateStructuredPromptAsync(
+    public async Task<string> GenerateTitleAsync(
         string babbleText,
-        string systemPrompt,
-        string templateName,
-        string promptFormat = "text",
-        bool allowEmojis = false,
         CancellationToken cancellationToken = default)
     {
-        var effectiveSystemPrompt = BuildSystemPrompt(systemPrompt, promptFormat, allowEmojis);
-
-        var wrappedSystemPrompt = $"""
-            {effectiveSystemPrompt}
-
-            Additionally, you MUST respond with a JSON object containing exactly two fields:
-            - "name": a short descriptive title (3-8 words) summarizing the babble content, suitable as a name for the babble recording (do NOT use the template name "{templateName}" as the title)
-            - "prompt": the refined prompt text
-
-            Respond ONLY with valid JSON. Do not wrap in markdown code fences.
-            """;
-
         var messages = new List<ChatMessage>
         {
-            new(ChatRole.System, wrappedSystemPrompt),
+            new(ChatRole.System, "Generate a short descriptive title (3-8 words) summarizing the following text. Respond with ONLY the title, no quotes or extra text."),
             new(ChatRole.User, babbleText),
         };
 
-        var options = new ChatOptions
-        {
-            ResponseFormat = ChatResponseFormat.Json,
-        };
-
-        var response = await chatClient.GetResponseAsync(messages, options, cancellationToken);
-        var responseText = response.Text ?? "";
-
-        // Strip markdown code fences if present (e.g. ```json ... ```)
-        responseText = CodeFenceRegex().Replace(responseText, "$1").Trim();
-
-        var result = JsonSerializer.Deserialize<StructuredPromptResult>(responseText, JsonOptions)
-            ?? throw new InvalidOperationException("Failed to parse structured prompt response from LLM.");
-
-        return result;
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        return (response.Text ?? "").Trim();
     }
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-    };
-
-    [GeneratedRegex(@"^```(?:json)?\s*\n?(.*?)\n?\s*```$", RegexOptions.Singleline)]
-    private static partial Regex CodeFenceRegex();
 }

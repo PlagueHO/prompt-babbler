@@ -16,7 +16,6 @@ const durationHistogram = meter.createHistogram('prompt.duration_ms', {
 
 export function usePromptGeneration() {
   const [generatedText, setGeneratedText] = useState('');
-  const [generatedName, setGeneratedName] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -24,22 +23,21 @@ export function usePromptGeneration() {
 
   const generate = useCallback(
     async (
-      babbleText: string,
+      babbleId: string,
       templateId: string,
       promptFormat: PromptFormat = 'text',
       allowEmojis: boolean = false
-    ): Promise<{ name: string | null; text: string }> => {
+    ): Promise<{ text: string; promptId: string | null }> => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
 
       setGeneratedText('');
-      setGeneratedName(null);
       setIsGenerating(true);
       setError(null);
 
-      let localName: string | null = null;
       let localText = '';
+      let localPromptId: string | null = null;
 
       const genStart = performance.now();
       const span = tracer.startSpan('prompt.generate', {
@@ -53,7 +51,7 @@ export function usePromptGeneration() {
 
       try {
         const token = await getAuthToken();
-        const stream = await api.generatePrompt(babbleText, templateId, promptFormat, allowEmojis, token);
+        const stream = await api.generatePrompt(babbleId, templateId, promptFormat, allowEmojis, token);
         const reader = stream.getReader();
         const decoder = new TextDecoder();
 
@@ -76,10 +74,9 @@ export function usePromptGeneration() {
               const payload = line.slice(6);
               if (payload === '[DONE]') break;
               try {
-                const parsed = JSON.parse(payload) as { text?: string; name?: string };
-                if (parsed.name) {
-                  setGeneratedName(parsed.name);
-                  localName = parsed.name;
+                const parsed = JSON.parse(payload) as { text?: string; promptId?: string };
+                if (parsed.promptId) {
+                  localPromptId = parsed.promptId;
                 }
                 if (parsed.text) {
                   if (!firstTokenRecorded) {
@@ -101,7 +98,7 @@ export function usePromptGeneration() {
         if (controller.signal.aborted) {
           span.setAttribute('cancelled', true);
           span.end();
-          return { name: localName, text: localText };
+          return { text: localText, promptId: localPromptId };
         }
         const message = err instanceof Error ? err.message : 'Prompt generation failed';
         setError(message);
@@ -117,10 +114,10 @@ export function usePromptGeneration() {
         }
       }
 
-      return { name: localName, text: localText };
+      return { text: localText, promptId: localPromptId };
     },
     [getAuthToken]
   );
 
-  return { generatedText, generatedName, isGenerating, error, generate };
+  return { generatedText, isGenerating, error, generate };
 }

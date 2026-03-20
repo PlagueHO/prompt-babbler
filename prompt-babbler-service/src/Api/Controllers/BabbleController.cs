@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web.Resource;
@@ -16,11 +17,22 @@ namespace PromptBabbler.Api.Controllers;
 public sealed class BabbleController : ControllerBase
 {
     private readonly IBabbleService _babbleService;
+    private readonly IPromptGenerationService _promptGenerationService;
+    private readonly IPromptTemplateService _templateService;
+    private readonly IGeneratedPromptService _generatedPromptService;
     private readonly ILogger<BabbleController> _logger;
 
-    public BabbleController(IBabbleService babbleService, ILogger<BabbleController> logger)
+    public BabbleController(
+        IBabbleService babbleService,
+        IPromptGenerationService promptGenerationService,
+        IPromptTemplateService templateService,
+        IGeneratedPromptService generatedPromptService,
+        ILogger<BabbleController> logger)
     {
         _babbleService = babbleService;
+        _promptGenerationService = promptGenerationService;
+        _templateService = templateService;
+        _generatedPromptService = generatedPromptService;
         _logger = logger;
     }
 
@@ -129,6 +141,145 @@ public sealed class BabbleController : ControllerBase
         _logger.LogInformation("Deleted babble {BabbleId} for user {UserId}", id, userId);
 
         return NoContent();
+    }
+
+    [HttpPost("{id}/generate")]
+    public async Task GeneratePrompt(
+        string id,
+        [FromBody] GeneratePromptRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = User.GetUserIdOrAnonymous();
+        var babble = await _babbleService.GetByIdAsync(userId, id, cancellationToken);
+        if (babble is null)
+        {
+            HttpContext.Response.StatusCode = 404;
+            await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Title = "Babble Not Found",
+                Status = 404,
+                Detail = $"No babble found with ID '{id}'.",
+            }, cancellationToken);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.TemplateId))
+        {
+            HttpContext.Response.StatusCode = 400;
+            await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Title = "Invalid Request",
+                Status = 400,
+                Detail = "TemplateId is required and cannot be empty.",
+            }, cancellationToken);
+            return;
+        }
+
+        var template = await _templateService.GetByIdAsync(null, request.TemplateId, cancellationToken);
+        if (template is null)
+        {
+            HttpContext.Response.StatusCode = 404;
+            await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Title = "Template Not Found",
+                Status = 404,
+                Detail = $"No template found with ID '{request.TemplateId}'.",
+            }, cancellationToken);
+            return;
+        }
+
+        Response.ContentType = "text/event-stream";
+        Response.Headers.CacheControl = "no-cache";
+        Response.Headers.Connection = "keep-alive";
+
+        try
+        {
+            var fullText = new System.Text.StringBuilder();
+
+            await foreach (var chunk in _promptGenerationService.GeneratePromptStreamAsync(
+                babble.Text, template.SystemPrompt, request.PromptFormat, request.AllowEmojis, cancellationToken))
+            {
+                var textData = JsonSerializer.Serialize(new { text = chunk });
+                await Response.WriteAsync($"data: {textData}\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+                fullText.Append(chunk);
+            }
+
+            // Auto-persist the generated prompt
+            var generatedPrompt = new GeneratedPrompt
+            {
+                Id = Guid.NewGuid().ToString(),
+                BabbleId = babble.Id,
+                UserId = userId,
+                TemplateId = template.Id,
+                TemplateName = template.Name,
+                PromptText = fullText.ToString(),
+                GeneratedAt = DateTimeOffset.UtcNow,
+            };
+
+            var created = await _generatedPromptService.CreateAsync(userId, generatedPrompt, cancellationToken);
+            _logger.LogInformation("Auto-persisted generated prompt {PromptId} for babble {BabbleId}", created.Id, created.BabbleId);
+
+            var promptIdData = JsonSerializer.Serialize(new { promptId = created.Id });
+            await Response.WriteAsync($"data: {promptIdData}\n\n", cancellationToken);
+            await Response.Body.FlushAsync(cancellationToken);
+
+            await Response.WriteAsync("data: [DONE]\n\n", cancellationToken);
+            await Response.Body.FlushAsync(cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Prompt generation failed for babble {BabbleId}", id);
+            if (!Response.HasStarted)
+            {
+                HttpContext.Response.StatusCode = 502;
+                await HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                {
+                    Title = "Azure OpenAI Error",
+                    Status = 502,
+                    Detail = "An error occurred while communicating with Azure OpenAI. Please try again.",
+                }, cancellationToken);
+            }
+        }
+    }
+
+    [HttpPost("{id}/generate-title")]
+    public async Task<IActionResult> GenerateTitle(
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = User.GetUserIdOrAnonymous();
+        var babble = await _babbleService.GetByIdAsync(userId, id, cancellationToken);
+        if (babble is null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            var title = await _promptGenerationService.GenerateTitleAsync(babble.Text, cancellationToken);
+
+            var updated = babble with
+            {
+                Title = title,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            };
+
+            var result = await _babbleService.UpdateAsync(userId, updated, cancellationToken);
+            _logger.LogInformation("Generated title for babble {BabbleId}: {Title}", result.Id, result.Title);
+
+            return Ok(ToResponse(result));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Title generation failed for babble {BabbleId}", id);
+            return StatusCode(502, new ProblemDetails
+            {
+                Title = "Azure OpenAI Error",
+                Status = 502,
+                Detail = "An error occurred while generating the title. Please try again.",
+            });
+        }
     }
 
     private static bool ValidateCreateRequest(CreateBabbleRequest request, out string? error)

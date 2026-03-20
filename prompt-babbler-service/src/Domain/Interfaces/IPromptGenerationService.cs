@@ -1,5 +1,3 @@
-using PromptBabbler.Domain.Models;
-
 namespace PromptBabbler.Domain.Interfaces;
 
 public interface IPromptGenerationService
@@ -11,11 +9,7 @@ public interface IPromptGenerationService
         bool allowEmojis = false,
         CancellationToken cancellationToken = default);
 
-    Task<StructuredPromptResult> GenerateStructuredPromptAsync(
+    Task<string> GenerateTitleAsync(
         string babbleText,
-        string systemPrompt,
-        string templateName,
-        string promptFormat = "text",
-        bool allowEmojis = false,
         CancellationToken cancellationToken = default);
 }

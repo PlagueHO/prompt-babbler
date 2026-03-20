@@ -7,7 +7,7 @@ namespace PromptBabbler.Api.IntegrationTests.Controllers;
 
 [TestClass]
 [TestCategory("Integration")]
-public sealed class PromptControllerTests
+public sealed class BabbleGenerateIntegrationTests
 {
     [TestMethod]
     public async Task GeneratePrompt_WithoutAuth_Returns401()
@@ -15,8 +15,19 @@ public sealed class PromptControllerTests
         await using var factory = new NoAuthWebApplicationFactory();
         var client = factory.CreateClient();
 
-        var request = new { babbleText = "Hello world", templateId = "template-1" };
-        var response = await client.PostAsJsonAsync("/api/prompts/generate", request);
+        var request = new { templateId = "template-1" };
+        var response = await client.PostAsJsonAsync("/api/babbles/test-babble-id/generate", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [TestMethod]
+    public async Task GenerateTitle_WithoutAuth_Returns401()
+    {
+        await using var factory = new NoAuthWebApplicationFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsync("/api/babbles/test-babble-id/generate-title", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

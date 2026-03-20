@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using PromptBabbler.Api.Controllers;
 using PromptBabbler.Api.Models.Requests;
 using PromptBabbler.Api.Models.Responses;
@@ -19,14 +20,19 @@ public sealed class BabbleControllerTests
     private const string TestUserId = "00000000-0000-0000-0000-000000000000";
 
     private readonly IBabbleService _babbleService = Substitute.For<IBabbleService>();
+    private readonly IPromptGenerationService _promptGenerationService = Substitute.For<IPromptGenerationService>();
+    private readonly IPromptTemplateService _templateService = Substitute.For<IPromptTemplateService>();
+    private readonly IGeneratedPromptService _generatedPromptService = Substitute.For<IGeneratedPromptService>();
     private readonly ILogger<BabbleController> _logger = Substitute.For<ILogger<BabbleController>>();
     private readonly BabbleController _controller;
 
     public BabbleControllerTests()
     {
-        _controller = new BabbleController(_babbleService, _logger);
+        _controller = new BabbleController(
+            _babbleService, _promptGenerationService, _templateService, _generatedPromptService, _logger);
 
         var httpContext = new DefaultHttpContext();
+        httpContext.Response.Body = new MemoryStream();
         httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
         [
             new Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", TestUserId),
@@ -266,5 +272,171 @@ public sealed class BabbleControllerTests
         var result = await _controller.DeleteBabble("missing", CancellationToken.None);
 
         result.Should().BeOfType<NotFoundResult>();
+    }
+
+    // ---- POST /api/babbles/{id}/generate ----
+
+    private static PromptTemplate CreateTemplate(string id = "template-1") => new()
+    {
+        Id = id,
+        UserId = "_builtin",
+        Name = "Test Template",
+        Description = "A test template.",
+        SystemPrompt = "You are a prompt engineer.",
+        IsBuiltIn = true,
+        CreatedAt = DateTimeOffset.UtcNow,
+        UpdatedAt = DateTimeOffset.UtcNow,
+    };
+
+    private static async IAsyncEnumerable<string> ToAsyncEnumerable(params string[] items)
+    {
+        foreach (var item in items)
+        {
+            yield return item;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    [TestMethod]
+    public async Task GeneratePrompt_BabbleNotFound_Returns404()
+    {
+        _babbleService.GetByIdAsync(TestUserId, "missing", Arg.Any<CancellationToken>())
+            .Returns((Babble?)null);
+
+        var request = new GeneratePromptRequest { TemplateId = "template-1" };
+
+        await _controller.GeneratePrompt("missing", request, CancellationToken.None);
+
+        _controller.HttpContext.Response.StatusCode.Should().Be(404);
+    }
+
+    [TestMethod]
+    public async Task GeneratePrompt_EmptyTemplateId_Returns400()
+    {
+        var babble = CreateBabble();
+        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+            .Returns(babble);
+
+        var request = new GeneratePromptRequest { TemplateId = "" };
+
+        await _controller.GeneratePrompt("test-id", request, CancellationToken.None);
+
+        _controller.HttpContext.Response.StatusCode.Should().Be(400);
+    }
+
+    [TestMethod]
+    public async Task GeneratePrompt_TemplateNotFound_Returns404()
+    {
+        var babble = CreateBabble();
+        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+            .Returns(babble);
+        _templateService.GetByIdAsync(null, "nonexistent", Arg.Any<CancellationToken>())
+            .Returns((PromptTemplate?)null);
+
+        var request = new GeneratePromptRequest { TemplateId = "nonexistent" };
+
+        await _controller.GeneratePrompt("test-id", request, CancellationToken.None);
+
+        _controller.HttpContext.Response.StatusCode.Should().Be(404);
+    }
+
+    [TestMethod]
+    public async Task GeneratePrompt_ValidRequest_StreamsSSEChunksAndPromptId()
+    {
+        var babble = CreateBabble();
+        var template = CreateTemplate();
+
+        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+            .Returns(babble);
+        _templateService.GetByIdAsync(null, "template-1", Arg.Any<CancellationToken>())
+            .Returns(template);
+        _promptGenerationService.GeneratePromptStreamAsync(
+            babble.Text, template.SystemPrompt, "text", false, Arg.Any<CancellationToken>())
+            .Returns(ToAsyncEnumerable("Hello ", "world"));
+        _generatedPromptService.CreateAsync(TestUserId, Arg.Any<GeneratedPrompt>(), Arg.Any<CancellationToken>())
+            .Returns(ci =>
+            {
+                var p = ci.Arg<GeneratedPrompt>();
+                return p;
+            });
+
+        var request = new GeneratePromptRequest { TemplateId = "template-1" };
+        await _controller.GeneratePrompt("test-id", request, CancellationToken.None);
+
+        _controller.HttpContext.Response.ContentType.Should().Be("text/event-stream");
+
+        _controller.HttpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(_controller.HttpContext.Response.Body).ReadToEndAsync();
+        body.Should().Contain("\"text\":\"Hello \"");
+        body.Should().Contain("\"text\":\"world\"");
+        body.Should().Contain("\"promptId\":");
+        body.Should().Contain("data: [DONE]");
+    }
+
+    [TestMethod]
+    public async Task GeneratePrompt_LlmFailure_Returns502()
+    {
+        var babble = CreateBabble();
+        var template = CreateTemplate();
+
+        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+            .Returns(babble);
+        _templateService.GetByIdAsync(null, "template-1", Arg.Any<CancellationToken>())
+            .Returns(template);
+        _promptGenerationService.GeneratePromptStreamAsync(
+            babble.Text, template.SystemPrompt, "text", false, Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("LLM error"));
+
+        var request = new GeneratePromptRequest { TemplateId = "template-1" };
+        await _controller.GeneratePrompt("test-id", request, CancellationToken.None);
+
+        _controller.HttpContext.Response.StatusCode.Should().Be(502);
+    }
+
+    // ---- POST /api/babbles/{id}/generate-title ----
+
+    [TestMethod]
+    public async Task GenerateTitle_BabbleNotFound_Returns404()
+    {
+        _babbleService.GetByIdAsync(TestUserId, "missing", Arg.Any<CancellationToken>())
+            .Returns((Babble?)null);
+
+        var result = await _controller.GenerateTitle("missing", CancellationToken.None);
+
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [TestMethod]
+    public async Task GenerateTitle_ValidRequest_UpdatesTitleAndReturnsResponse()
+    {
+        var babble = CreateBabble();
+        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+            .Returns(babble);
+        _promptGenerationService.GenerateTitleAsync(babble.Text, Arg.Any<CancellationToken>())
+            .Returns("Sort Function Request");
+        _babbleService.UpdateAsync(TestUserId, Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var result = await _controller.GenerateTitle("test-id", CancellationToken.None);
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = ok.Value.Should().BeOfType<BabbleResponse>().Subject;
+        response.Title.Should().Be("Sort Function Request");
+    }
+
+    [TestMethod]
+    public async Task GenerateTitle_LlmFailure_Returns502()
+    {
+        var babble = CreateBabble();
+        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+            .Returns(babble);
+        _promptGenerationService.GenerateTitleAsync(babble.Text, Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("LLM error"));
+
+        var result = await _controller.GenerateTitle("test-id", CancellationToken.None);
+
+        var statusResult = result.Should().BeOfType<ObjectResult>().Subject;
+        statusResult.StatusCode.Should().Be(502);
     }
 }
