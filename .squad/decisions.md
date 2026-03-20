@@ -86,6 +86,18 @@ getAuthTokenRef.current = getAuthToken;
 **What:** All Azure infrastructure is defined in Bicep using Azure Verified Modules (AVM) as the primary source. When an AVM module is not available or not up-to-date for the required resource type, fall back to pure Bicep. The custom `cognitive-services/accounts/main.bicep` module is a temporary fallback pending AVM support for AI Foundry V2. Microsoft Graph Bicep extension is used for Entra ID app registrations.
 **Why:** AVM modules provide validated, tested, and well-documented infrastructure patterns maintained by Microsoft. Falling back to pure Bicep ensures we aren't blocked by AVM gaps while maintaining consistency in tooling.
 
+### VNET Integration with Private Endpoints
+
+**By:** Wash (DevOps/Infra)  
+**Date:** 2026-03-19  
+**Status:** Implemented
+
+**What:** Added Azure Virtual Network (`10.0.0.0/16`) with two subnets: ACA infrastructure subnet (`10.0.0.0/23`), private endpoint subnet (`10.0.2.0/24`). Created private DNS zones for Cosmos DB (`privatelink.documents.azure.com`), Cognitive Services (`privatelink.cognitiveservices.azure.com`), and OpenAI (`privatelink.openai.azure.com`). Configured private endpoints for both Cosmos DB and Foundry. Container Apps Environment remains publicly accessible via `internal: false`.
+
+**Why:** Private endpoints improve security by eliminating direct internet exposure for Cosmos DB and Foundry while keeping data on the Azure backbone. The existing `enablePublicNetworkAccess` parameter enables dev/test hybrid mode (public + private) and production private-only mode. Container Apps must remain public to serve Static Web App frontend.
+
+**Key Learning:** AVM managed environment uses `infrastructureSubnetId` (not `infrastructureSubnetResourceId`). Container Apps Consumption environments do NOT require subnet delegation. Minimum /23 subnet. Private endpoint network policies must be disabled. Foundry requires both cognitiveservices and openai DNS zones.
+
 ## Governance
 
 - All meaningful changes require team consensus

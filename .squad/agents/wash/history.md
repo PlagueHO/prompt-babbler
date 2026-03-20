@@ -17,6 +17,7 @@
 - Cosmos DB: serverless, 4 containers with defined partition keys
 - RBAC roles: `Cognitive Services OpenAI User`, `Cognitive Services Speech User`, `Cosmos DB Built-in Data Contributor`
 - Container images: `ghcr.io/plagueho/prompt-babbler-api`
+- **VNET integration:** Virtual network with private endpoints for Cosmos DB and Foundry, Container Apps Environment VNET-integrated but public-facing (external ingress)
 
 ### CI/CD (GitHub Actions)
 
@@ -52,3 +53,5 @@
 
 📌 Team initialized on 2026-03-19 — cast from Firefly universe
 📌 Role: DevOps/Infra — Bicep, GitHub Actions, Aspire, Azure deployment, RBAC
+📌 VNET with private endpoints (2026-03-19): Added Azure VNET (`br/public:avm/res/network/virtual-network:0.1.5`) with two subnets: one for Container Apps Environment (10.0.0.0/23, no delegation required for Consumption environments), one for private endpoints (10.0.2.0/24, network policies disabled). Private DNS zones for Cosmos DB (`privatelink.documents.azure.com`), Cognitive Services (`privatelink.cognitiveservices.azure.com`), and OpenAI (`privatelink.openai.azure.com`) linked to VNET. Cosmos DB and Foundry both have private endpoints via AVM module `privateEndpoints` parameter. Container Apps Environment uses `infrastructureSubnetId` (not `infrastructureSubnetResourceId`) with `internal: false` to remain publicly accessible. Control via `enablePublicNetworkAccess` param: when true, hybrid mode (public + private); when false, private-only via VNET.
+📌 VNET orchestration complete (2026-03-20): Orchestration log, session log, and decision merged. Kaylee notified for backend connectivity validation.

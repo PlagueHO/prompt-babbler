@@ -60,3 +60,4 @@
 
 📌 Team initialized on 2026-03-19 — cast from Firefly universe
 📌 Role: Backend Dev — .NET, Azure AI, Cosmos DB, APIs, Clean Architecture
+📌 **VNET integration (2026-03-20):** Wash completed VNET setup with private endpoints for Cosmos DB and Foundry. Backend must ensure Bearer token flows work correctly through private endpoints in private-only mode (enablePublicNetworkAccess=false). No API changes required; authentication flow unchanged.
