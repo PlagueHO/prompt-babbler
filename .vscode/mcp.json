@@ -1,7 +1,7 @@
 {
   "inputs": [],
   "servers": {
-    "azure/verified-module-bicep": {
+    "azure-verified-module-bicep": {
       "type": "sse",
       "url": "https://gitmcp.io/Azure/bicep-registry-modules"
     },
@@ -17,7 +17,7 @@
       "url": "https://api.githubcopilot.com/mcp/",
       "type": "http"
     },
-    "microsoft/aspire": {
+    "microsoft-aspire": {
       "type": "stdio",
       "command": "aspire",
       "args": [
@@ -25,27 +25,27 @@
         "start"
       ]
     },
-    "microsoft/agent-framework": {
+    "microsoft-agent-framework": {
       "url": "https://gitmcp.io/microsoft/agent-framework",
       "type": "sse"
     },
-    "microsoft/learn": {
+    "microsoft-learn": {
       "url": "https://learn.microsoft.com/api/mcp",
       "type": "http"
     },
-    "microsoft/foundry": {
+    "microsoft-foundry": {
         "type": "http",
         "url": "https://mcp.ai.azure.com"
     },
-    "react/repo": {
+    "react-repo": {
       "url": "https://gitmcp.io/facebook/react",
       "type": "sse"
     },
-    "typescript/repo": {
+    "typescript-repo": {
       "url": "https://gitmcp.io/microsoft/TypeScript",
       "type": "sse"
     },
-    "nodejs/repo": {
+    "nodejs-repo": {
       "url": "https://gitmcp.io/nodejs/node",
       "type": "sse"
     },
@@ -65,7 +65,7 @@
         "run-test-mcp-server"
       ]
     },
-    "shadcnui/repo": {
+    "shadcnui-repo": {
       "url": "https://gitmcp.io/shadcn-ui/ui",
       "type": "sse"
     }
