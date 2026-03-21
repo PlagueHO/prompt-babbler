@@ -17,6 +17,7 @@ import { diagnosticSettingFullType } from 'br/public:avm/utl/types/avm-common-ty
 @sys.description('Optional. The diagnostic settings of the service.')
 param diagnosticSettings diagnosticSettingFullType[]?
 
+
 @sys.description('Optional. Resource tags for the Foundry Project.')
 param tags object?
 
@@ -45,6 +46,7 @@ param applications applicationType[] = []
 import { projectCapabilityHostType } from './capabilityHost/main.bicep'
 @sys.description('Optional. Capability hosts to create in the Foundry Project. These configure per-project storage backends for threads, vectors, and files.')
 param capabilityHosts projectCapabilityHostType[] = []
+
 
 var formattedUserAssignedIdentities = reduce(
   map((managedIdentities.?userAssignedResourceIds ?? []), (id) => { '${id}': {} }),
@@ -273,9 +275,12 @@ module project_capabilityHosts './capabilityHost/main.bicep' = [
   }
 ]
 
+// Filter applications to only those with agents defined (RP requires agents to be non-empty)
+var deployableApplications = filter(applications ?? [], app => !empty(app.?agents ?? []))
+
 @batchSize(1)
 module project_applications './application/main.bicep' = [
-  for (application, index) in (applications ?? []): {
+  for (application, index) in deployableApplications: {
     name: '${take('${accountName}-${name}-${application.name}', 60)}-app'
     params: {
       accountName: accountName
@@ -288,7 +293,7 @@ module project_applications './application/main.bicep' = [
       defaultInstanceIdentity: application.?defaultInstanceIdentity
       baseUrl: application.?baseUrl
       trafficRoutingPolicy: application.?trafficRoutingPolicy
-      agents: application.?agents
+      agents: application.agents
       tags: application.?tags
       agentDeployments: application.?agentDeployments ?? []
     }
@@ -355,7 +360,7 @@ output resourceGroupName string = resourceGroup().name
 import { applicationOutputType } from './application/main.bicep'
 @sys.description('The applications created in the Foundry Project.')
 output applications applicationOutputType[] = [
-  for (application, index) in (applications ?? []): {
+  for (application, index) in deployableApplications: {
     name: project_applications[index].outputs.name
     resourceId: project_applications[index].outputs.resourceId
   }
