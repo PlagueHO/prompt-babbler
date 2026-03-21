@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { TagInput } from '@/components/ui/tag-input';
@@ -13,14 +12,12 @@ interface BabbleEditorProps {
 }
 
 export function BabbleEditor({ babble, onSave, onCancel }: BabbleEditorProps) {
-  const [title, setTitle] = useState(babble.title);
   const [text, setText] = useState(babble.text);
   const [tags, setTags] = useState<string[]>(babble.tags ?? []);
 
   const handleSave = () => {
     onSave({
       ...babble,
-      title: title.trim() || babble.title,
       text,
       tags,
       updatedAt: new Date().toISOString(),
@@ -29,11 +26,6 @@ export function BabbleEditor({ babble, onSave, onCancel }: BabbleEditorProps) {
 
   return (
     <div className="space-y-4">
-      <Input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Babble title"
-      />
       <Textarea
         value={text}
         onChange={(e) => setText(e.target.value)}

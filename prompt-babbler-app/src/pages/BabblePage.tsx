@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Mic, Loader2, Sparkles } from 'lucide-react';
+import { Pencil, Trash2, Mic, Loader2, Sparkles, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { Separator } from '@/components/ui/separator';
 import { TagList } from '@/components/ui/tag-list';
@@ -45,6 +46,8 @@ export function BabblePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInputValue, setTitleInputValue] = useState('');
   const autoGenerateTriggered = useRef(false);
 
   // Fetch babble from API on mount.
@@ -122,6 +125,22 @@ export function BabblePage() {
     [babble, generate, refreshPrompts],
   );
 
+  const handleSaveTitle = useCallback(async () => {
+    if (!babble) return;
+    try {
+      const result = await updateBabble(babble.id, { title: titleInputValue.trim() || babble.title, text: babble.text, tags: babble.tags });
+      setBabble(result);
+      setIsEditingTitle(false);
+      toast.success('Title updated');
+    } catch {
+      toast.error('Failed to update title');
+    }
+  }, [babble, titleInputValue, updateBabble]);
+
+  const handleCancelTitle = useCallback(() => {
+    setIsEditingTitle(false);
+  }, []);
+
   const handleGenerateTitle = useCallback(async () => {
     if (!babble) return;
     try {
@@ -192,26 +211,69 @@ export function BabblePage() {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">{babble.title}</h1>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-7"
-              onClick={() => void handleGenerateTitle()}
-              disabled={isGeneratingTitle || !babble.text.trim()}
-              title="Generate title from babble text"
-            >
-              {isGeneratingTitle ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Sparkles className="size-4" />
-              )}
-            </Button>
+            {isEditingTitle ? (
+              <>
+                <Input
+                  value={titleInputValue}
+                  onChange={(e) => setTitleInputValue(e.target.value)}
+                  className="text-2xl font-bold h-auto py-1"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void handleSaveTitle();
+                    if (e.key === 'Escape') handleCancelTitle();
+                  }}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-7"
+                  onClick={() => void handleSaveTitle()}
+                  title="Save title"
+                >
+                  <Check className="size-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-7"
+                  onClick={handleCancelTitle}
+                  title="Cancel editing title"
+                >
+                  <X className="size-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{babble.title}</h1>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-7"
+                  onClick={() => { setTitleInputValue(babble.title); setIsEditingTitle(true); }}
+                  title="Edit title"
+                >
+                  <Pencil className="size-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-7"
+                  onClick={() => void handleGenerateTitle()}
+                  disabled={isGeneratingTitle || !babble.text.trim()}
+                  title="Generate title from babble text"
+                >
+                  {isGeneratingTitle ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-4" />
+                  )}
+                </Button>
+              </>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
             {new Date(babble.updatedAt).toLocaleString()}
           </p>
-          <TagList tags={babble.tags} className="mt-1" />
         </div>
         <div className="flex gap-2">
           <Button asChild size="sm">
@@ -239,6 +301,10 @@ export function BabblePage() {
         </div>
       </div>
 
+      {(babble.tags?.length ?? 0) > 0 && !isEditing && (
+        <TagList tags={babble.tags} />
+      )}
+
       {isEditing ? (
         <BabbleEditor
           babble={babble}
@@ -246,7 +312,7 @@ export function BabblePage() {
           onCancel={() => setIsEditing(false)}
         />
       ) : (
-        <div className="rounded-lg border p-4">
+        <div className="max-h-[50vh] overflow-y-auto rounded-lg border p-4">
           <p className="whitespace-pre-wrap text-sm leading-relaxed">
             {babble.text || 'No content.'}
           </p>
