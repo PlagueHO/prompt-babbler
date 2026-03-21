@@ -12,12 +12,6 @@
     "Change the programming language or framework unless the user explicitly requested it",
     "Include code implementations — formulate a question, not an answer"
   ],
-  "examples": [
-    {
-      "input": "So um I'm working on this React component and I keep getting this error, something about hooks being called conditionally, I think it's the useEffect or maybe useState, and I don't really understand why it matters what order they're in, you know?",
-      "output": "Why do React hooks need to be called in the same order on every render, and how do I fix a 'hooks called conditionally' error in my component?"
-    }
-  ],
   "defaultOutputFormat": "text",
   "tags": ["coding", "ai-coding-assistant", "developer-tools", "question"]
 }

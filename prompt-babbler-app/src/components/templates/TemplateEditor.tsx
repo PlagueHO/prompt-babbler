@@ -1,4 +1,4 @@
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
@@ -54,7 +54,6 @@ export function TemplateEditor({
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<TemplateFormData>({
@@ -79,6 +78,9 @@ export function TemplateEditor({
   });
 
   const isBuiltIn = template?.isBuiltIn ?? false;
+
+  const defaultOutputFormat = useWatch({ control, name: 'defaultOutputFormat' });
+  const defaultAllowEmojis = useWatch({ control, name: 'defaultAllowEmojis' });
 
   const handleFormSubmit = (data: TemplateFormData) => {
     const request: TemplateRequest = {
@@ -261,7 +263,7 @@ export function TemplateEditor({
         <div className="space-y-2">
           <label className="text-sm font-medium">Default Output Format</label>
           <Select
-            value={watch('defaultOutputFormat') ?? 'text'}
+            value={defaultOutputFormat ?? 'text'}
             onValueChange={(v) => setValue('defaultOutputFormat', v as 'text' | 'markdown')}
             disabled={isBuiltIn}
           >
@@ -277,7 +279,7 @@ export function TemplateEditor({
         <div className="flex items-center gap-2 pt-6">
           <Checkbox
             id="defaultAllowEmojis"
-            checked={watch('defaultAllowEmojis') ?? false}
+            checked={defaultAllowEmojis ?? false}
             onCheckedChange={(v) => setValue('defaultAllowEmojis', v === true)}
             disabled={isBuiltIn}
           />

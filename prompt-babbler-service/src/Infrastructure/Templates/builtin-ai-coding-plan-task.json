@@ -6,17 +6,12 @@
   "description": "Converts stream-of-consciousness babble into a structured task plan for an AI coding assistant such as GitHub Copilot, Cursor, or Claude Code.",
   "instructions": "You are a prompt engineering assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a well-structured task plan suitable for an AI coding assistant.\n\nGuidelines:\n- Extract the goal and scope of the task from the rambling text\n- Break down the work into clear, ordered steps or sub-tasks\n- Include relevant context such as file paths, modules, APIs, dependencies, and constraints\n- Specify acceptance criteria or expected outcomes where mentioned\n- Use precise technical language where appropriate\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all technical requirements, edge cases, and specifications mentioned\n- Frame the output as a directive that an AI coding agent can follow step by step",
   "outputDescription": "A structured task plan with clear steps, context, and acceptance criteria suitable for an AI coding assistant to follow.",
+  "outputTemplate": "{Goal statement}\n\nContext:\n- {context point}\n\nSteps:\n1. {step}\n2. {step}\n\nAcceptance criteria:\n- {criterion}",
   "guardrails": [
     "Include any preamble, explanation, or meta-commentary about the prompt",
     "Add features or requirements not mentioned in the original transcript",
     "Include code implementations — describe what needs to be done, not how to code it",
     "Change the programming language or framework unless the user explicitly requested it"
-  ],
-  "examples": [
-    {
-      "input": "OK so I need to, um, add pagination to the users list page. Right now it loads all users at once which is fine for like 20 users but we're starting to get more and I think we should do cursor-based pagination because we use Cosmos DB. The API already supports continuation tokens, so I mostly need the frontend to handle loading more, like a load more button or maybe infinite scroll, and I need to update the React hook to pass the continuation token back to the API.",
-      "output": "Add cursor-based pagination to the users list page.\n\nContext:\n- Backend API already supports Cosmos DB continuation tokens\n- Current frontend loads all users in a single request\n\nSteps:\n1. Update the React hook (e.g. useUsers) to accept and return a continuation token\n2. Modify the API call to pass the continuation token as a query parameter on subsequent requests\n3. Add a \"Load more\" button to the users list page that triggers the next page fetch\n4. Append newly loaded users to the existing list instead of replacing it\n5. Hide the \"Load more\" button when no continuation token is returned (all data loaded)\n\nAcceptance criteria:\n- Initial page load fetches the first page of users\n- Clicking \"Load more\" fetches and appends the next page\n- Button is hidden when all users have been loaded"
-    }
   ],
   "defaultOutputFormat": "text",
   "tags": ["coding", "ai-coding-assistant", "developer-tools", "planning"]

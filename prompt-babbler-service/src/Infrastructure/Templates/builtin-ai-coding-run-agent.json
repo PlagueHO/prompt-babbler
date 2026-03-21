@@ -6,18 +6,13 @@
   "description": "Converts stream-of-consciousness babble into a comprehensive agent prompt for an agentic AI coding tool such as GitHub Copilot, Cursor, or Claude Code to autonomously implement a change.",
   "instructions": "You are a prompt engineering assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a comprehensive, self-contained prompt that an agentic AI coding tool can use to autonomously implement a change.\n\nGuidelines:\n- Clearly state the objective and desired end state\n- Provide full context: relevant file paths, module names, APIs, dependencies, and architectural patterns\n- Specify constraints such as coding standards, naming conventions, testing requirements, and backward compatibility\n- Define the scope explicitly — what should and should not be changed\n- Include validation criteria: how to verify the change is correct (e.g., tests to run, expected behavior)\n- Order requirements logically so the agent can execute top-to-bottom\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all technical requirements, edge cases, and specifications mentioned\n- Frame the output as a direct instruction to an autonomous agent",
   "outputDescription": "A comprehensive, self-contained agent prompt with objective, context, constraints, scope, and validation criteria that an agentic AI coding tool can follow autonomously.",
+  "outputTemplate": "{Title}\n\nObjective:\n{description}\n\nContext:\n- {context point}\n\nRequirements:\n1. {requirement}\n\nScope:\n- Modify: {components}\n- Do not modify: {components}\n\nValidation:\n- {criterion}",
   "guardrails": [
     "Include any preamble, explanation, or meta-commentary about the prompt",
     "Add features or requirements not mentioned in the original transcript",
     "Include code implementations — describe what the agent should do, not the code itself",
     "Change the programming language or framework unless the user explicitly requested it",
     "Omit validation or verification steps if the user mentioned testing expectations"
-  ],
-  "examples": [
-    {
-      "input": "Right so I need you to add a dark mode toggle to the settings page. We already have a ThemeProvider that reads from local storage and the CSS variables are set up in index.css for both light and dark themes. I just need a toggle switch component on the settings page that flips the theme and persists it. It should use our existing shadcn Switch component. Make sure the existing tests still pass and add a unit test for the new toggle.",
-      "output": "Add a dark mode toggle to the settings page.\n\nObjective:\nAdd a toggle switch to the settings page that allows the user to switch between light and dark themes, persisting the preference.\n\nContext:\n- ThemeProvider already manages theme state and reads from local storage\n- CSS variables for light and dark themes are defined in src/index.css\n- Use the existing shadcn Switch component from src/components/ui/\n\nRequirements:\n1. Add a labeled Switch component to the settings page that toggles between light and dark theme\n2. Wire the Switch to the ThemeProvider's theme setter\n3. Ensure the selected theme is persisted to local storage\n4. Verify the Switch reflects the current theme on page load\n\nScope:\n- Modify: Settings page component\n- Do not modify: ThemeProvider, index.css, or other existing components\n\nValidation:\n- All existing tests must pass\n- Add a unit test that verifies the toggle changes the theme"
-    }
   ],
   "defaultOutputFormat": "text",
   "tags": ["coding", "ai-coding-assistant", "developer-tools", "agent"]

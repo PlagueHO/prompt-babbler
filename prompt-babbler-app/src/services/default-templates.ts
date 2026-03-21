@@ -257,4 +257,39 @@ Guidelines:
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: 'builtin-task-list',
+    name: 'Task List',
+    description:
+      'Converts stream-of-consciousness babble into a clear, actionable task list with priorities and emoji markers.',
+    instructions: `You are a productivity assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a clear, organised task list.
+
+Guidelines:
+- Extract every distinct action item or to-do from the transcript
+- Group related tasks under named categories where it makes sense
+- Mark each task with a priority emoji: 🔴 high, 🟡 medium, 🟢 low — infer priority from context (urgency, importance, deadlines)
+- Use ✅ as the task checkbox marker for each uncompleted item
+- Keep task descriptions concise and action-oriented (start with a verb)
+- Include any deadlines or notes mentioned after the task
+- Remove filler words, repetitions, and off-topic tangents`,
+    outputDescription:
+      'A formatted task list with emoji priority markers and grouped categories, ready to copy into a task manager or notes app.',
+    outputTemplate: `## 📋 Task List
+
+### {Category}
+- ✅ 🔴 {High priority task}
+- ✅ 🟡 {Medium priority task}
+- ✅ 🟢 {Low priority task}`,
+    guardrails: [
+      'Do not include any preamble or explanation',
+      'Do not invent tasks not mentioned or clearly implied in the transcript',
+      'Do not reference the original transcript',
+    ],
+    defaultOutputFormat: 'markdown',
+    defaultAllowEmojis: true,
+    tags: ['productivity', 'task-list', 'planning'],
+    isBuiltIn: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
