@@ -40,7 +40,7 @@ export function useTemplates() {
   }, [fetchTemplates, accountCount]);
 
   const createTemplate = useCallback(
-    async (template: { name: string; description: string; systemPrompt: string }): Promise<PromptTemplate> => {
+    async (template: api.TemplateRequest): Promise<PromptTemplate> => {
       const token = await getAuthToken();
       const created = await api.createTemplate(template, token);
       await fetchTemplates();
@@ -55,7 +55,15 @@ export function useTemplates() {
       const updated = await api.updateTemplate(template.id, {
         name: template.name,
         description: template.description,
-        systemPrompt: template.systemPrompt,
+        instructions: template.instructions,
+        outputDescription: template.outputDescription,
+        outputTemplate: template.outputTemplate,
+        examples: template.examples,
+        guardrails: template.guardrails,
+        defaultOutputFormat: template.defaultOutputFormat,
+        defaultAllowEmojis: template.defaultAllowEmojis,
+        tags: template.tags,
+        additionalProperties: template.additionalProperties,
       }, token);
       await fetchTemplates();
       return updated;

@@ -10,7 +10,7 @@
     "id",
     "name",
     "description",
-    "systemPrompt"
+    "instructions"
   ],
   "additionalProperties": false,
   "properties": {
@@ -42,11 +42,74 @@
       "minLength": 1,
       "maxLength": 1000
     },
-    "systemPrompt": {
+    "instructions": {
       "type": "string",
-      "description": "The system prompt text used by the template.",
+      "description": "Core instructions for the LLM. This is the primary directive that tells the model what to do.",
       "minLength": 1,
       "maxLength": 50000
+    },
+    "outputDescription": {
+      "type": "string",
+      "description": "Describes the desired characteristics of the output.",
+      "maxLength": 2000
+    },
+    "outputTemplate": {
+      "type": "string",
+      "description": "A text or markdown format template for the output structure.",
+      "maxLength": 10000
+    },
+    "examples": {
+      "type": "array",
+      "description": "Few-shot examples as input/output pairs.",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["input", "output"],
+        "additionalProperties": false,
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "Sample babble input.",
+            "minLength": 1,
+            "maxLength": 5000
+          },
+          "output": {
+            "type": "string",
+            "description": "Desired prompt output for the sample input.",
+            "minLength": 1,
+            "maxLength": 10000
+          }
+        }
+      }
+    },
+    "guardrails": {
+      "type": "array",
+      "description": "Don't-do constraints for the LLM.",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "defaultOutputFormat": {
+      "type": "string",
+      "description": "Default output format. Can be overridden per request.",
+      "enum": ["text", "markdown"]
+    },
+    "defaultAllowEmojis": {
+      "type": "boolean",
+      "description": "Default emoji preference. Can be overridden per request."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Categorization tags for the template.",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      }
     }
   }
 }

@@ -7,7 +7,7 @@ const builtInTemplate: PromptTemplate = {
   id: 't1',
   name: 'Built-in Template',
   description: 'A built-in template description',
-  systemPrompt: 'Do something useful',
+  instructions: 'Do something useful',
   isBuiltIn: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -23,5 +23,15 @@ describe('TemplateCard', () => {
   it('shows built-in badge', () => {
     render(<TemplateCard template={builtInTemplate} onClick={vi.fn()} />);
     expect(screen.getByText('Built-in')).toBeInTheDocument();
+  });
+
+  it('renders tags when present', () => {
+    const taggedTemplate: PromptTemplate = {
+      ...builtInTemplate,
+      tags: ['coding', 'review'],
+    };
+    render(<TemplateCard template={taggedTemplate} onClick={vi.fn()} />);
+    expect(screen.getByText('coding')).toBeInTheDocument();
+    expect(screen.getByText('review')).toBeInTheDocument();
   });
 });

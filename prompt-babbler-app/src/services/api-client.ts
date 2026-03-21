@@ -2,6 +2,7 @@ import type {
   Babble,
   GeneratedPrompt,
   PagedResponse,
+  PromptFormat,
   PromptTemplate,
   StatusResponse,
   UserProfile,
@@ -72,11 +73,24 @@ export async function getTemplate(id: string, accessToken?: string): Promise<Pro
   return fetchJson<PromptTemplate>(`/api/templates/${encodeURIComponent(id)}`, undefined, accessToken);
 }
 
-export async function createTemplate(request: {
+export interface TemplateRequest {
   name: string;
   description: string;
-  systemPrompt: string;
-}, accessToken?: string): Promise<PromptTemplate> {
+  instructions: string;
+  outputDescription?: string;
+  outputTemplate?: string;
+  examples?: { input: string; output: string }[];
+  guardrails?: string[];
+  defaultOutputFormat?: PromptFormat;
+  defaultAllowEmojis?: boolean;
+  tags?: string[];
+  additionalProperties?: Record<string, unknown>;
+}
+
+export async function createTemplate(
+  request: TemplateRequest,
+  accessToken?: string,
+): Promise<PromptTemplate> {
   return fetchJson<PromptTemplate>('/api/templates', {
     method: 'POST',
     body: JSON.stringify(request),
@@ -85,7 +99,7 @@ export async function createTemplate(request: {
 
 export async function updateTemplate(
   id: string,
-  request: { name: string; description: string; systemPrompt: string },
+  request: TemplateRequest,
   accessToken?: string,
 ): Promise<PromptTemplate> {
   return fetchJson<PromptTemplate>(`/api/templates/${encodeURIComponent(id)}`, {
@@ -173,7 +187,7 @@ export async function getBabble(id: string, accessToken?: string): Promise<Babbl
 }
 
 export async function createBabble(
-  request: { title: string; text: string },
+  request: { title: string; text: string; tags?: string[] },
   accessToken?: string,
 ): Promise<Babble> {
   return fetchJson<Babble>('/api/babbles', {
@@ -184,7 +198,7 @@ export async function createBabble(
 
 export async function updateBabble(
   id: string,
-  request: { title: string; text: string },
+  request: { title: string; text: string; tags?: string[] },
   accessToken?: string,
 ): Promise<Babble> {
   return fetchJson<Babble>(`/api/babbles/${encodeURIComponent(id)}`, {

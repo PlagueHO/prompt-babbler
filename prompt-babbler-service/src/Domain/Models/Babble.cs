@@ -19,6 +19,9 @@ public sealed record Babble
     [JsonPropertyName("createdAt")]
     public required DateTimeOffset CreatedAt { get; init; }
 
+    [JsonPropertyName("tags")]
+    public IReadOnlyList<string>? Tags { get; init; }
+
     [JsonPropertyName("updatedAt")]
     public required DateTimeOffset UpdatedAt { get; init; }
 }

@@ -62,7 +62,14 @@ public sealed class BuiltInTemplateSeedingService : IHostedService
                 UserId = CosmosPromptTemplateRepository.BuiltInUserId,
                 Name = definition.Name,
                 Description = definition.Description,
-                SystemPrompt = definition.SystemPrompt,
+                Instructions = definition.Instructions,
+                OutputDescription = definition.OutputDescription,
+                OutputTemplate = definition.OutputTemplate,
+                Examples = definition.Examples,
+                Guardrails = definition.Guardrails,
+                DefaultOutputFormat = definition.DefaultOutputFormat,
+                DefaultAllowEmojis = definition.DefaultAllowEmojis,
+                Tags = definition.Tags,
                 IsBuiltIn = true,
                 CreatedAt = now,
                 UpdatedAt = now,
@@ -78,6 +85,13 @@ public sealed class BuiltInTemplateSeedingService : IHostedService
         public required string Id { get; init; }
         public required string Name { get; init; }
         public required string Description { get; init; }
-        public required string SystemPrompt { get; init; }
+        public required string Instructions { get; init; }
+        public string? OutputDescription { get; init; }
+        public string? OutputTemplate { get; init; }
+        public IReadOnlyList<PromptExample>? Examples { get; init; }
+        public IReadOnlyList<string>? Guardrails { get; init; }
+        public string? DefaultOutputFormat { get; init; }
+        public bool? DefaultAllowEmojis { get; init; }
+        public IReadOnlyList<string>? Tags { get; init; }
     }
 }

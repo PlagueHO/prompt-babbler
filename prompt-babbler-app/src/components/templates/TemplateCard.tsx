@@ -6,6 +6,7 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { TagList } from '@/components/ui/tag-list';
 import type { PromptTemplate } from '@/types';
 
 interface TemplateCardProps {
@@ -30,8 +31,9 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
       </CardHeader>
       <CardContent>
         <p className="line-clamp-2 text-xs text-muted-foreground font-mono">
-          {template.systemPrompt}
+          {template.instructions}
         </p>
+        <TagList tags={template.tags} className="mt-2" />
       </CardContent>
     </Card>
   );

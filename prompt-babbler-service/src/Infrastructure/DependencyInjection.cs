@@ -14,7 +14,9 @@ public static class DependencyInjection
         string speechRegion,
         string aiServicesEndpoint)
     {
+        services.AddSingleton<IPromptBuilder, PromptBuilder>();
         services.AddTransient<IPromptGenerationService, AzureOpenAiPromptGenerationService>();
+        services.AddTransient<ITemplateValidationService, TemplateValidationService>();
 
         // Speech Service authenticates via a Cognitive Services token obtained by exchanging
         // the AAD token at the AI Services resource's STS endpoint.

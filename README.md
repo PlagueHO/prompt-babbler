@@ -8,6 +8,24 @@
 
 💬 Prompt Babbler is a speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Azure AI Foundry, and generates structured prompts for target systems like GitHub Copilot. It can run locally with a Cosmos DB emulator or be deployed to Azure with a fully managed Cosmos DB instance and Azure AI Foundry resources. The app is built with a React frontend and a .NET backend, orchestrated by .NET Aspire for seamless local and cloud development.
 
+## What It Does
+
+Prompt Babbler turns rough speech into polished, structured prompts ready to use with AI tools. The typical workflow is:
+
+1. **Record** — Click record and speak your thoughts out loud, stream-of-consciousness style.
+1. **Transcribe** — Azure AI Speech Service converts your audio to text in real time.
+1. **Generate** — The app sends your transcription through a configurable prompt template and calls an Azure OpenAI model to produce a structured, ready-to-use prompt.
+1. **Use** — Copy the generated prompt into GitHub Copilot, an AI assistant, an image generator, or any other AI tool.
+
+### Key Features
+
+- **Real-time speech transcription** via Azure AI Speech Service — see your words appear as you speak.
+- **Prompt templates** — Create and manage reusable templates that shape how your transcription is turned into a prompt. Templates support structured instructions, output format, guardrails, examples, and tags.
+- **Prompt history** — Every generated prompt is saved alongside its source transcription (called a *babble*) so you can review and reuse past outputs.
+- **Multi-target support** — Included built-in templates for GitHub Copilot, general AI assistants, and image generators.
+- **Single-user and multi-user modes** — Run privately without authentication, or enable Microsoft Entra ID for multi-user access.
+- **Fully cloud-native** — Deploys to Azure Static Web Apps + Azure Container Apps with Cosmos DB and Azure AI Foundry, all provisioned via Bicep.
+
 ## Quick Start
 
 For full setup instructions including prerequisite installation, see [docs/QUICKSTART-LOCAL.md](docs/QUICKSTART-LOCAL.md). To deploy to Azure, see [docs/QUICKSTART-AZURE.md](docs/QUICKSTART-AZURE.md).

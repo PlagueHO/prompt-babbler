@@ -9,6 +9,7 @@ Apply these rules per the [GFM spec](https://github.github.com/gfm/) when writin
 
 > [!IMPORTANT]
 > Don't force wrap lines at a specific length. This preserves readability and minimizes diffs when editing.
+> Numbered lists should use `1.` for all items to allow for easy reordering without needing to update numbers.
 
 ## Preliminaries
 

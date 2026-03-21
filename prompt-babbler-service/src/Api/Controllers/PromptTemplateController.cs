@@ -15,12 +15,19 @@ namespace PromptBabbler.Api.Controllers;
 [Route("api/templates")]
 public sealed class PromptTemplateController : ControllerBase
 {
+    private static readonly string[] AllowedOutputFormats = ["text", "markdown"];
+
     private readonly IPromptTemplateService _templateService;
+    private readonly ITemplateValidationService _validationService;
     private readonly ILogger<PromptTemplateController> _logger;
 
-    public PromptTemplateController(IPromptTemplateService templateService, ILogger<PromptTemplateController> logger)
+    public PromptTemplateController(
+        IPromptTemplateService templateService,
+        ITemplateValidationService validationService,
+        ILogger<PromptTemplateController> logger)
     {
         _templateService = templateService;
+        _validationService = validationService;
         _logger = logger;
     }
 
@@ -29,7 +36,6 @@ public sealed class PromptTemplateController : ControllerBase
         [FromQuery] bool forceRefresh = false,
         CancellationToken cancellationToken = default)
     {
-        // Extract userId from the authenticated user's Entra ID object ID claim, or "_anonymous" in single-user mode.
         var userId = User.GetUserIdOrAnonymous();
         var templates = await _templateService.GetTemplatesAsync(userId, forceRefresh, cancellationToken);
         return Ok(templates.Select(ToResponse));
@@ -53,7 +59,9 @@ public sealed class PromptTemplateController : ControllerBase
         [FromBody] CreatePromptTemplateRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!ValidateCreateRequest(request, out var validationError))
+        if (!ValidateTemplateFields(request.Name, request.Description, request.Instructions,
+            request.OutputDescription, request.OutputTemplate, request.Examples,
+            request.Guardrails, request.DefaultOutputFormat, request.Tags, out var validationError))
         {
             return BadRequest(validationError);
         }
@@ -66,11 +74,25 @@ public sealed class PromptTemplateController : ControllerBase
             UserId = userId,
             Name = request.Name,
             Description = request.Description,
-            SystemPrompt = request.SystemPrompt,
+            Instructions = request.Instructions,
+            OutputDescription = request.OutputDescription,
+            OutputTemplate = request.OutputTemplate,
+            Examples = request.Examples?.Select(e => new PromptExample { Input = e.Input, Output = e.Output }).ToList(),
+            Guardrails = request.Guardrails,
+            DefaultOutputFormat = request.DefaultOutputFormat,
+            DefaultAllowEmojis = request.DefaultAllowEmojis,
+            Tags = request.Tags,
+            AdditionalProperties = request.AdditionalProperties,
             IsBuiltIn = false,
             CreatedAt = now,
             UpdatedAt = now,
         };
+
+        var validationResult = await _validationService.ValidateTemplateAsync(template, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new { errors = validationResult.Errors });
+        }
 
         var created = await _templateService.CreateAsync(template, cancellationToken);
         _logger.LogInformation("Created user template {TemplateId}: {TemplateName}", created.Id, created.Name);
@@ -84,7 +106,9 @@ public sealed class PromptTemplateController : ControllerBase
         [FromBody] UpdatePromptTemplateRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!ValidateUpdateRequest(request, out var validationError))
+        if (!ValidateTemplateFields(request.Name, request.Description, request.Instructions,
+            request.OutputDescription, request.OutputTemplate, request.Examples,
+            request.Guardrails, request.DefaultOutputFormat, request.Tags, out var validationError))
         {
             return BadRequest(validationError);
         }
@@ -108,9 +132,23 @@ public sealed class PromptTemplateController : ControllerBase
         {
             Name = request.Name,
             Description = request.Description,
-            SystemPrompt = request.SystemPrompt,
+            Instructions = request.Instructions,
+            OutputDescription = request.OutputDescription,
+            OutputTemplate = request.OutputTemplate,
+            Examples = request.Examples?.Select(e => new PromptExample { Input = e.Input, Output = e.Output }).ToList(),
+            Guardrails = request.Guardrails,
+            DefaultOutputFormat = request.DefaultOutputFormat,
+            DefaultAllowEmojis = request.DefaultAllowEmojis,
+            Tags = request.Tags,
+            AdditionalProperties = request.AdditionalProperties,
             UpdatedAt = DateTimeOffset.UtcNow,
         };
+
+        var validationResult = await _validationService.ValidateTemplateAsync(updated, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new { errors = validationResult.Errors });
+        }
 
         var result = await _templateService.UpdateAsync(updated, cancellationToken);
         _logger.LogInformation("Updated user template {TemplateId}: {TemplateName}", result.Id, result.Name);
@@ -142,48 +180,113 @@ public sealed class PromptTemplateController : ControllerBase
         return NoContent();
     }
 
-    private static bool ValidateCreateRequest(CreatePromptTemplateRequest request, out string? error)
+    private static bool ValidateTemplateFields(
+        string name,
+        string description,
+        string instructions,
+        string? outputDescription,
+        string? outputTemplate,
+        IReadOnlyList<ExampleRequest>? examples,
+        IReadOnlyList<string>? guardrails,
+        string? defaultOutputFormat,
+        IReadOnlyList<string>? tags,
+        out string? error)
     {
-        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 100)
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 100)
         {
             error = "Name is required and must be between 1 and 100 characters.";
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(request.Description) || request.Description.Length > 500)
+        if (string.IsNullOrWhiteSpace(description) || description.Length > 500)
         {
             error = "Description is required and must be between 1 and 500 characters.";
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(request.SystemPrompt) || request.SystemPrompt.Length > 10000)
+        if (string.IsNullOrWhiteSpace(instructions) || instructions.Length > 10000)
         {
-            error = "SystemPrompt is required and must be between 1 and 10000 characters.";
+            error = "Instructions is required and must be between 1 and 10000 characters.";
             return false;
         }
 
-        error = null;
-        return true;
-    }
-
-    private static bool ValidateUpdateRequest(UpdatePromptTemplateRequest request, out string? error)
-    {
-        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 100)
+        if (outputDescription is not null && outputDescription.Length > 2000)
         {
-            error = "Name is required and must be between 1 and 100 characters.";
+            error = "OutputDescription must be at most 2000 characters.";
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(request.Description) || request.Description.Length > 500)
+        if (outputTemplate is not null && outputTemplate.Length > 10000)
         {
-            error = "Description is required and must be between 1 and 500 characters.";
+            error = "OutputTemplate must be at most 10000 characters.";
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(request.SystemPrompt) || request.SystemPrompt.Length > 10000)
+        if (examples is not null)
         {
-            error = "SystemPrompt is required and must be between 1 and 10000 characters.";
+            if (examples.Count > 10)
+            {
+                error = "At most 10 examples are allowed.";
+                return false;
+            }
+
+            for (var i = 0; i < examples.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(examples[i].Input) || examples[i].Input.Length > 5000)
+                {
+                    error = $"Examples[{i}].Input is required and must be at most 5000 characters.";
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(examples[i].Output) || examples[i].Output.Length > 10000)
+                {
+                    error = $"Examples[{i}].Output is required and must be at most 10000 characters.";
+                    return false;
+                }
+            }
+        }
+
+        if (guardrails is not null)
+        {
+            if (guardrails.Count > 20)
+            {
+                error = "At most 20 guardrails are allowed.";
+                return false;
+            }
+
+            for (var i = 0; i < guardrails.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(guardrails[i]) || guardrails[i].Length > 500)
+                {
+                    error = $"Guardrails[{i}] is required and must be at most 500 characters.";
+                    return false;
+                }
+            }
+        }
+
+        if (defaultOutputFormat is not null &&
+            !AllowedOutputFormats.Contains(defaultOutputFormat, StringComparer.OrdinalIgnoreCase))
+        {
+            error = "DefaultOutputFormat must be 'text' or 'markdown'.";
             return false;
+        }
+
+        if (tags is not null)
+        {
+            if (tags.Count > 20)
+            {
+                error = "At most 20 tags are allowed.";
+                return false;
+            }
+
+            for (var i = 0; i < tags.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(tags[i]) || tags[i].Length > 50)
+                {
+                    error = $"Tags[{i}] is required and must be at most 50 characters.";
+                    return false;
+                }
+            }
         }
 
         error = null;
@@ -195,7 +298,15 @@ public sealed class PromptTemplateController : ControllerBase
         Id = template.Id,
         Name = template.Name,
         Description = template.Description,
-        SystemPrompt = template.SystemPrompt,
+        Instructions = template.Instructions,
+        OutputDescription = template.OutputDescription,
+        OutputTemplate = template.OutputTemplate,
+        Examples = template.Examples,
+        Guardrails = template.Guardrails,
+        DefaultOutputFormat = template.DefaultOutputFormat,
+        DefaultAllowEmojis = template.DefaultAllowEmojis,
+        Tags = template.Tags,
+        AdditionalProperties = template.AdditionalProperties,
         IsBuiltIn = template.IsBuiltIn,
         CreatedAt = template.CreatedAt.ToString("o"),
         UpdatedAt = template.UpdatedAt.ToString("o"),

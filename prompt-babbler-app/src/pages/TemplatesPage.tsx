@@ -5,6 +5,7 @@ import { TemplateEditor } from '@/components/templates/TemplateEditor';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useTemplates } from '@/hooks/useTemplates';
 import type { PromptTemplate } from '@/types';
+import type { TemplateRequest } from '@/services/api-client';
 
 export function TemplatesPage() {
   const { templates, loading, error, createTemplate, updateTemplate, deleteTemplate } =
@@ -18,16 +19,14 @@ export function TemplatesPage() {
   }, []);
 
   const handleSave = useCallback(
-    async (data: { name: string; description: string; systemPrompt: string }) => {
+    async (data: TemplateRequest) => {
       if (isCreating) {
         await createTemplate(data);
         toast.success('Template created');
       } else if (selected) {
         await updateTemplate({
           ...selected,
-          name: data.name,
-          description: data.description,
-          systemPrompt: data.systemPrompt,
+          ...data,
           updatedAt: new Date().toISOString(),
         });
         toast.success('Template updated');

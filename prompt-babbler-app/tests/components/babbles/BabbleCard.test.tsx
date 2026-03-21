@@ -10,7 +10,6 @@ const babble: Babble = {
   text: 'Some babble text content here',
   createdAt: '2024-01-15T10:00:00.000Z',
   updatedAt: '2024-01-15T10:00:00.000Z',
-  lastGeneratedPrompt: null,
 };
 
 describe('BabbleCard', () => {
@@ -36,5 +35,28 @@ describe('BabbleCard', () => {
     );
     const preview = screen.getByText(/A+…/);
     expect(preview).toBeInTheDocument();
+  });
+
+  it('renders tags when present', () => {
+    const taggedBabble: Babble = {
+      ...babble,
+      tags: ['react', 'typescript'],
+    };
+    render(
+      <MemoryRouter>
+        <BabbleCard babble={taggedBabble} />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('react')).toBeInTheDocument();
+    expect(screen.getByText('typescript')).toBeInTheDocument();
+  });
+
+  it('does not render tags section when tags are empty', () => {
+    render(
+      <MemoryRouter>
+        <BabbleCard babble={{ ...babble, tags: [] }} />
+      </MemoryRouter>
+    );
+    expect(screen.queryByText('react')).not.toBeInTheDocument();
   });
 });

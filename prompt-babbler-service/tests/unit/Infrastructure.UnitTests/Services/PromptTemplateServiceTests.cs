@@ -43,7 +43,7 @@ public sealed class PromptTemplateServiceTests
             UserId = userId,
             Name = name,
             Description = "Test description",
-            SystemPrompt = "You are a test assistant.",
+            Instructions = "You are a test assistant.",
             IsBuiltIn = isBuiltIn,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,

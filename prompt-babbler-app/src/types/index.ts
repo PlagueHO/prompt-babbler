@@ -2,15 +2,29 @@ export interface Babble {
   id: string;
   title: string;
   text: string;
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PromptExample {
+  input: string;
+  output: string;
 }
 
 export interface PromptTemplate {
   id: string;
   name: string;
   description: string;
-  systemPrompt: string;
+  instructions: string;
+  outputDescription?: string;
+  outputTemplate?: string;
+  examples?: PromptExample[];
+  guardrails?: string[];
+  defaultOutputFormat?: PromptFormat;
+  defaultAllowEmojis?: boolean;
+  tags?: string[];
+  additionalProperties?: Record<string, unknown>;
   isBuiltIn: boolean;
   createdAt: string;
   updatedAt: string;

@@ -19,12 +19,17 @@ public sealed class PromptTemplateControllerTests
     private const string TestUserId = "00000000-0000-0000-0000-000000000000";
 
     private readonly IPromptTemplateService _templateService = Substitute.For<IPromptTemplateService>();
+    private readonly ITemplateValidationService _validationService = Substitute.For<ITemplateValidationService>();
     private readonly ILogger<PromptTemplateController> _logger = Substitute.For<ILogger<PromptTemplateController>>();
     private readonly PromptTemplateController _controller;
 
     public PromptTemplateControllerTests()
     {
-        _controller = new PromptTemplateController(_templateService, _logger);
+        _controller = new PromptTemplateController(_templateService, _validationService, _logger);
+
+        // Default: validation always passes
+        _validationService.ValidateTemplateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
+            .Returns(TemplateValidationResult.Success());
 
         var httpContext = new DefaultHttpContext();
         httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
@@ -49,7 +54,7 @@ public sealed class PromptTemplateControllerTests
             UserId = userId,
             Name = name,
             Description = "A test template description.",
-            SystemPrompt = "You are a test assistant.",
+            Instructions = "You are a test assistant.",
             IsBuiltIn = isBuiltIn,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
@@ -126,7 +131,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "New Template",
             Description = "A new template",
-            SystemPrompt = "You are helpful.",
+            Instructions = "You are helpful.",
         };
 
         _templateService.CreateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
@@ -145,7 +150,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "",
             Description = "A new template",
-            SystemPrompt = "You are helpful.",
+            Instructions = "You are helpful.",
         };
 
         var result = await _controller.CreateTemplate(request, CancellationToken.None);
@@ -160,7 +165,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "Valid Name",
             Description = "A new template",
-            SystemPrompt = "",
+            Instructions = "",
         };
 
         var result = await _controller.CreateTemplate(request, CancellationToken.None);
@@ -175,7 +180,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = new string('x', 101),
             Description = "A new template",
-            SystemPrompt = "You are helpful.",
+            Instructions = "You are helpful.",
         };
 
         var result = await _controller.CreateTemplate(request, CancellationToken.None);
@@ -190,7 +195,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "Valid Name",
             Description = new string('x', 501),
-            SystemPrompt = "You are helpful.",
+            Instructions = "You are helpful.",
         };
 
         var result = await _controller.CreateTemplate(request, CancellationToken.None);
@@ -205,7 +210,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "Valid Name",
             Description = "Valid description",
-            SystemPrompt = new string('x', 10001),
+            Instructions = new string('x', 10001),
         };
 
         var result = await _controller.CreateTemplate(request, CancellationToken.None);
@@ -228,7 +233,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "Updated Name",
             Description = "Updated description",
-            SystemPrompt = "Updated prompt",
+            Instructions = "Updated prompt",
         };
 
         var result = await _controller.UpdateTemplate("test-id", request, CancellationToken.None);
@@ -247,7 +252,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "Updated Name",
             Description = "Updated description",
-            SystemPrompt = "Updated prompt",
+            Instructions = "Updated prompt",
         };
 
         var result = await _controller.UpdateTemplate("test-id", request, CancellationToken.None);
@@ -266,7 +271,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "Updated Name",
             Description = "Updated description",
-            SystemPrompt = "Updated prompt",
+            Instructions = "Updated prompt",
         };
 
         var result = await _controller.UpdateTemplate("missing", request, CancellationToken.None);
@@ -281,7 +286,7 @@ public sealed class PromptTemplateControllerTests
         {
             Name = "",
             Description = "Valid description",
-            SystemPrompt = "Valid prompt",
+            Instructions = "Valid prompt",
         };
 
         var result = await _controller.UpdateTemplate("test-id", request, CancellationToken.None);

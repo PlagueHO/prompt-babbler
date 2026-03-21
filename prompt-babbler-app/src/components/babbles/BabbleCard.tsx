@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
+import { TagList } from '@/components/ui/tag-list';
 import type { Babble } from '@/types';
 
 interface BabbleCardProps {
@@ -35,6 +36,7 @@ export function BabbleCard({ babble }: BabbleCardProps) {
           <p className="line-clamp-3 text-sm text-muted-foreground">
             {truncated || 'No content yet.'}
           </p>
+          <TagList tags={babble.tags} className="mt-2" />
         </CardContent>
       </Card>
     </Link>

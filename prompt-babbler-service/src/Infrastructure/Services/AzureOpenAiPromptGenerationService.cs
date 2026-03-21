@@ -1,38 +1,24 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using PromptBabbler.Domain.Interfaces;
+using PromptBabbler.Domain.Models;
 
 namespace PromptBabbler.Infrastructure.Services;
 
-public sealed class AzureOpenAiPromptGenerationService(IChatClient chatClient) : IPromptGenerationService
+public sealed class AzureOpenAiPromptGenerationService(
+    IChatClient chatClient,
+    IPromptBuilder promptBuilder) : IPromptGenerationService
 {
-    private static readonly string[] AllowedFormats = ["text", "markdown"];
-
-    private static string BuildSystemPrompt(string systemPrompt, string promptFormat, bool allowEmojis)
-    {
-        var format = AllowedFormats.Contains(promptFormat, StringComparer.OrdinalIgnoreCase)
-            ? promptFormat
-            : "text";
-
-        var formatInstruction = string.Equals(format, "markdown", StringComparison.OrdinalIgnoreCase)
-            ? "Respond using Markdown formatting."
-            : "Respond in plain text without any Markdown formatting.";
-
-        var emojiInstruction = allowEmojis
-            ? "You may use emojis where appropriate."
-            : "Do not use any emojis.";
-
-        return $"{systemPrompt}\n\n{formatInstruction}\n{emojiInstruction}";
-    }
-
     public async IAsyncEnumerable<string> GeneratePromptStreamAsync(
         string babbleText,
-        string systemPrompt,
-        string promptFormat = "text",
-        bool allowEmojis = false,
+        PromptTemplate template,
+        string? promptFormat = null,
+        bool? allowEmojis = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var effectiveSystemPrompt = BuildSystemPrompt(systemPrompt, promptFormat, allowEmojis);
+        var effectiveFormat = promptFormat ?? template.DefaultOutputFormat ?? "text";
+        var effectiveEmojis = allowEmojis ?? template.DefaultAllowEmojis ?? false;
+        var effectiveSystemPrompt = promptBuilder.BuildSystemPrompt(template, effectiveFormat, effectiveEmojis);
 
         var messages = new List<ChatMessage>
         {

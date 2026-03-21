@@ -50,7 +50,11 @@ public sealed class PromptTemplateControllerTests
         templateService.CreateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
             .Returns(ci => ci.Arg<PromptTemplate>());
 
-        var request = new { name = "Test", description = "Test description", systemPrompt = "Be helpful." };
+        var validationService = factory.Services.GetRequiredService<ITemplateValidationService>();
+        validationService.ValidateTemplateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
+            .Returns(TemplateValidationResult.Success());
+
+        var request = new { name = "Test", description = "Test description", instructions = "Be helpful." };
         var response = await client.PostAsJsonAsync("/api/templates", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -62,7 +66,7 @@ public sealed class PromptTemplateControllerTests
         await using var factory = new NoAuthWebApplicationFactory();
         var client = factory.CreateClient();
 
-        var request = new { name = "Test", description = "Test description", systemPrompt = "Be helpful." };
+        var request = new { name = "Test", description = "Test description", instructions = "Be helpful." };
         var response = await client.PostAsJsonAsync("/api/templates", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -74,7 +78,7 @@ public sealed class PromptTemplateControllerTests
         await using var factory = new CustomWebApplicationFactory();
         var client = factory.CreateClient();
 
-        var request = new { name = "", description = "Test description", systemPrompt = "Be helpful." };
+        var request = new { name = "", description = "Test description", instructions = "Be helpful." };
         var response = await client.PostAsJsonAsync("/api/templates", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);

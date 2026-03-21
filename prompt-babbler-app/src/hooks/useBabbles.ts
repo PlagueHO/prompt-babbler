@@ -62,7 +62,7 @@ export function useBabbles() {
   }, [fetchBabbles, hasMore, continuationToken]);
 
   const createBabble = useCallback(
-    async (request: { title: string; text: string }): Promise<Babble> => {
+    async (request: { title: string; text: string; tags?: string[] }): Promise<Babble> => {
       const authToken = await getAuthTokenRef.current();
       const created = await api.createBabble(request, authToken);
       await fetchBabbles();
@@ -72,7 +72,7 @@ export function useBabbles() {
   );
 
   const updateBabble = useCallback(
-    async (id: string, request: { title: string; text: string }): Promise<Babble> => {
+    async (id: string, request: { title: string; text: string; tags?: string[] }): Promise<Babble> => {
       const authToken = await getAuthTokenRef.current();
       const updated = await api.updateBabble(id, request, authToken);
       // Update in-place for immediate UI response.

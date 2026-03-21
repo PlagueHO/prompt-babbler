@@ -10,7 +10,7 @@ vi.mock('@/services/api-client', () => {
       id: 'builtin-1',
       name: 'Built-in Template',
       description: 'A built-in template',
-      systemPrompt: 'You are helpful.',
+      instructions: 'You are helpful.',
       isBuiltIn: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -20,7 +20,7 @@ vi.mock('@/services/api-client', () => {
   return {
     getTemplates: vi.fn().mockResolvedValue(mockTemplates),
     getTemplate: vi.fn(),
-    createTemplate: vi.fn().mockImplementation(async (req: { name: string; description: string; systemPrompt: string }) => ({
+    createTemplate: vi.fn().mockImplementation(async (req: { name: string; description: string; instructions: string }) => ({
       id: 'new-1',
       ...req,
       isBuiltIn: false,
@@ -59,7 +59,7 @@ describe('useTemplates', () => {
     await result.current.createTemplate({
       name: 'Custom Template',
       description: 'A custom template',
-      systemPrompt: 'Do something',
+      instructions: 'Do something',
     });
 
     const { createTemplate } = await import('@/services/api-client');

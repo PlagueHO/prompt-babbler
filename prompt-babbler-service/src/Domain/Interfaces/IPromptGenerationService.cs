@@ -1,12 +1,14 @@
+using PromptBabbler.Domain.Models;
+
 namespace PromptBabbler.Domain.Interfaces;
 
 public interface IPromptGenerationService
 {
     IAsyncEnumerable<string> GeneratePromptStreamAsync(
         string babbleText,
-        string systemPrompt,
-        string promptFormat = "text",
-        bool allowEmojis = false,
+        PromptTemplate template,
+        string? promptFormat = null,
+        bool? allowEmojis = null,
         CancellationToken cancellationToken = default);
 
     Task<string> GenerateTitleAsync(

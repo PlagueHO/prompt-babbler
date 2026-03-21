@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Pencil, Trash2, Mic, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { TagList } from '@/components/ui/tag-list';
 import { BabbleEditor } from '@/components/babbles/BabbleEditor';
 import { DeleteBabbleDialog } from '@/components/babbles/DeleteBabbleDialog';
 import { PromptGenerator } from '@/components/prompts/PromptGenerator';
@@ -81,7 +82,7 @@ export function BabblePage() {
   const handleSave = useCallback(
     async (updated: Babble) => {
       try {
-        const result = await updateBabble(updated.id, { title: updated.title, text: updated.text });
+        const result = await updateBabble(updated.id, { title: updated.title, text: updated.text, tags: updated.tags });
         setBabble(result);
         setIsEditing(false);
         toast.success('Babble updated');
@@ -209,6 +210,7 @@ export function BabblePage() {
           <p className="text-sm text-muted-foreground">
             {new Date(babble.updatedAt).toLocaleString()}
           </p>
+          <TagList tags={babble.tags} className="mt-1" />
         </div>
         <div className="flex gap-2">
           <Button asChild size="sm">

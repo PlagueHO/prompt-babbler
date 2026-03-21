@@ -282,7 +282,7 @@ public sealed class BabbleControllerTests
         UserId = "_builtin",
         Name = "Test Template",
         Description = "A test template.",
-        SystemPrompt = "You are a prompt engineer.",
+        Instructions = "You are a prompt engineer.",
         IsBuiltIn = true,
         CreatedAt = DateTimeOffset.UtcNow,
         UpdatedAt = DateTimeOffset.UtcNow,
@@ -352,7 +352,7 @@ public sealed class BabbleControllerTests
         _templateService.GetByIdAsync(null, "template-1", Arg.Any<CancellationToken>())
             .Returns(template);
         _promptGenerationService.GeneratePromptStreamAsync(
-            babble.Text, template.SystemPrompt, "text", false, Arg.Any<CancellationToken>())
+            babble.Text, template, Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns(ToAsyncEnumerable("Hello ", "world"));
         _generatedPromptService.CreateAsync(TestUserId, Arg.Any<GeneratedPrompt>(), Arg.Any<CancellationToken>())
             .Returns(ci =>
@@ -385,7 +385,7 @@ public sealed class BabbleControllerTests
         _templateService.GetByIdAsync(null, "template-1", Arg.Any<CancellationToken>())
             .Returns(template);
         _promptGenerationService.GeneratePromptStreamAsync(
-            babble.Text, template.SystemPrompt, "text", false, Arg.Any<CancellationToken>())
+            babble.Text, template, Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Throws(new InvalidOperationException("LLM error"));
 
         var request = new GeneratePromptRequest { TemplateId = "template-1" };
@@ -438,5 +438,97 @@ public sealed class BabbleControllerTests
 
         var statusResult = result.Should().BeOfType<ObjectResult>().Subject;
         statusResult.StatusCode.Should().Be(502);
+    }
+
+    // ---- Tag validation ----
+
+    [TestMethod]
+    public async Task CreateBabble_TooManyTags_Returns400()
+    {
+        var tags = Enumerable.Range(0, 21).Select(i => $"tag{i}").ToList();
+        var request = new CreateBabbleRequest
+        {
+            Title = "Valid Title",
+            Text = "Valid text.",
+            Tags = tags,
+        };
+
+        var result = await _controller.CreateBabble(request, CancellationToken.None);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [TestMethod]
+    public async Task CreateBabble_TagTooLong_Returns400()
+    {
+        var request = new CreateBabbleRequest
+        {
+            Title = "Valid Title",
+            Text = "Valid text.",
+            Tags = [new string('x', 51)],
+        };
+
+        var result = await _controller.CreateBabble(request, CancellationToken.None);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [TestMethod]
+    public async Task CreateBabble_ValidTags_Returns201()
+    {
+        _babbleService.CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var request = new CreateBabbleRequest
+        {
+            Title = "Valid Title",
+            Text = "Valid text.",
+            Tags = ["tag1", "tag2"],
+        };
+
+        var result = await _controller.CreateBabble(request, CancellationToken.None);
+
+        var created = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+        var response = created.Value.Should().BeOfType<BabbleResponse>().Subject;
+        response.Tags.Should().BeEquivalentTo(new[] { "tag1", "tag2" });
+    }
+
+    [TestMethod]
+    public async Task UpdateBabble_TooManyTags_Returns400()
+    {
+        var tags = Enumerable.Range(0, 21).Select(i => $"tag{i}").ToList();
+        var request = new UpdateBabbleRequest
+        {
+            Title = "Valid Title",
+            Text = "Valid text.",
+            Tags = tags,
+        };
+
+        var result = await _controller.UpdateBabble("test-id", request, CancellationToken.None);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [TestMethod]
+    public async Task UpdateBabble_ValidTags_Returns200()
+    {
+        var existing = CreateBabble();
+        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+            .Returns(existing);
+        _babbleService.UpdateAsync(TestUserId, Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var request = new UpdateBabbleRequest
+        {
+            Title = "Updated Title",
+            Text = "Updated text.",
+            Tags = ["alpha", "beta"],
+        };
+
+        var result = await _controller.UpdateBabble("test-id", request, CancellationToken.None);
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = ok.Value.Should().BeOfType<BabbleResponse>().Subject;
+        response.Tags.Should().BeEquivalentTo(new[] { "alpha", "beta" });
     }
 }

@@ -19,7 +19,8 @@ import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { getSpeechLanguage } from '@/services/local-storage';
 import { AuthGuard } from '@/components/layout/AuthGuard';
-import { Save, ChevronDown, Sparkles, Loader2, Trash2 } from 'lucide-react';
+import { Save, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
+import { ClearTranscriptDialog } from '@/components/recording/ClearTranscriptDialog';
 import type { Babble } from '@/types';
 
 export function RecordPage() {
@@ -170,14 +171,9 @@ export function RecordPage() {
   const transcriptionDone = !isRecording && !isConnected;
 
   const handleClear = useCallback(() => {
-    const message = isAppendMode
-      ? 'Clear the new transcript? The existing babble text will not be affected.'
-      : 'Clear the entire transcript? This cannot be undone.';
-    if (window.confirm(message)) {
-      reset();
-      if (!isAppendMode) {
-        setTitle('');
-      }
+    reset();
+    if (!isAppendMode) {
+      setTitle('');
     }
   }, [reset, isAppendMode]);
 
@@ -289,14 +285,11 @@ export function RecordPage() {
             </DropdownMenu>
           </div>
 
-          <Button
-            variant="ghost"
-            onClick={handleClear}
+          <ClearTranscriptDialog
+            isAppendMode={isAppendMode}
             disabled={!transcribedText.trim() || !transcriptionDone}
-          >
-            <Trash2 className="size-4" />
-            Clear
-          </Button>
+            onConfirm={handleClear}
+          />
         </div>
       </div>
     </div>

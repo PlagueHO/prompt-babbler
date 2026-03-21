@@ -86,6 +86,7 @@ public sealed class BabbleController : ControllerBase
             UserId = userId,
             Title = request.Title,
             Text = request.Text,
+            Tags = request.Tags,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -118,6 +119,7 @@ public sealed class BabbleController : ControllerBase
         {
             Title = request.Title,
             Text = request.Text,
+            Tags = request.Tags,
             UpdatedAt = DateTimeOffset.UtcNow,
         };
 
@@ -197,7 +199,7 @@ public sealed class BabbleController : ControllerBase
             var fullText = new System.Text.StringBuilder();
 
             await foreach (var chunk in _promptGenerationService.GeneratePromptStreamAsync(
-                babble.Text, template.SystemPrompt, request.PromptFormat, request.AllowEmojis, cancellationToken))
+                babble.Text, template, request.PromptFormat, request.AllowEmojis, cancellationToken))
             {
                 var textData = JsonSerializer.Serialize(new { text = chunk });
                 await Response.WriteAsync($"data: {textData}\n\n", cancellationToken);
@@ -296,6 +298,11 @@ public sealed class BabbleController : ControllerBase
             return false;
         }
 
+        if (!ValidateTags(request.Tags, out error))
+        {
+            return false;
+        }
+
         error = null;
         return true;
     }
@@ -314,6 +321,35 @@ public sealed class BabbleController : ControllerBase
             return false;
         }
 
+        if (!ValidateTags(request.Tags, out error))
+        {
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
+    private static bool ValidateTags(IReadOnlyList<string>? tags, out string? error)
+    {
+        if (tags is not null)
+        {
+            if (tags.Count > 20)
+            {
+                error = "At most 20 tags are allowed.";
+                return false;
+            }
+
+            for (var i = 0; i < tags.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(tags[i]) || tags[i].Length > 50)
+                {
+                    error = $"Tags[{i}] is required and must be at most 50 characters.";
+                    return false;
+                }
+            }
+        }
+
         error = null;
         return true;
     }
@@ -323,6 +359,7 @@ public sealed class BabbleController : ControllerBase
         Id = babble.Id,
         Title = babble.Title,
         Text = babble.Text,
+        Tags = babble.Tags,
         CreatedAt = babble.CreatedAt.ToString("o"),
         UpdatedAt = babble.UpdatedAt.ToString("o"),
     };
