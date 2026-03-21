@@ -60,4 +60,6 @@
 
 📌 Team initialized on 2026-03-19 — cast from Firefly universe
 📌 Role: Backend Dev — .NET, Azure AI, Cosmos DB, APIs, Clean Architecture
-📌 **VNET integration (2026-03-20):** Wash completed VNET setup with private endpoints for Cosmos DB and Foundry. Backend must ensure Bearer token flows work correctly through private endpoints in private-only mode (enablePublicNetworkAccess=false). No API changes required; authentication flow unchanged.
+📌 **Babble pinning/search/sort/filter (2026-03-21):** Added `IsPinned` (bool, default false) to `Babble` domain model. Updated `IBabbleRepository` and `IBabbleService` `GetByUserAsync` signatures with `search`, `sortBy`, `sortDirection`, `isPinned` optional params. `CosmosBabbleRepository` builds dynamic query using `StringBuilder` — appends `CONTAINS(LOWER(c.title), @search)` and `c.isPinned = @isPinned` conditionally; ORDER BY field/direction mapped from validated params. Controller validates `sortBy` ∈ {`createdAt`,`title`} and `sortDirection` ∈ {`desc`,`asc`}, search max 200 chars. UpdateBabble preserves `IsPinned` if not supplied (`request.IsPinned ?? existing.IsPinned`). All test mocks updated to new 8-arg signature.
+
+**Follow-up (2026-03-21):** Home redesign session complete. Frontend implemented with dual-section UI (6 pinned bubbles + infinite-scroll list). Backend tested and validated for search/sort/filter. Coordinator validated test suite. Full stack ready for integration.
