@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using PromptBabbler.Domain.Interfaces;
@@ -24,10 +25,40 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
         string userId,
         string? continuationToken = null,
         int pageSize = 20,
+        string? search = null,
+        string? sortBy = null,
+        string? sortDirection = null,
+        bool? isPinned = null,
         CancellationToken cancellationToken = default)
     {
-        var query = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId ORDER BY c.createdAt DESC")
+        var queryText = new StringBuilder("SELECT * FROM c WHERE c.userId = @userId");
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            queryText.Append(" AND CONTAINS(LOWER(c.title), @search)");
+        }
+
+        if (isPinned.HasValue)
+        {
+            queryText.Append(" AND c.isPinned = @isPinned");
+        }
+
+        var orderByField = sortBy == "title" ? "c.title" : "c.createdAt";
+        var orderByDirection = string.Equals(sortDirection, "asc", StringComparison.OrdinalIgnoreCase) ? "ASC" : "DESC";
+        queryText.Append($" ORDER BY {orderByField} {orderByDirection}");
+
+        var queryDefinition = new QueryDefinition(queryText.ToString())
             .WithParameter("@userId", userId);
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            queryDefinition = queryDefinition.WithParameter("@search", search.ToLowerInvariant());
+        }
+
+        if (isPinned.HasValue)
+        {
+            queryDefinition = queryDefinition.WithParameter("@isPinned", isPinned.Value);
+        }
 
         var options = new QueryRequestOptions
         {
@@ -36,7 +67,7 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
         };
 
         var results = new List<Babble>();
-        using var iterator = _container.GetItemQueryIterator<Babble>(query, continuationToken, options);
+        using var iterator = _container.GetItemQueryIterator<Babble>(queryDefinition, continuationToken, options);
 
         if (iterator.HasMoreResults)
         {
@@ -86,6 +117,31 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             cancellationToken: cancellationToken);
 
         _logger.LogInformation("Updated babble {BabbleId} for user {UserId}", babble.Id, babble.UserId);
+
+        return response.Resource;
+    }
+
+    public async Task<Babble> SetPinAsync(string userId, string babbleId, bool isPinned, CancellationToken cancellationToken = default)
+    {
+        var existing = await GetByIdAsync(userId, babbleId, cancellationToken);
+        if (existing is null)
+        {
+            throw new InvalidOperationException($"Babble '{babbleId}' not found for user '{userId}'.");
+        }
+
+        var updated = existing with
+        {
+            IsPinned = isPinned,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+
+        var response = await _container.ReplaceItemAsync(
+            updated,
+            updated.Id,
+            new PartitionKey(userId),
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Set pin {IsPinned} on babble {BabbleId} for user {UserId}", isPinned, babbleId, userId);
 
         return response.Resource;
     }

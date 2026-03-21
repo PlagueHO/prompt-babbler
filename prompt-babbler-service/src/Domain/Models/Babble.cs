@@ -24,4 +24,7 @@ public sealed record Babble
 
     [JsonPropertyName("updatedAt")]
     public required DateTimeOffset UpdatedAt { get; init; }
+
+    [JsonPropertyName("isPinned")]
+    public bool IsPinned { get; init; }
 }

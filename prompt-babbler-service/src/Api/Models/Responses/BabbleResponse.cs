@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PromptBabbler.Api.Models.Responses;
 
 public sealed record BabbleResponse
@@ -8,4 +10,7 @@ public sealed record BabbleResponse
     public IReadOnlyList<string>? Tags { get; init; }
     public required string CreatedAt { get; init; }
     public required string UpdatedAt { get; init; }
+
+    [JsonPropertyName("isPinned")]
+    public required bool IsPinned { get; init; }
 }

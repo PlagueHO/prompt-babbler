@@ -8,6 +8,10 @@ public interface IBabbleService
         string userId,
         string? continuationToken = null,
         int pageSize = 20,
+        string? search = null,
+        string? sortBy = null,
+        string? sortDirection = null,
+        bool? isPinned = null,
         CancellationToken cancellationToken = default);
 
     Task<Babble?> GetByIdAsync(string userId, string babbleId, CancellationToken cancellationToken = default);
@@ -17,4 +21,6 @@ public interface IBabbleService
     Task<Babble> UpdateAsync(string userId, Babble babble, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string userId, string babbleId, CancellationToken cancellationToken = default);
+
+    Task<Babble> SetPinAsync(string userId, string babbleId, bool isPinned, CancellationToken cancellationToken = default);
 }

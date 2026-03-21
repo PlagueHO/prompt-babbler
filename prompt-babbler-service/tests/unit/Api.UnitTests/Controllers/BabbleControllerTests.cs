@@ -63,7 +63,7 @@ public sealed class BabbleControllerTests
     public async Task GetBabbles_ReturnsPagedResponse()
     {
         var babbles = new List<Babble> { CreateBabble() };
-        _babbleService.GetByUserAsync(TestUserId, null, 20, Arg.Any<CancellationToken>())
+        _babbleService.GetByUserAsync(TestUserId, null, 20, Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns((babbles.AsReadOnly(), (string?)null));
 
         var result = await _controller.GetBabbles(cancellationToken: CancellationToken.None);
@@ -75,23 +75,23 @@ public sealed class BabbleControllerTests
     [TestMethod]
     public async Task GetBabbles_ClampsPageSizeToMax100()
     {
-        _babbleService.GetByUserAsync(TestUserId, null, 100, Arg.Any<CancellationToken>())
+        _babbleService.GetByUserAsync(TestUserId, null, 100, Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns((new List<Babble>().AsReadOnly(), (string?)null));
 
         await _controller.GetBabbles(pageSize: 200, cancellationToken: CancellationToken.None);
 
-        await _babbleService.Received(1).GetByUserAsync(TestUserId, null, 100, Arg.Any<CancellationToken>());
+        await _babbleService.Received(1).GetByUserAsync(TestUserId, null, 100, Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
     public async Task GetBabbles_ClampsPageSizeToMin1()
     {
-        _babbleService.GetByUserAsync(TestUserId, null, 1, Arg.Any<CancellationToken>())
+        _babbleService.GetByUserAsync(TestUserId, null, 1, Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns((new List<Babble>().AsReadOnly(), (string?)null));
 
         await _controller.GetBabbles(pageSize: 0, cancellationToken: CancellationToken.None);
 
-        await _babbleService.Received(1).GetByUserAsync(TestUserId, null, 1, Arg.Any<CancellationToken>());
+        await _babbleService.Received(1).GetByUserAsync(TestUserId, null, 1, Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>());
     }
 
     // ---- GET /api/babbles/{id} ----
@@ -530,5 +530,63 @@ public sealed class BabbleControllerTests
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
         var response = ok.Value.Should().BeOfType<BabbleResponse>().Subject;
         response.Tags.Should().BeEquivalentTo(new[] { "alpha", "beta" });
+    }
+
+    // ---- PATCH /api/babbles/{id}/pin ----
+
+    [TestMethod]
+    public async Task PinBabble_WithValidRequest_ReturnsOkWithUpdatedBabble()
+    {
+        // Arrange
+        var babble = CreateBabble() with { IsPinned = true };
+        _babbleService.SetPinAsync(TestUserId, "test-id", true, Arg.Any<CancellationToken>())
+            .Returns(babble);
+
+        var request = new PinBabbleRequest { IsPinned = true };
+
+        // Act
+        var result = await _controller.PinBabble("test-id", request, CancellationToken.None);
+
+        // Assert
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = ok.Value.Should().BeOfType<BabbleResponse>().Subject;
+        response.IsPinned.Should().BeTrue();
+        await _babbleService.Received(1).SetPinAsync(TestUserId, "test-id", true, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task PinBabble_WithNonExistentBabble_ReturnsNotFound()
+    {
+        // Arrange
+        _babbleService.SetPinAsync(TestUserId, "missing", true, Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Babble not found"));
+
+        var request = new PinBabbleRequest { IsPinned = true };
+
+        // Act
+        var result = await _controller.PinBabble("missing", request, CancellationToken.None);
+
+        // Assert
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [TestMethod]
+    public async Task PinBabble_UnpinBabble_ReturnsOkWithUnpinnedBabble()
+    {
+        // Arrange
+        var babble = CreateBabble();
+        _babbleService.SetPinAsync(TestUserId, "test-id", false, Arg.Any<CancellationToken>())
+            .Returns(babble);
+
+        var request = new PinBabbleRequest { IsPinned = false };
+
+        // Act
+        var result = await _controller.PinBabble("test-id", request, CancellationToken.None);
+
+        // Assert
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = ok.Value.Should().BeOfType<BabbleResponse>().Subject;
+        response.IsPinned.Should().BeFalse();
+        await _babbleService.Received(1).SetPinAsync(TestUserId, "test-id", false, Arg.Any<CancellationToken>());
     }
 }

@@ -83,3 +83,14 @@
 - Integration: Backend tested standalone; frontend components integrated; all tests passing
 - UI Patterns: Optimistic pin toggle, debounce via ref, IntersectionObserver sentinel for infinite scroll
 - Outcome: Home screen redesign feature complete, ready for production deployment
+
+### pinBabble API migration (2026-03-21)
+
+**What changed:**
+- Added `pinBabble(id, isPinned, accessToken?)` to `src/services/api-client.ts` — uses `PATCH /api/babbles/{id}/pin` instead of full `PUT`
+- Updated `togglePin` in `src/hooks/useBabbles.ts` to call `api.pinBabble()` instead of `api.updateBabble()` with full payload
+- Added `pinBabble` mock to `tests/hooks/useBabbles.test.ts`; removed unused `PagedResponse` import (tech debt cleanup)
+
+**Patterns established:**
+- **Surgical PATCH endpoints**: prefer PATCH with minimal body over PUT with full entity for single-field mutations — avoids concurrent edit conflicts
+- **Test mock hygiene**: when swapping API calls in hooks, always update test mocks to include the new function

@@ -40,13 +40,33 @@ public sealed class BabbleController : ControllerBase
     public async Task<IActionResult> GetBabbles(
         [FromQuery] string? continuationToken = null,
         [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortDirection = null,
+        [FromQuery] bool? isPinned = null,
         CancellationToken cancellationToken = default)
     {
+        if (search is not null && search.Length > 200)
+        {
+            return BadRequest("search must be at most 200 characters.");
+        }
+
+        if (sortBy is not null && sortBy != "createdAt" && sortBy != "title")
+        {
+            return BadRequest("sortBy must be 'createdAt' or 'title'.");
+        }
+
+        if (sortDirection is not null && sortDirection != "desc" && sortDirection != "asc")
+        {
+            return BadRequest("sortDirection must be 'desc' or 'asc'.");
+        }
+
         var userId = User.GetUserIdOrAnonymous();
 
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        var (items, nextToken) = await _babbleService.GetByUserAsync(userId, continuationToken, pageSize, cancellationToken);
+        var (items, nextToken) = await _babbleService.GetByUserAsync(
+            userId, continuationToken, pageSize, search, sortBy, sortDirection, isPinned, cancellationToken);
 
         return Ok(new PagedResponse<BabbleResponse>
         {
@@ -87,6 +107,7 @@ public sealed class BabbleController : ControllerBase
             Title = request.Title,
             Text = request.Text,
             Tags = request.Tags,
+            IsPinned = request.IsPinned ?? false,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -120,6 +141,7 @@ public sealed class BabbleController : ControllerBase
             Title = request.Title,
             Text = request.Text,
             Tags = request.Tags,
+            IsPinned = request.IsPinned ?? existing.IsPinned,
             UpdatedAt = DateTimeOffset.UtcNow,
         };
 
@@ -127,6 +149,27 @@ public sealed class BabbleController : ControllerBase
         _logger.LogInformation("Updated babble {BabbleId} for user {UserId}", result.Id, result.UserId);
 
         return Ok(ToResponse(result));
+    }
+
+    [HttpPatch("{id}/pin")]
+    public async Task<IActionResult> PinBabble(
+        string id,
+        [FromBody] PinBabbleRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = User.GetUserIdOrAnonymous();
+
+        try
+        {
+            var result = await _babbleService.SetPinAsync(userId, id, request.IsPinned, cancellationToken);
+            _logger.LogInformation("Set pin {IsPinned} on babble {BabbleId} for user {UserId}", request.IsPinned, id, userId);
+
+            return Ok(ToResponse(result));
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
     }
 
     [HttpDelete("{id}")]
@@ -362,5 +405,6 @@ public sealed class BabbleController : ControllerBase
         Tags = babble.Tags,
         CreatedAt = babble.CreatedAt.ToString("o"),
         UpdatedAt = babble.UpdatedAt.ToString("o"),
+        IsPinned = babble.IsPinned,
     };
 }

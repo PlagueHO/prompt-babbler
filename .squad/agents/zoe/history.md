@@ -52,3 +52,4 @@
 
 📌 Team initialized on 2026-03-19 — cast from Firefly universe
 📌 Role: Tester — unit tests, integration tests, quality gate, a11y testing
+📌 Pin feature: `PATCH /api/babbles/{id}/pin` uses `PinBabbleRequest` (required `IsPinned` bool). Controller calls `IBabbleService.SetPinAsync` which delegates to `IBabbleRepository.SetPinAsync`. InvalidOperationException from service → NotFound response. Wrote 3 controller tests + 2 service tests covering pin, unpin, not-found, and exception propagation.

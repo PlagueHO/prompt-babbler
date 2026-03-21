@@ -24,9 +24,13 @@ public sealed class BabbleService : IBabbleService
         string userId,
         string? continuationToken = null,
         int pageSize = 20,
+        string? search = null,
+        string? sortBy = null,
+        string? sortDirection = null,
+        bool? isPinned = null,
         CancellationToken cancellationToken = default)
     {
-        return await _babbleRepository.GetByUserAsync(userId, continuationToken, pageSize, cancellationToken);
+        return await _babbleRepository.GetByUserAsync(userId, continuationToken, pageSize, search, sortBy, sortDirection, isPinned, cancellationToken);
     }
 
     public async Task<Babble?> GetByIdAsync(string userId, string babbleId, CancellationToken cancellationToken = default)
@@ -48,6 +52,11 @@ public sealed class BabbleService : IBabbleService
         }
 
         return await _babbleRepository.UpdateAsync(babble, cancellationToken);
+    }
+
+    public async Task<Babble> SetPinAsync(string userId, string babbleId, bool isPinned, CancellationToken cancellationToken = default)
+    {
+        return await _babbleRepository.SetPinAsync(userId, babbleId, isPinned, cancellationToken);
     }
 
     public async Task DeleteAsync(string userId, string babbleId, CancellationToken cancellationToken = default)

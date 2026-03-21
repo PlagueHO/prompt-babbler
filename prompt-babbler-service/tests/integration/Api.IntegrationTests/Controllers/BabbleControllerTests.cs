@@ -21,7 +21,7 @@ public sealed class BabbleControllerTests
         var client = factory.CreateClient();
 
         var babbleService = factory.Services.GetRequiredService<IBabbleService>();
-        babbleService.GetByUserAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+        babbleService.GetByUserAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns((new List<Babble> { BabbleFixtures.CreateBabble() }.AsReadOnly(), (string?)null));
 
         var response = await client.GetAsync("/api/babbles");

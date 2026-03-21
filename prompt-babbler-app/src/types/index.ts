@@ -3,6 +3,7 @@ export interface Babble {
   title: string;
   text: string;
   tags?: string[];
+  isPinned: boolean;
   createdAt: string;
   updatedAt: string;
 }

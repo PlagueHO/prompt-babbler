@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Domain.Models;
 using PromptBabbler.Infrastructure.Services;
@@ -39,7 +40,7 @@ public sealed class BabbleServiceTests
     public async Task GetByUserAsync_DelegatesToRepository()
     {
         var expected = new List<Babble> { CreateBabble() };
-        _babbleRepository.GetByUserAsync("user-1", null, 20, Arg.Any<CancellationToken>())
+        _babbleRepository.GetByUserAsync("user-1", null, 20, Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns((expected.AsReadOnly(), (string?)null));
 
         var (items, token) = await _service.GetByUserAsync("user-1");
@@ -134,5 +135,39 @@ public sealed class BabbleServiceTests
         await _service.DeleteAsync("test-user-id", "test-babble-id");
 
         callOrder.Should().ContainInOrder("prompts", "babble");
+    }
+
+    // ---- SetPinAsync ----
+
+    [TestMethod]
+    public async Task SetPinAsync_WithValidBabble_CallsRepositoryAndReturnsResult()
+    {
+        // Arrange
+        var babble = CreateBabble() with { IsPinned = true };
+        _babbleRepository.SetPinAsync("test-user-id", "test-babble-id", true, Arg.Any<CancellationToken>())
+            .Returns(babble);
+
+        // Act
+        var result = await _service.SetPinAsync("test-user-id", "test-babble-id", true);
+
+        // Assert
+        result.Should().Be(babble);
+        result.IsPinned.Should().BeTrue();
+        await _babbleRepository.Received(1).SetPinAsync("test-user-id", "test-babble-id", true, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task SetPinAsync_WhenRepositoryThrows_PropagatesException()
+    {
+        // Arrange
+        _babbleRepository.SetPinAsync("test-user-id", "missing-id", true, Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Babble not found"));
+
+        // Act
+        var act = () => _service.SetPinAsync("test-user-id", "missing-id", true);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not found*");
     }
 }

@@ -170,14 +170,26 @@ export async function generateTitle(
 
 // Babble APIs
 
+export interface GetBabblesOptions {
+  continuationToken?: string | null;
+  pageSize?: number;
+  search?: string;
+  sortBy?: 'createdAt' | 'title';
+  sortDirection?: 'desc' | 'asc';
+  isPinned?: boolean;
+}
+
 export async function getBabbles(
-  continuationToken?: string | null,
-  pageSize = 20,
+  options: GetBabblesOptions = {},
   accessToken?: string,
 ): Promise<PagedResponse<Babble>> {
   const params = new URLSearchParams();
-  if (continuationToken) params.set('continuationToken', continuationToken);
-  params.set('pageSize', String(pageSize));
+  if (options.continuationToken) params.set('continuationToken', options.continuationToken);
+  params.set('pageSize', String(options.pageSize ?? 20));
+  if (options.search) params.set('search', options.search);
+  if (options.sortBy) params.set('sortBy', options.sortBy);
+  if (options.sortDirection) params.set('sortDirection', options.sortDirection);
+  if (options.isPinned !== undefined) params.set('isPinned', String(options.isPinned));
   const query = params.toString();
   return fetchJson<PagedResponse<Babble>>(`/api/babbles?${query}`, undefined, accessToken);
 }
@@ -198,12 +210,23 @@ export async function createBabble(
 
 export async function updateBabble(
   id: string,
-  request: { title: string; text: string; tags?: string[] },
+  request: { title: string; text: string; tags?: string[]; isPinned?: boolean },
   accessToken?: string,
 ): Promise<Babble> {
   return fetchJson<Babble>(`/api/babbles/${encodeURIComponent(id)}`, {
     method: 'PUT',
     body: JSON.stringify(request),
+  }, accessToken);
+}
+
+export async function pinBabble(
+  id: string,
+  isPinned: boolean,
+  accessToken?: string,
+): Promise<Babble> {
+  return fetchJson<Babble>(`/api/babbles/${encodeURIComponent(id)}/pin`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isPinned }),
   }, accessToken);
 }
 
