@@ -135,6 +135,9 @@ param enableTelemetry bool = true
 @description('Optional. Array of deployments about cognitive service accounts to create.')
 param deployments deploymentType[]?
 
+@description('Optional. Array of RAI policies to create for the Cognitive Services account.')
+param raiPolicies raiPolicyType[]?
+
 @description('Optional. Key vault reference and secret settings for the module\'s secrets export.')
 param secretsExportConfiguration secretsExportConfigurationType?
 
@@ -411,11 +414,28 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2025-10-01-previ
   }
 }
 
+resource cognitiveService_raiPolicies 'Microsoft.CognitiveServices/accounts/raiPolicies@2025-10-01-preview' = [
+  for (raiPolicy, index) in (raiPolicies ?? []): {
+    parent: cognitiveService
+    name: raiPolicy.name
+    properties: {
+      basePolicyName: raiPolicy.?basePolicyName ?? 'Microsoft.Default'
+      mode: raiPolicy.?mode ?? 'Blocking'
+      contentFilters: raiPolicy.?contentFilters
+      customBlocklists: raiPolicy.?customBlocklists
+    }
+    tags: raiPolicy.?tags
+  }
+]
+
 @batchSize(1)
 resource cognitiveService_deployments 'Microsoft.CognitiveServices/accounts/deployments@2025-10-01-preview' = [
   for (deployment, index) in (deployments ?? []): {
     parent: cognitiveService
     name: deployment.?name ?? '${name}-deployments'
+    dependsOn: [
+      cognitiveService_raiPolicies
+    ]
     properties: {
       model: deployment.model
       raiPolicyName: deployment.?raiPolicyName
@@ -704,6 +724,14 @@ output capabilityHostsOutput capabilityHostOutputType[] = [
   }
 ]
 
+@description('The RAI policies created in the Cognitive Services account.')
+output raiPoliciesOutput raiPolicyOutputType[] = [
+  for (raiPolicy, index) in (raiPolicies ?? []): {
+    name: cognitiveService_raiPolicies[index].name
+    resourceId: cognitiveService_raiPolicies[index].id
+  }
+]
+
 // ================ //
 // Definitions      //
 // ================ //
@@ -863,4 +891,68 @@ type foundryProjectPropertiesType = {
 
   @sys.description('A description for the Foundry Project. This corresponds to the "description" property within the "properties" of the Microsoft.CognitiveServices/accounts/projects resource.')
   description: string
+}
+
+@export()
+@description('The type for a cognitive services account RAI policy.')
+type raiPolicyType = {
+  @description('Required. The name of the RAI policy.')
+  name: string
+
+  @description('Optional. The base policy name. Defaults to Microsoft.Default.')
+  basePolicyName: string?
+
+  @description('Optional. The RAI policy mode.')
+  mode: ('Asynchronous_filter' | 'Blocking' | 'Default' | 'Deferred')?
+
+  @description('Optional. The list of content filters to apply.')
+  contentFilters: raiPolicyContentFilterType[]?
+
+  @description('Optional. The list of custom blocklists to apply.')
+  customBlocklists: raiPolicyCustomBlocklistType[]?
+
+  @description('Optional. Resource tags.')
+  tags: object?
+}
+
+@export()
+@description('The type for a RAI policy content filter.')
+type raiPolicyContentFilterType = {
+  @description('Required. The name of the content filter (e.g., Hate, Sexual, Violence, SelfHarm).')
+  name: string
+
+  @description('Required. Whether the content filter is enabled.')
+  enabled: bool
+
+  @description('Required. Whether blocking is enabled for this filter.')
+  blocking: bool
+
+  @description('Optional. The severity threshold level at which content is filtered.')
+  severityThreshold: ('High' | 'Low' | 'Medium')?
+
+  @description('Optional. The content source to apply the filter to.')
+  source: ('Completion' | 'Prompt')?
+}
+
+@export()
+@description('The type for a RAI policy custom blocklist configuration.')
+type raiPolicyCustomBlocklistType = {
+  @description('Required. The name of the blocklist.')
+  blocklistName: string
+
+  @description('Required. Whether blocking is enabled for this blocklist.')
+  blocking: bool
+
+  @description('Optional. The content source to apply the blocklist to.')
+  source: ('Completion' | 'Prompt')?
+}
+
+@export()
+@description('The type for the RAI policy output.')
+type raiPolicyOutputType = {
+  @description('The name of the RAI policy.')
+  name: string
+
+  @description('The resource ID of the RAI policy.')
+  resourceId: string
 }

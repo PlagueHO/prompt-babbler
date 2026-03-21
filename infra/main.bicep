@@ -250,6 +250,23 @@ module foundryService './cognitive-services/accounts/main.bicep' = {
     ]
     sku: 'S0'
     deployments: modelDeployments
+    raiPolicies: [
+      {
+        name: 'PromptBabblerContentPolicy'
+        basePolicyName: 'Microsoft.Default'
+        mode: 'Blocking'
+        contentFilters: [
+          { name: 'Hate', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Prompt' }
+          { name: 'Sexual', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Prompt' }
+          { name: 'Violence', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Prompt' }
+          { name: 'SelfHarm', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Prompt' }
+          { name: 'Hate', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Completion' }
+          { name: 'Sexual', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Completion' }
+          { name: 'Violence', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Completion' }
+          { name: 'SelfHarm', enabled: true, blocking: true, severityThreshold: 'Medium', source: 'Completion' }
+        ]
+      }
+    ]
     defaultProject: defaultProjectName
     projects: [
       {
