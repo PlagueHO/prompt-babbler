@@ -3,12 +3,13 @@ import { toast } from 'sonner';
 import { TemplateList } from '@/components/templates/TemplateList';
 import { TemplateEditor } from '@/components/templates/TemplateEditor';
 import { AuthGuard } from '@/components/layout/AuthGuard';
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { useTemplates } from '@/hooks/useTemplates';
 import type { PromptTemplate } from '@/types';
 import type { TemplateRequest } from '@/services/api-client';
 
 export function TemplatesPage() {
-  const { templates, loading, error, createTemplate, updateTemplate, deleteTemplate } =
+  const { templates, loading, error, refresh, createTemplate, updateTemplate, deleteTemplate } =
     useTemplates();
   const [selected, setSelected] = useState<PromptTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -85,7 +86,7 @@ export function TemplatesPage() {
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading templates...</p>
       ) : error ? (
-        <p className="text-sm text-destructive">Error: {error}</p>
+        <ErrorBanner error={error} onRetry={() => void refresh()} />
       ) : (
         <TemplateList
           templates={templates}

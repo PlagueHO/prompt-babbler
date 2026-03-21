@@ -1,5 +1,6 @@
 import { Loader2, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { PromptHistoryCard } from './PromptHistoryCard';
 import type { GeneratedPrompt } from '@/types';
 
@@ -34,9 +35,7 @@ export function PromptHistoryList({
         </span>
       </div>
 
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <ErrorBanner error={error} />}
 
       <div className="space-y-2">
         {prompts.map((prompt) => (

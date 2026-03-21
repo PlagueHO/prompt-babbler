@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
-import { Plus, Mic, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, Mic, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { BabbleList } from '@/components/babbles/BabbleList';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useBabbles } from '@/hooks/useBabbles';
@@ -28,16 +29,7 @@ export function HomePage() {
         </div>
       </div>
 
-      {error && (
-        <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
-          <AlertCircle className="size-4 shrink-0 text-destructive" />
-          <span className="flex-1 text-sm text-destructive">{error}</span>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
-            <RefreshCw className="size-4" />
-            Retry
-          </Button>
-        </div>
-      )}
+      {error && <ErrorBanner error={error} onRetry={() => void refresh()} />}
 
       {loading && babbles.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-12 text-center">

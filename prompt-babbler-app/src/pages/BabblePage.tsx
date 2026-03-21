@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router';
 import { toast } from 'sonner';
 import { Pencil, Trash2, Mic, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ErrorBanner } from '@/components/ui/error-banner';
 import { Separator } from '@/components/ui/separator';
 import { TagList } from '@/components/ui/tag-list';
 import { BabbleEditor } from '@/components/babbles/BabbleEditor';
@@ -267,9 +268,7 @@ export function BabblePage() {
             <CopyButton text={generatedText} />
           )}
         </div>
-        {genError && (
-          <p className="text-sm text-destructive">{genError}</p>
-        )}
+        {genError && <ErrorBanner error={genError} />}
         <PromptDisplay text={generatedText} isGenerating={isGenerating} />
       </div>
 
