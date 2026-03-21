@@ -13,7 +13,7 @@ export function Header() {
   return (
     <header className="border-b bg-background">
       <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
-        <NavLink to="/" className="text-lg font-bold tracking-tight">
+        <NavLink to="/" className="gradient-brand text-lg font-bold tracking-tight">
           Prompt Babbler
         </NavLink>
         <nav className="flex items-center gap-1">
