@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "13799221922633857701"
+      "templateHash": "1942509647324422754"
     }
   },
   "parameters": {
@@ -782,7 +782,15 @@
             "value": [
               {
                 "name": "[variables('acaSubnetName')]",
-                "addressPrefix": "10.0.0.0/23"
+                "addressPrefix": "10.0.0.0/23",
+                "delegations": [
+                  {
+                    "name": "Microsoft.App-environments",
+                    "properties": {
+                      "serviceName": "Microsoft.App/environments"
+                    }
+                  }
+                ]
               },
               {
                 "name": "[variables('privateEndpointSubnetName')]",
@@ -31648,6 +31656,14 @@
           "name": {
             "value": "[variables('cosmosDbAccountName')]"
           },
+          "capabilitiesToAdd": {
+            "value": [
+              "EnableServerless"
+            ]
+          },
+          "enableBurstCapacity": {
+            "value": false
+          },
           "sqlRoleAssignments": {
             "value": [
               {
@@ -37584,6 +37600,14 @@
         "parameters": {
           "name": {
             "value": "[variables('cosmosDbAccountName')]"
+          },
+          "capabilitiesToAdd": {
+            "value": [
+              "EnableServerless"
+            ]
+          },
+          "enableBurstCapacity": {
+            "value": false
           },
           "sqlRoleAssignments": {
             "value": [

@@ -97,8 +97,16 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.5' = {
       {
         name: acaSubnetName
         addressPrefix: '10.0.0.0/23'
-        // NOTE: ACA Consumption environments DO NOT require subnet delegation to Microsoft.App/environments
-        // The delegation is only for Workload Profiles environments
+        // Delegation to Microsoft.App/environments is required when infrastructureSubnetId is set
+        // on a managed environment (both Consumption and Workload Profiles).
+        delegations: [
+          {
+            name: 'Microsoft.App-environments'
+            properties: {
+              serviceName: 'Microsoft.App/environments'
+            }
+          }
+        ]
       }
       {
         name: privateEndpointSubnetName
@@ -525,6 +533,10 @@ module containerAppCosmosDbRoles 'br/public:avm/res/document-db/database-account
   scope: resourceGroup(resourceGroupName)
   params: {
     name: cosmosDbAccountName
+    capabilitiesToAdd: [
+      'EnableServerless'
+    ]
+    enableBurstCapacity: false
     sqlRoleAssignments: [
       {
         principalId: containerApp.outputs.systemAssignedMIPrincipalId
@@ -543,6 +555,10 @@ module principalCosmosDbRoles 'br/public:avm/res/document-db/database-account:0.
   ]
   params: {
     name: cosmosDbAccountName
+    capabilitiesToAdd: [
+      'EnableServerless'
+    ]
+    enableBurstCapacity: false
     sqlRoleAssignments: [
       {
         principalId: principalId

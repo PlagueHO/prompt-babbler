@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.40.2.10011",
-      "templateHash": "8173527886164927861"
+      "version": "0.41.2.15936",
+      "templateHash": "17543538079957988720"
     },
     "name": "Cognitive Services Capability Hosts",
     "description": "This module creates a capability host in a Cognitive Services account.\r\nCapability hosts enable AI agent functionality by configuring storage for threads, vectors, and files.\r\nSee: https://learn.microsoft.com/en-us/azure/ai-foundry/agents/concepts/capability-hosts\r\n"

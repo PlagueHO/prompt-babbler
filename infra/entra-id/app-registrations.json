@@ -1,0 +1,136 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.41.2.15936",
+      "templateHash": "5852620956768678940"
+    }
+  },
+  "parameters": {
+    "environmentName": {
+      "type": "string",
+      "metadata": {
+        "description": "Environment name used as display name prefix."
+      }
+    },
+    "spaProductionRedirectUri": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Production redirect URI for the SPA (e.g., https://<staticwebapp>.azurestaticapps.net)."
+      }
+    }
+  },
+  "variables": {
+    "accessAsUserScopeId": "[guid('prompt-babbler-access-as-user')]",
+    "spaRedirectUris": "[if(empty(parameters('spaProductionRedirectUri')), createArray('http://localhost:5173'), createArray('http://localhost:5173', parameters('spaProductionRedirectUri')))]"
+  },
+  "imports": {
+    "microsoftGraphV1": {
+      "provider": "MicrosoftGraph",
+      "version": "0.2.0-preview"
+    }
+  },
+  "resources": {
+    "apiApp": {
+      "import": "microsoftGraphV1",
+      "type": "Microsoft.Graph/applications@v1.0",
+      "properties": {
+        "uniqueName": "prompt-babbler-api",
+        "displayName": "[format('{0}-prompt-babbler-api', parameters('environmentName'))]",
+        "signInAudience": "AzureADMyOrg",
+        "api": {
+          "requestedAccessTokenVersion": 2,
+          "oauth2PermissionScopes": [
+            {
+              "id": "[variables('accessAsUserScopeId')]",
+              "value": "access_as_user",
+              "type": "User",
+              "adminConsentDisplayName": "Access Prompt Babbler API",
+              "adminConsentDescription": "Allow the app to access Prompt Babbler API on behalf of the signed-in user.",
+              "userConsentDisplayName": "Access Prompt Babbler API",
+              "userConsentDescription": "Allow the app to access Prompt Babbler API on your behalf.",
+              "isEnabled": true
+            }
+          ]
+        },
+        "optionalClaims": {
+          "accessToken": [
+            {
+              "name": "idtyp",
+              "essential": false
+            }
+          ]
+        },
+        "identifierUris": [
+          "api://prompt-babbler-api"
+        ]
+      }
+    },
+    "apiServicePrincipal": {
+      "import": "microsoftGraphV1",
+      "type": "Microsoft.Graph/servicePrincipals@v1.0",
+      "properties": {
+        "appId": "[reference('apiApp').appId]"
+      },
+      "dependsOn": [
+        "apiApp"
+      ]
+    },
+    "spaApp": {
+      "import": "microsoftGraphV1",
+      "type": "Microsoft.Graph/applications@v1.0",
+      "properties": {
+        "uniqueName": "prompt-babbler-spa",
+        "displayName": "[format('{0}-prompt-babbler-spa', parameters('environmentName'))]",
+        "signInAudience": "AzureADMyOrg",
+        "spa": {
+          "redirectUris": "[variables('spaRedirectUris')]"
+        },
+        "requiredResourceAccess": [
+          {
+            "resourceAppId": "[reference('apiApp').appId]",
+            "resourceAccess": [
+              {
+                "id": "[variables('accessAsUserScopeId')]",
+                "type": "Scope"
+              }
+            ]
+          }
+        ]
+      },
+      "dependsOn": [
+        "apiApp"
+      ]
+    },
+    "spaServicePrincipal": {
+      "import": "microsoftGraphV1",
+      "type": "Microsoft.Graph/servicePrincipals@v1.0",
+      "properties": {
+        "appId": "[reference('spaApp').appId]"
+      },
+      "dependsOn": [
+        "spaApp"
+      ]
+    }
+  },
+  "outputs": {
+    "apiClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "The client ID (appId) of the API app registration."
+      },
+      "value": "[reference('apiApp').appId]"
+    },
+    "spaClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "The client ID (appId) of the SPA app registration."
+      },
+      "value": "[reference('spaApp').appId]"
+    }
+  }
+}

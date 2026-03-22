@@ -429,6 +429,28 @@
       }
     },
     {
+      "label": "infra: build (bicep)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "Get-ChildItem -Path infra -Recurse -Filter '*.bicep' | ForEach-Object { Write-Host \"Building $($_.FullName)...\"; az bicep build --file $($_.FullName) }"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "icon": {
+        "id": "cloud",
+        "color": "terminal.ansiYellow"
+      }
+    },
+    {
       "label": "markdown: lint",
       "type": "shell",
       "command": "pnpm",
