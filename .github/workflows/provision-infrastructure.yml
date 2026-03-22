@@ -169,6 +169,9 @@ jobs:
             azd env set ENABLE_ENTRA_AUTH "$ENTRA_AUTH"
           fi
 
+      - name: Set hook scripts executable
+        run: chmod +x infra/hooks/*.sh
+
       - name: Provision Infrastructure using Azure Developer CLI
         id: provision
         continue-on-error: true
