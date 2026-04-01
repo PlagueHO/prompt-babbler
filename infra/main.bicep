@@ -80,7 +80,7 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
 
 // --------- NETWORKING RESOURCES ---------
 // Virtual Network with subnets for Container Apps Environment and Private Endpoints
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.5' = {
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.8.0' = {
   name: 'virtual-network-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -97,16 +97,9 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.5' = {
       {
         name: acaSubnetName
         addressPrefix: '10.0.0.0/23'
-        // Delegation to Microsoft.App/environments is required when infrastructureSubnetId is set
+        // Delegation to Microsoft.App/environments is required when infrastructureSubnetResourceId is set
         // on a managed environment (both Consumption and Workload Profiles).
-        delegations: [
-          {
-            name: 'Microsoft.App-environments'
-            properties: {
-              serviceName: 'Microsoft.App/environments'
-            }
-          }
-        ]
+        delegation: 'Microsoft.App/environments'
       }
       {
         name: privateEndpointSubnetName
@@ -119,7 +112,7 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.5' = {
 }
 
 // Private DNS Zone for Cosmos DB
-module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'cosmos-db-private-dns-zone-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -138,7 +131,7 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0'
 }
 
 // Private DNS Zones for Azure AI Foundry / Cognitive Services
-module foundryPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+module foundryPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'foundry-private-dns-zone-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -157,7 +150,7 @@ module foundryPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' 
 }
 
 // Private DNS Zone for OpenAI endpoint access
-module openAiPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+module openAiPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'openai-private-dns-zone-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -412,7 +405,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
 }
 
 // --------- CONTAINER APPS ENVIRONMENT ---------
-module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.10.0' = {
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.1' = {
   name: 'container-apps-environment-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -422,17 +415,20 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.10.
     name: containerAppsEnvironmentName
     location: location
     tags: tags
-    logAnalyticsWorkspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsWorkspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+    }
     zoneRedundant: false
     // VNET integration - attach to the ACA subnet
-    infrastructureSubnetId: virtualNetwork.outputs.subnetResourceIds[0] // acaSubnet
+    infrastructureSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[0] // acaSubnet
     // internal: false means the environment remains publicly accessible (external ingress)
     internal: false
   }
 }
 
 // --------- CONTAINER APP (API) ---------
-module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
+module containerApp 'br/public:avm/res/app/container-app:0.21.0' = {
   name: 'container-app-api-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -497,8 +493,10 @@ module containerApp 'br/public:avm/res/app/container-app:0.12.0' = {
     ingressExternal: true
     ingressTargetPort: 8080
     ingressTransport: 'auto'
-    scaleMinReplicas: 0
-    scaleMaxReplicas: 3
+    scaleSettings: {
+      minReplicas: 0
+      maxReplicas: 3
+    }
   }
 }
 
@@ -569,7 +567,7 @@ module principalCosmosDbRoles 'br/public:avm/res/document-db/database-account:0.
 }
 
 // --------- STATIC WEB APP (FRONTEND) ---------
-module staticWebApp 'br/public:avm/res/web/static-site:0.7.0' = {
+module staticWebApp 'br/public:avm/res/web/static-site:0.9.3' = {
   name: 'static-web-app-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [

@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "12602606074955496629"
+      "templateHash": "9038329454438907517"
     },
     "name": "Cognitive Services",
     "description": "This module deploys a Cognitive Service account.\nThis is a temporary module for deploying Azure Foundry Cognitive Services accounts.\nIt is intended to be replaced by the Azure Verified Module (AVM) for Microsoft.CognitiveServices accounts\nonce it supports Foundry V2 (projects, connections etc)\nhttps://github.com/Azure/bicep-registry-modules/issues/5390\n"
@@ -659,36 +659,7 @@
         "description": "Type for network configuration in AI Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network."
       }
     },
-    "_1.secretSetOutputType": {
-      "type": "object",
-      "properties": {
-        "secretResourceId": {
-          "type": "string",
-          "metadata": {
-            "description": "The resourceId of the exported secret."
-          }
-        },
-        "secretUri": {
-          "type": "string",
-          "metadata": {
-            "description": "The secret URI of the exported secret."
-          }
-        },
-        "secretUriWithVersion": {
-          "type": "string",
-          "metadata": {
-            "description": "The secret URI with version of the exported secret."
-          }
-        }
-      },
-      "metadata": {
-        "description": "An AVM-aligned type for the output of the secret set via the secrets export feature.",
-        "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
-        }
-      }
-    },
-    "_2.privateEndpointCustomDnsConfigType": {
+    "_1.privateEndpointCustomDnsConfigType": {
       "type": "object",
       "properties": {
         "fqdn": {
@@ -710,11 +681,11 @@
       },
       "metadata": {
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
-    "_2.privateEndpointIpConfigurationType": {
+    "_1.privateEndpointIpConfigurationType": {
       "type": "object",
       "properties": {
         "name": {
@@ -752,11 +723,11 @@
       },
       "metadata": {
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
-    "_2.privateEndpointPrivateDnsZoneGroupType": {
+    "_1.privateEndpointPrivateDnsZoneGroupType": {
       "type": "object",
       "properties": {
         "name": {
@@ -793,11 +764,40 @@
       },
       "metadata": {
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
-    "_3.aadAuthTypeWorkspaceConnectionPropertyType": {
+    "_1.secretSetOutputType": {
+      "type": "object",
+      "properties": {
+        "secretResourceId": {
+          "type": "string",
+          "metadata": {
+            "description": "The resourceId of the exported secret."
+          }
+        },
+        "secretUri": {
+          "type": "string",
+          "metadata": {
+            "description": "The secret URI of the exported secret."
+          }
+        },
+        "secretUriWithVersion": {
+          "type": "string",
+          "metadata": {
+            "description": "The secret URI with version of the exported secret."
+          }
+        }
+      },
+      "metadata": {
+        "description": "An AVM-aligned type for the output of the secret set via the secrets export feature.",
+        "__bicep_imported_from!": {
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
+        }
+      }
+    },
+    "_2.aadAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -817,7 +817,7 @@
         }
       }
     },
-    "_3.accessKeyAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.accessKeyAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -830,7 +830,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionAccessKeyType",
+          "$ref": "#/definitions/_2.workspaceConnectionAccessKeyType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -843,7 +843,7 @@
         }
       }
     },
-    "_3.accountKeyAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.accountKeyAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -856,7 +856,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionAccountKeyType",
+          "$ref": "#/definitions/_2.workspaceConnectionAccountKeyType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -869,7 +869,7 @@
         }
       }
     },
-    "_3.apiKeyAuthWorkspaceConnectionPropertyType": {
+    "_2.apiKeyAuthWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -882,7 +882,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionApiKeyType",
+          "$ref": "#/definitions/_2.workspaceConnectionApiKeyType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -895,7 +895,7 @@
         }
       }
     },
-    "_3.categoryType": {
+    "_2.categoryType": {
       "type": "string",
       "allowedValues": [
         "ADLSGen2",
@@ -1011,46 +1011,46 @@
         }
       }
     },
-    "_3.connectionPropertyType": {
+    "_2.connectionPropertyType": {
       "type": "secureObject",
       "discriminator": {
         "propertyName": "authType",
         "mapping": {
           "AAD": {
-            "$ref": "#/definitions/_3.aadAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.aadAuthTypeWorkspaceConnectionPropertyType"
           },
           "AccessKey": {
-            "$ref": "#/definitions/_3.accessKeyAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.accessKeyAuthTypeWorkspaceConnectionPropertyType"
           },
           "AccountKey": {
-            "$ref": "#/definitions/_3.accountKeyAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.accountKeyAuthTypeWorkspaceConnectionPropertyType"
           },
           "ApiKey": {
-            "$ref": "#/definitions/_3.apiKeyAuthWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.apiKeyAuthWorkspaceConnectionPropertyType"
           },
           "CustomKeys": {
-            "$ref": "#/definitions/_3.customKeysWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.customKeysWorkspaceConnectionPropertyType"
           },
           "ManagedIdentity": {
-            "$ref": "#/definitions/_3.managedIdentityAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.managedIdentityAuthTypeWorkspaceConnectionPropertyType"
           },
           "None": {
-            "$ref": "#/definitions/_3.noneAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.noneAuthTypeWorkspaceConnectionPropertyType"
           },
           "OAuth2": {
-            "$ref": "#/definitions/_3.oauth2AuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.oauth2AuthTypeWorkspaceConnectionPropertyType"
           },
           "PAT": {
-            "$ref": "#/definitions/_3.patAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.patAuthTypeWorkspaceConnectionPropertyType"
           },
           "SAS": {
-            "$ref": "#/definitions/_3.sasAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.sasAuthTypeWorkspaceConnectionPropertyType"
           },
           "ServicePrincipal": {
-            "$ref": "#/definitions/_3.servicePrincipalAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.servicePrincipalAuthTypeWorkspaceConnectionPropertyType"
           },
           "UsernamePassword": {
-            "$ref": "#/definitions/_3.usernamePasswordAuthTypeWorkspaceConnectionPropertyType"
+            "$ref": "#/definitions/_2.usernamePasswordAuthTypeWorkspaceConnectionPropertyType"
           }
         }
       },
@@ -1061,7 +1061,7 @@
         }
       }
     },
-    "_3.customKeysType": {
+    "_2.customKeysType": {
       "type": "object",
       "properties": {
         "keys": {
@@ -1085,7 +1085,7 @@
         }
       }
     },
-    "_3.customKeysWorkspaceConnectionPropertyType": {
+    "_2.customKeysWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1098,7 +1098,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.customKeysType",
+          "$ref": "#/definitions/_2.customKeysType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -1111,7 +1111,7 @@
         }
       }
     },
-    "_3.managedIdentityAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.managedIdentityAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1124,7 +1124,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionManagedIdentityType",
+          "$ref": "#/definitions/_2.workspaceConnectionManagedIdentityType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -1137,7 +1137,7 @@
         }
       }
     },
-    "_3.noneAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.noneAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1157,7 +1157,7 @@
         }
       }
     },
-    "_3.oauth2AuthTypeWorkspaceConnectionPropertyType": {
+    "_2.oauth2AuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1170,7 +1170,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionOAuth2Type",
+          "$ref": "#/definitions/_2.workspaceConnectionOAuth2Type",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -1183,7 +1183,7 @@
         }
       }
     },
-    "_3.patAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.patAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1196,7 +1196,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionPersonalAccessTokenType",
+          "$ref": "#/definitions/_2.workspaceConnectionPersonalAccessTokenType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -1209,7 +1209,7 @@
         }
       }
     },
-    "_3.sasAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.sasAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1222,7 +1222,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionSharedAccessSignatureType",
+          "$ref": "#/definitions/_2.workspaceConnectionSharedAccessSignatureType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -1235,7 +1235,7 @@
         }
       }
     },
-    "_3.servicePrincipalAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.servicePrincipalAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1248,7 +1248,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionServicePrincipalType",
+          "$ref": "#/definitions/_2.workspaceConnectionServicePrincipalType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -1261,7 +1261,7 @@
         }
       }
     },
-    "_3.usernamePasswordAuthTypeWorkspaceConnectionPropertyType": {
+    "_2.usernamePasswordAuthTypeWorkspaceConnectionPropertyType": {
       "type": "object",
       "properties": {
         "authType": {
@@ -1274,7 +1274,7 @@
           }
         },
         "credentials": {
-          "$ref": "#/definitions/_3.workspaceConnectionUsernamePasswordType",
+          "$ref": "#/definitions/_2.workspaceConnectionUsernamePasswordType",
           "metadata": {
             "description": "Required. The credentials for the connection."
           }
@@ -1287,7 +1287,7 @@
         }
       }
     },
-    "_3.workspaceConnectionAccessKeyType": {
+    "_2.workspaceConnectionAccessKeyType": {
       "type": "object",
       "properties": {
         "accessKeyId": {
@@ -1310,7 +1310,7 @@
         }
       }
     },
-    "_3.workspaceConnectionAccountKeyType": {
+    "_2.workspaceConnectionAccountKeyType": {
       "type": "object",
       "properties": {
         "key": {
@@ -1327,7 +1327,7 @@
         }
       }
     },
-    "_3.workspaceConnectionApiKeyType": {
+    "_2.workspaceConnectionApiKeyType": {
       "type": "object",
       "properties": {
         "key": {
@@ -1344,7 +1344,7 @@
         }
       }
     },
-    "_3.workspaceConnectionManagedIdentityType": {
+    "_2.workspaceConnectionManagedIdentityType": {
       "type": "object",
       "properties": {
         "clientId": {
@@ -1367,7 +1367,7 @@
         }
       }
     },
-    "_3.workspaceConnectionOAuth2Type": {
+    "_2.workspaceConnectionOAuth2Type": {
       "type": "object",
       "properties": {
         "authUrl": {
@@ -1433,7 +1433,7 @@
         }
       }
     },
-    "_3.workspaceConnectionPersonalAccessTokenType": {
+    "_2.workspaceConnectionPersonalAccessTokenType": {
       "type": "object",
       "properties": {
         "pat": {
@@ -1450,7 +1450,7 @@
         }
       }
     },
-    "_3.workspaceConnectionServicePrincipalType": {
+    "_2.workspaceConnectionServicePrincipalType": {
       "type": "object",
       "properties": {
         "clientId": {
@@ -1479,7 +1479,7 @@
         }
       }
     },
-    "_3.workspaceConnectionSharedAccessSignatureType": {
+    "_2.workspaceConnectionSharedAccessSignatureType": {
       "type": "object",
       "properties": {
         "sas": {
@@ -1496,7 +1496,7 @@
         }
       }
     },
-    "_3.workspaceConnectionUsernamePasswordType": {
+    "_2.workspaceConnectionUsernamePasswordType": {
       "type": "object",
       "properties": {
         "password": {
@@ -1526,7 +1526,7 @@
         }
       }
     },
-    "_4.agentDeploymentType": {
+    "_3.agentDeploymentType": {
       "type": "object",
       "properties": {
         "name": {
@@ -1569,7 +1569,7 @@
         "agents": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/_4.versionedAgentReferenceType"
+            "$ref": "#/definitions/_3.versionedAgentReferenceType"
           },
           "minLength": 1,
           "metadata": {
@@ -1579,7 +1579,7 @@
         "protocols": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/_4.agentProtocolVersionType"
+            "$ref": "#/definitions/_3.agentProtocolVersionType"
           },
           "minLength": 1,
           "metadata": {
@@ -1617,7 +1617,7 @@
         }
       }
     },
-    "_4.agentProtocolVersionType": {
+    "_3.agentProtocolVersionType": {
       "type": "object",
       "properties": {
         "protocol": {
@@ -1646,7 +1646,7 @@
         }
       }
     },
-    "_4.versionedAgentReferenceType": {
+    "_3.versionedAgentReferenceType": {
       "type": "object",
       "properties": {
         "agentId": {
@@ -1677,7 +1677,7 @@
         }
       }
     },
-    "_5.agentReferenceType": {
+    "_4.agentReferenceType": {
       "type": "object",
       "properties": {
         "agentId": {
@@ -1701,7 +1701,7 @@
         }
       }
     },
-    "_5.applicationAuthorizationPolicyType": {
+    "_4.applicationAuthorizationPolicyType": {
       "type": "object",
       "properties": {
         "authorizationScheme": {
@@ -1723,7 +1723,7 @@
         }
       }
     },
-    "_5.applicationTrafficRoutingPolicyType": {
+    "_4.applicationTrafficRoutingPolicyType": {
       "type": "object",
       "properties": {
         "protocol": {
@@ -1739,7 +1739,7 @@
         "rules": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/_5.trafficRoutingRuleType"
+            "$ref": "#/definitions/_4.trafficRoutingRuleType"
           },
           "nullable": true,
           "metadata": {
@@ -1754,7 +1754,7 @@
         }
       }
     },
-    "_5.assignedIdentityType": {
+    "_4.assignedIdentityType": {
       "type": "object",
       "properties": {
         "clientId": {
@@ -1814,7 +1814,7 @@
         }
       }
     },
-    "_5.trafficRoutingRuleType": {
+    "_4.trafficRoutingRuleType": {
       "type": "object",
       "properties": {
         "deploymentId": {
@@ -1900,21 +1900,21 @@
           }
         },
         "authorizationPolicy": {
-          "$ref": "#/definitions/_5.applicationAuthorizationPolicyType",
+          "$ref": "#/definitions/_4.applicationAuthorizationPolicyType",
           "nullable": true,
           "metadata": {
             "description": "Optional. The authorization policy for the application."
           }
         },
         "agentIdentityBlueprint": {
-          "$ref": "#/definitions/_5.assignedIdentityType",
+          "$ref": "#/definitions/_4.assignedIdentityType",
           "nullable": true,
           "metadata": {
             "description": "Optional. The Entra ID agentic blueprint of the application."
           }
         },
         "defaultInstanceIdentity": {
-          "$ref": "#/definitions/_5.assignedIdentityType",
+          "$ref": "#/definitions/_4.assignedIdentityType",
           "nullable": true,
           "metadata": {
             "description": "Optional. The default agent instance identity."
@@ -1928,7 +1928,7 @@
           }
         },
         "trafficRoutingPolicy": {
-          "$ref": "#/definitions/_5.applicationTrafficRoutingPolicyType",
+          "$ref": "#/definitions/_4.applicationTrafficRoutingPolicyType",
           "nullable": true,
           "metadata": {
             "description": "Optional. The traffic routing policy for the application's deployments."
@@ -1937,7 +1937,7 @@
         "agents": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/_5.agentReferenceType"
+            "$ref": "#/definitions/_4.agentReferenceType"
           },
           "metadata": {
             "description": "Required. The list of agent references in this application. Must contain at least one agent reference with agentName. Agents must exist in the project before the application can be deployed."
@@ -1953,7 +1953,7 @@
         "agentDeployments": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/_4.agentDeploymentType"
+            "$ref": "#/definitions/_3.agentDeploymentType"
           },
           "nullable": true,
           "metadata": {
@@ -2034,7 +2034,7 @@
           }
         },
         "category": {
-          "$ref": "#/definitions/_3.categoryType",
+          "$ref": "#/definitions/_2.categoryType",
           "metadata": {
             "description": "Required. Category of the connection."
           }
@@ -2091,7 +2091,7 @@
           }
         },
         "connectionProperties": {
-          "$ref": "#/definitions/_3.connectionPropertyType",
+          "$ref": "#/definitions/_2.connectionPropertyType",
           "metadata": {
             "description": "Required. The properties of the connection, specific to the auth type."
           }
@@ -2137,7 +2137,7 @@
       "metadata": {
         "description": "An AVM-aligned type for a customer-managed key. To be used if the resource type does not support auto-rotation of the customer-managed key.",
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
@@ -2259,7 +2259,7 @@
       "metadata": {
         "description": "An AVM-aligned type for a diagnostic setting. To be used if both logs & metrics are supported by the resource provider.",
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
@@ -2296,7 +2296,7 @@
       "metadata": {
         "description": "An AVM-aligned type for a lock.",
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
@@ -2324,7 +2324,7 @@
       "metadata": {
         "description": "An AVM-aligned type for a managed identity configuration. To be used if both a system-assigned & user-assigned identities are supported by the resource provider.",
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
@@ -2373,7 +2373,7 @@
           }
         },
         "privateDnsZoneGroup": {
-          "$ref": "#/definitions/_2.privateEndpointPrivateDnsZoneGroupType",
+          "$ref": "#/definitions/_1.privateEndpointPrivateDnsZoneGroupType",
           "nullable": true,
           "metadata": {
             "description": "Optional. The private DNS Zone Group to configure for the Private Endpoint."
@@ -2397,7 +2397,7 @@
         "customDnsConfigs": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/_2.privateEndpointCustomDnsConfigType"
+            "$ref": "#/definitions/_1.privateEndpointCustomDnsConfigType"
           },
           "nullable": true,
           "metadata": {
@@ -2407,7 +2407,7 @@
         "ipConfigurations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/_2.privateEndpointIpConfigurationType"
+            "$ref": "#/definitions/_1.privateEndpointIpConfigurationType"
           },
           "nullable": true,
           "metadata": {
@@ -2469,7 +2469,7 @@
       "metadata": {
         "description": "An AVM-aligned type for a private endpoint. To be used if the private endpoint's default service / groupId can be assumed (i.e., for services that only have one Private Endpoint type like 'vault' for key vault).",
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
@@ -2624,7 +2624,7 @@
       "metadata": {
         "description": "An AVM-aligned type for a role assignment.",
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     },
@@ -2640,7 +2640,7 @@
       "metadata": {
         "description": "A map of the exported secrets",
         "__bicep_imported_from!": {
-          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+          "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
         }
       }
     }
@@ -3310,8 +3310,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.38.5.1644",
-              "templateHash": "16604612898799598358"
+              "version": "0.41.2.15936",
+              "templateHash": "18436885663402767850"
             },
             "name": "Private Endpoints",
             "description": "This module deploys a Private Endpoint."
@@ -3375,7 +3375,7 @@
               "metadata": {
                 "description": "An AVM-aligned type for a lock.",
                 "__bicep_imported_from!": {
-                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
                 }
               }
             },
@@ -3474,7 +3474,7 @@
               "metadata": {
                 "description": "An AVM-aligned type for a role assignment.",
                 "__bicep_imported_from!": {
-                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
                 }
               }
             }
@@ -3513,11 +3513,21 @@
               "type": "array",
               "metadata": {
                 "__bicep_resource_derived_type!": {
-                  "source": "Microsoft.Network/privateEndpoints@2024-01-01#properties/properties/properties/ipConfigurations"
+                  "source": "Microsoft.Network/privateEndpoints@2025-05-01#properties/properties/properties/ipConfigurations"
                 },
                 "description": "Optional. A list of IP configurations of the private endpoint. This will be used to map to the First Party Service endpoints."
               },
               "nullable": true
+            },
+            "ipVersionType": {
+              "type": "string",
+              "metadata": {
+                "__bicep_resource_derived_type!": {
+                  "source": "Microsoft.Network/privateEndpoints@2025-05-01#properties/properties/properties/ipVersionType"
+                },
+                "description": "Optional. Specifies the IP version type for the private IPs of the private endpoint. If not defined, this defaults to IPv4."
+              },
+              "defaultValue": "IPv4"
             },
             "privateDnsZoneGroup": {
               "$ref": "#/definitions/privateDnsZoneGroupType",
@@ -3554,7 +3564,7 @@
               "type": "object",
               "metadata": {
                 "__bicep_resource_derived_type!": {
-                  "source": "Microsoft.Network/privateEndpoints@2024-01-01#properties/tags"
+                  "source": "Microsoft.Network/privateEndpoints@2025-05-01#properties/tags"
                 },
                 "description": "Optional. Tags to be applied on all resources/resource groups in this deployment."
               },
@@ -3564,7 +3574,7 @@
               "type": "array",
               "metadata": {
                 "__bicep_resource_derived_type!": {
-                  "source": "Microsoft.Network/privateEndpoints@2024-01-01#properties/properties/properties/customDnsConfigs"
+                  "source": "Microsoft.Network/privateEndpoints@2025-05-01#properties/properties/properties/customDnsConfigs"
                 },
                 "description": "Optional. Custom DNS configurations."
               },
@@ -3574,7 +3584,7 @@
               "type": "array",
               "metadata": {
                 "__bicep_resource_derived_type!": {
-                  "source": "Microsoft.Network/privateEndpoints@2024-01-01#properties/properties/properties/manualPrivateLinkServiceConnections"
+                  "source": "Microsoft.Network/privateEndpoints@2025-05-01#properties/properties/properties/manualPrivateLinkServiceConnections"
                 },
                 "description": "Conditional. A grouping of information about the connection to the remote resource. Used when the network admin does not have access to approve connections to the remote resource. Required if `privateLinkServiceConnections` is empty."
               },
@@ -3584,7 +3594,7 @@
               "type": "array",
               "metadata": {
                 "__bicep_resource_derived_type!": {
-                  "source": "Microsoft.Network/privateEndpoints@2024-01-01#properties/properties/properties/privateLinkServiceConnections"
+                  "source": "Microsoft.Network/privateEndpoints@2025-05-01#properties/properties/properties/privateLinkServiceConnections"
                 },
                 "description": "Conditional. A grouping of information about the connection to the remote resource. Required if `manualPrivateLinkServiceConnections` is empty."
               },
@@ -3624,7 +3634,7 @@
               "condition": "[parameters('enableTelemetry')]",
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2025-04-01",
-              "name": "[format('46d3xbcp.res.network-privateendpoint.{0}.{1}', replace('0.11.1', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
+              "name": "[format('46d3xbcp.res.network-privateendpoint.{0}.{1}', replace('0.12.0', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4))]",
               "properties": {
                 "mode": "Incremental",
                 "template": {
@@ -3642,7 +3652,7 @@
             },
             "privateEndpoint": {
               "type": "Microsoft.Network/privateEndpoints",
-              "apiVersion": "2024-10-01",
+              "apiVersion": "2025-05-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
@@ -3663,14 +3673,15 @@
                 "privateLinkServiceConnections": "[coalesce(parameters('privateLinkServiceConnections'), createArray())]",
                 "subnet": {
                   "id": "[parameters('subnetResourceId')]"
-                }
+                },
+                "ipVersionType": "[parameters('ipVersionType')]"
               }
             },
             "privateEndpoint_lock": {
               "condition": "[and(not(empty(coalesce(parameters('lock'), createObject()))), not(equals(tryGet(parameters('lock'), 'kind'), 'None')))]",
               "type": "Microsoft.Authorization/locks",
               "apiVersion": "2020-05-01",
-              "scope": "[format('Microsoft.Network/privateEndpoints/{0}', parameters('name'))]",
+              "scope": "[resourceId('Microsoft.Network/privateEndpoints', parameters('name'))]",
               "name": "[coalesce(tryGet(parameters('lock'), 'name'), format('lock-{0}', parameters('name')))]",
               "properties": {
                 "level": "[coalesce(tryGet(parameters('lock'), 'kind'), '')]",
@@ -3687,7 +3698,7 @@
               },
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[format('Microsoft.Network/privateEndpoints/{0}', parameters('name'))]",
+              "scope": "[resourceId('Microsoft.Network/privateEndpoints', parameters('name'))]",
               "name": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.Network/privateEndpoints', parameters('name')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]",
               "properties": {
                 "roleDefinitionId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId]",
@@ -3730,8 +3741,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.38.5.1644",
-                      "templateHash": "24141742673128945"
+                      "version": "0.41.2.15936",
+                      "templateHash": "9935179114830442414"
                     },
                     "name": "Private Endpoint Private DNS Zone Groups",
                     "description": "This module deploys a Private Endpoint Private DNS Zone Group."
@@ -3790,12 +3801,12 @@
                     "privateEndpoint": {
                       "existing": true,
                       "type": "Microsoft.Network/privateEndpoints",
-                      "apiVersion": "2024-10-01",
+                      "apiVersion": "2025-05-01",
                       "name": "[parameters('privateEndpointName')]"
                     },
                     "privateDnsZoneGroup": {
                       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-                      "apiVersion": "2024-10-01",
+                      "apiVersion": "2025-05-01",
                       "name": "[format('{0}/{1}', parameters('privateEndpointName'), parameters('name'))]",
                       "properties": {
                         "copy": [
@@ -3870,13 +3881,13 @@
               "metadata": {
                 "description": "The location the resource was deployed into."
               },
-              "value": "[reference('privateEndpoint', '2024-10-01', 'full').location]"
+              "value": "[reference('privateEndpoint', '2025-05-01', 'full').location]"
             },
             "customDnsConfigs": {
               "type": "array",
               "metadata": {
                 "__bicep_resource_derived_type!": {
-                  "source": "Microsoft.Network/privateEndpoints@2024-01-01#properties/properties/properties/customDnsConfigs",
+                  "source": "Microsoft.Network/privateEndpoints@2025-05-01#properties/properties/properties/customDnsConfigs",
                   "output": true
                 },
                 "description": "The custom DNS configurations of the private endpoint."
@@ -3965,7 +3976,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "9636056188496279552"
+              "templateHash": "11204971273604209461"
             },
             "name": "Cognitive Services Project",
             "description": "This module deploys a Project within a Cognitive Services account.\nIt allows for the creation of a Foundry Project with optional managed identities and role assignments.\n"
@@ -5340,7 +5351,7 @@
               "metadata": {
                 "description": "An AVM-aligned type for a diagnostic setting. To be used if both logs & metrics are supported by the resource provider.",
                 "__bicep_imported_from!": {
-                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
                 }
               }
             },
@@ -5368,7 +5379,7 @@
               "metadata": {
                 "description": "An AVM-aligned type for a managed identity configuration. To be used if both a system-assigned & user-assigned identities are supported by the resource provider.",
                 "__bicep_imported_from!": {
-                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.1"
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
                 }
               }
             },
@@ -5523,7 +5534,7 @@
               "metadata": {
                 "description": "An AVM-aligned type for a role assignment.",
                 "__bicep_imported_from!": {
-                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
                 }
               }
             }
@@ -7913,7 +7924,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "793556095036860464"
+              "templateHash": "5682679963339445330"
             }
           },
           "definitions": {
@@ -7942,7 +7953,7 @@
               "metadata": {
                 "description": "An AVM-aligned type for the output of the secret set via the secrets export feature.",
                 "__bicep_imported_from!": {
-                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
                 }
               }
             },
@@ -7965,7 +7976,7 @@
               "metadata": {
                 "description": "An AVM-aligned type for the secret to set via the secrets export feature.",
                 "__bicep_imported_from!": {
-                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.6.0"
+                  "sourceTemplate": "br:mcr.microsoft.com/bicep/avm/utl/types/avm-common-types:0.7.0"
                 }
               }
             }
