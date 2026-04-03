@@ -1,0 +1,68 @@
+name: Smoke Test
+
+on:
+  workflow_call:
+    inputs:
+      AZURE_CONTAINER_APP_FQDN:
+        description: "The FQDN of the deployed Azure Container App"
+        required: true
+        type: string
+      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME:
+        description: "The default hostname of the deployed Azure Static Web App"
+        required: true
+        type: string
+
+jobs:
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module -Name Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser
+
+      - name: Run Smoke Tests
+        shell: pwsh
+        run: |
+          $container = New-PesterContainer -Path 'tests/smoke/Smoke.Tests.ps1' -Data @{
+            ApiBaseUrl      = 'https://${{ inputs.AZURE_CONTAINER_APP_FQDN }}'
+            FrontendBaseUrl = 'https://${{ inputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}'
+          }
+
+          $config = New-PesterConfiguration
+          $config.Run.Container = $container
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'TestResults/smoke-tests.xml'
+          $config.TestResult.OutputFormat = 'NUnitXml'
+
+          $result = Invoke-Pester -Configuration $config
+
+          if ($result.FailedCount -gt 0) {
+            exit 1
+          }
+
+      - name: Publish Smoke Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: Smoke Test Results
+          comment_title: Smoke Test Results
+          files: |
+            TestResults/smoke-tests.xml
+
+      - name: Upload Smoke Test Results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-test-results
+          path: TestResults/smoke-tests.xml
+          retention-days: 7

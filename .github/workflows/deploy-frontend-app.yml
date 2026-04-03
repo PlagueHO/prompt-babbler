@@ -43,8 +43,8 @@ jobs:
       - name: Download Frontend Build Artifact
         uses: actions/download-artifact@v7
         with:
-          name: marginalia-frontend
-          path: marginalia-app/dist
+          name: prompt-babbler-frontend
+          path: prompt-babbler-app/dist
 
       - name: Authenticate Azure CLI (Federated Credentials)
         uses: azure/login@v3
@@ -71,4 +71,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           skip_app_build: true
-          app_location: "marginalia-app/dist"
+          app_location: "prompt-babbler-app/dist"
