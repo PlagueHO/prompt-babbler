@@ -1,0 +1,74 @@
+name: Deploy Frontend App
+
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        description: "The environment to deploy the frontend app to"
+        required: true
+        type: string
+      AZURE_RESOURCE_GROUP:
+        description: "The Azure resource group containing the Static Web App"
+        required: true
+        type: string
+      AZURE_STATIC_WEB_APP_NAME:
+        description: "The Azure Static Web App resource name"
+        required: true
+        type: string
+
+    secrets:
+      AZURE_TENANT_ID:
+        description: "The Azure tenant ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        description: "The Azure subscription ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_CLIENT_ID:
+        description: "The Azure client ID to use for authentication to Azure for deployment"
+        required: true
+
+jobs:
+  deploy-frontend-app:
+    name: Deploy Frontend App ${{ inputs.ENVIRONMENT }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download Frontend Build Artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: marginalia-frontend
+          path: marginalia-app/dist
+
+      - name: Authenticate Azure CLI (Federated Credentials)
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get Static Web App Deployment Token
+        id: swa-token
+        run: |
+          DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
+            --name "${{ inputs.AZURE_STATIC_WEB_APP_NAME }}" \
+            --resource-group "${{ inputs.AZURE_RESOURCE_GROUP }}" \
+            --query "properties.apiKey" \
+            --output tsv)
+          echo "::add-mask::$DEPLOYMENT_TOKEN"
+          echo "token=$DEPLOYMENT_TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.token }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          skip_app_build: true
+          app_location: "marginalia-app/dist"

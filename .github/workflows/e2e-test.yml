@@ -49,6 +49,19 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
 
+  deploy-frontend-app:
+    name: Deploy Frontend App
+    needs: [provision-infrastructure]
+    uses: ./.github/workflows/deploy-frontend-app.yml
+    with:
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+      AZURE_RESOURCE_GROUP: ${{ needs.provision-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_STATIC_WEB_APP_NAME: ${{ needs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_NAME }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
   # TODO: Add integration/E2E test jobs here when the application
   # has been redesigned for Azure hosting (vNext). Example:
   #

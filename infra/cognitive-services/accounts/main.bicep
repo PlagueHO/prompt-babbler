@@ -741,12 +741,12 @@ output privateEndpoints privateEndpointOutputType[] = [
 ]
 
 @secure()
-@description('The primary access key.')
-output primaryKey string? = !disableLocalAuth ? cognitiveService.listKeys().key1 : null
+@description('The primary access key. Only available when disableLocalAuth is false and keys are explicitly retrieved.')
+output primaryKey string? = null
 
 @secure()
-@description('The secondary access key.')
-output secondaryKey string? = !disableLocalAuth ? cognitiveService.listKeys().key2 : null
+@description('The secondary access key. Only available when disableLocalAuth is false and keys are explicitly retrieved.')
+output secondaryKey string? = null
 
 @description('The Foundry Projects created in the Cognitive Services account.')
 output projects projectOutputType[] = [
