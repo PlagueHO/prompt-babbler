@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-jammy-chiseled AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled AS base
 WORKDIR /app
 EXPOSE 8080
 
