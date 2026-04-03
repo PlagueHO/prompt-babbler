@@ -21,15 +21,43 @@ Describe 'Backend API' {
                     Write-Host "Backend /health is ready (attempt $i/$maxRetries)"
                     break
                 }
+                else {
+                    Write-Host "Attempt $i/${maxRetries}: /health returned status $($response.StatusCode), retrying in ${retryDelay}s..."
+                    Start-Sleep -Seconds $retryDelay
+                }
             }
             catch {
-                Write-Host "Attempt $i/${maxRetries}: /health not ready, retrying in ${retryDelay}s..."
+                $statusCode = $null
+                $errorDetail = $_.Exception.Message
+                if ($_.Exception.Response) {
+                    $statusCode = [int]$_.Exception.Response.StatusCode
+                    $errorDetail = "HTTP $statusCode - $($_.Exception.Message)"
+                }
+                Write-Host "Attempt $i/${maxRetries}: /health not ready ($errorDetail), retrying in ${retryDelay}s..."
                 Start-Sleep -Seconds $retryDelay
             }
         }
 
         if (-not $healthy) {
-            throw "Backend /health did not become healthy after $maxRetries attempts"
+            # Capture final state for diagnostics
+            $finalError = "Unknown"
+            try {
+                $response = Invoke-WebRequest -Uri "$ApiBaseUrl/health" -UseBasicParsing -TimeoutSec 10
+                $finalError = "Status $($response.StatusCode): $($response.Content)"
+            }
+            catch {
+                $finalError = $_.Exception.Message
+                if ($_.Exception.Response) {
+                    $finalError = "HTTP $([int]$_.Exception.Response.StatusCode): $($_.Exception.Message)"
+                    try {
+                        $reader = [System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream())
+                        $body = $reader.ReadToEnd()
+                        $reader.Close()
+                        if ($body) { $finalError += " | Body: $body" }
+                    } catch {}
+                }
+            }
+            throw "Backend /health did not become healthy after $maxRetries attempts. Last error: $finalError"
         }
     }
 

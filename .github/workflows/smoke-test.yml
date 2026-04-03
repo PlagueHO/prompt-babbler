@@ -11,6 +11,25 @@ on:
         description: "The default hostname of the deployed Azure Static Web App"
         required: true
         type: string
+      AZURE_RESOURCE_GROUP:
+        description: "The Azure resource group containing the Container App"
+        required: true
+        type: string
+      AZURE_CONTAINER_APP_NAME:
+        description: "The name of the Azure Container App"
+        required: true
+        type: string
+
+    secrets:
+      AZURE_TENANT_ID:
+        description: "The Azure tenant ID for authentication"
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        description: "The Azure subscription ID for authentication"
+        required: true
+      AZURE_CLIENT_ID:
+        description: "The Azure client ID for authentication"
+        required: true
 
 jobs:
   smoke-test:
@@ -19,10 +38,58 @@ jobs:
     permissions:
       checks: write
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Authenticate Azure CLI (Federated Credentials)
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Check Container App Status
+        shell: pwsh
+        run: |
+          Write-Host "=== Container App Provisioning State ==="
+          $app = az containerapp show `
+            --name '${{ inputs.AZURE_CONTAINER_APP_NAME }}' `
+            --resource-group '${{ inputs.AZURE_RESOURCE_GROUP }}' `
+            --output json | ConvertFrom-Json
+
+          Write-Host "Provisioning State: $($app.properties.provisioningState)"
+          Write-Host "Running State: $($app.properties.runningStatus.state)"
+          Write-Host "Latest Revision: $($app.properties.latestRevisionName)"
+          Write-Host "Latest Revision FQDN: $($app.properties.latestRevisionFqdn)"
+          Write-Host "FQDN: $($app.properties.configuration.ingress.fqdn)"
+
+          Write-Host ""
+          Write-Host "=== Active Revisions ==="
+          $revisions = az containerapp revision list `
+            --name '${{ inputs.AZURE_CONTAINER_APP_NAME }}' `
+            --resource-group '${{ inputs.AZURE_RESOURCE_GROUP }}' `
+            --output json | ConvertFrom-Json
+
+          foreach ($rev in $revisions) {
+            Write-Host "Revision: $($rev.name)"
+            Write-Host "  Active: $($rev.properties.active)"
+            Write-Host "  Running State: $($rev.properties.runningState)"
+            Write-Host "  Provisioning State: $($rev.properties.provisioningState)"
+            Write-Host "  Health State: $($rev.properties.healthState)"
+            Write-Host "  Replicas: $($rev.properties.replicas)"
+            Write-Host "  Created: $($rev.properties.createdTime)"
+          }
+
+          Write-Host ""
+          Write-Host "=== Recent Container App Logs (last 50 lines) ==="
+          az containerapp logs show `
+            --name '${{ inputs.AZURE_CONTAINER_APP_NAME }}' `
+            --resource-group '${{ inputs.AZURE_RESOURCE_GROUP }}' `
+            --type system `
+            --tail 50 2>&1 | Write-Host
 
       - name: Install Pester
         shell: pwsh
@@ -58,6 +125,58 @@ jobs:
           comment_title: Smoke Test Results
           files: |
             TestResults/smoke-tests.xml
+
+      - name: Diagnose Container App on Failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "=== Container App Detailed Diagnostics ==="
+
+          Write-Host ""
+          Write-Host "--- Revision Details ---"
+          $revisions = az containerapp revision list `
+            --name '${{ inputs.AZURE_CONTAINER_APP_NAME }}' `
+            --resource-group '${{ inputs.AZURE_RESOURCE_GROUP }}' `
+            --output json | ConvertFrom-Json
+
+          foreach ($rev in $revisions) {
+            Write-Host "Revision: $($rev.name) | Active: $($rev.properties.active) | Running: $($rev.properties.runningState) | Health: $($rev.properties.healthState) | Replicas: $($rev.properties.replicas)"
+
+            # Show replica details
+            $replicas = az containerapp replica list `
+              --name '${{ inputs.AZURE_CONTAINER_APP_NAME }}' `
+              --resource-group '${{ inputs.AZURE_RESOURCE_GROUP }}' `
+              --revision "$($rev.name)" `
+              --output json 2>&1 | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+            if ($replicas) {
+              foreach ($replica in $replicas) {
+                Write-Host "  Replica: $($replica.name)"
+                foreach ($container in $replica.properties.containers) {
+                  Write-Host "    Container: $($container.name) | State: $($container.runningState) | ExitCode: $($container.exitCode) | RestartCount: $($container.restartCount)"
+                  if ($container.runningStateDetail) {
+                    Write-Host "    State Detail: $($container.runningStateDetail)"
+                  }
+                }
+              }
+            }
+          }
+
+          Write-Host ""
+          Write-Host "--- System Logs (last 100 lines) ---"
+          az containerapp logs show `
+            --name '${{ inputs.AZURE_CONTAINER_APP_NAME }}' `
+            --resource-group '${{ inputs.AZURE_RESOURCE_GROUP }}' `
+            --type system `
+            --tail 100 2>&1 | Write-Host
+
+          Write-Host ""
+          Write-Host "--- Console Logs (last 100 lines) ---"
+          az containerapp logs show `
+            --name '${{ inputs.AZURE_CONTAINER_APP_NAME }}' `
+            --resource-group '${{ inputs.AZURE_RESOURCE_GROUP }}' `
+            --type console `
+            --tail 100 2>&1 | Write-Host
 
       - name: Upload Smoke Test Results
         if: always()

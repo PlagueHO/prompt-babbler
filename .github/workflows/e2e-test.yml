@@ -69,9 +69,16 @@ jobs:
     permissions:
       checks: write
       contents: read
+      id-token: write
     with:
       AZURE_CONTAINER_APP_FQDN: ${{ needs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_FQDN }}
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
+      AZURE_RESOURCE_GROUP: ${{ needs.provision-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_CONTAINER_APP_NAME: ${{ needs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_NAME }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
 
   delete-infrastructure:
     name: Delete Provisioned Infrastructure
