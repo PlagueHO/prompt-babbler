@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.41.2.15936",
+      "templateHash": "15186196035259728334"
+    },
+    "name": "Cosmos DB SQL Role Assignments",
+    "description": "Creates SQL data-plane role assignments on an existing Cosmos DB account without redeploying the account resource."
+  },
+  "definitions": {
+    "sqlRoleAssignmentType": {
+      "type": "object",
+      "properties": {
+        "principalId": {
+          "type": "string",
+          "metadata": {
+            "description": "Required. The principal ID to assign the role to."
+          }
+        },
+        "roleDefinitionId": {
+          "type": "string",
+          "metadata": {
+            "description": "Required. The Cosmos DB built-in role definition GUID (e.g., 00000000-0000-0000-0000-000000000002 for Data Contributor)."
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_export!": true
+      }
+    }
+  },
+  "parameters": {
+    "cosmosDbAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. The name of the existing Cosmos DB account."
+      }
+    },
+    "sqlRoleAssignments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/sqlRoleAssignmentType"
+      },
+      "metadata": {
+        "description": "Required. Array of role assignments to create."
+      }
+    }
+  },
+  "resources": {
+    "cosmosDbAccount": {
+      "existing": true,
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-11-15",
+      "name": "[parameters('cosmosDbAccountName')]"
+    },
+    "roleAssignments": {
+      "copy": {
+        "name": "roleAssignments",
+        "count": "[length(parameters('sqlRoleAssignments'))]"
+      },
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments",
+      "apiVersion": "2024-11-15",
+      "name": "[format('{0}/{1}', parameters('cosmosDbAccountName'), guid(format('{0}/sqlRoleDefinitions/{1}', resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName')), parameters('sqlRoleAssignments')[copyIndex()].roleDefinitionId), parameters('sqlRoleAssignments')[copyIndex()].principalId, resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName'))))]",
+      "properties": {
+        "principalId": "[parameters('sqlRoleAssignments')[copyIndex()].principalId]",
+        "roleDefinitionId": "[format('{0}/sqlRoleDefinitions/{1}', resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName')), parameters('sqlRoleAssignments')[copyIndex()].roleDefinitionId)]",
+        "scope": "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName'))]"
+      }
+    }
+  }
+}

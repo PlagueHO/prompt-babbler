@@ -49,7 +49,6 @@ jobs:
 
   build-and-push-api-container:
     name: Build and Push API Container Image
-    if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - set-build-variables
       - lint-build-test-and-publish-backend-service
@@ -68,14 +67,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from tag
-        id: version
-        run: |
-          TAG="${GITHUB_REF#refs/tags/v}"
-          echo "version=${TAG}" >> $GITHUB_OUTPUT
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+
+      - name: Extract container metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/prompt-babbler-api
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=sha-${{ github.sha }}
+            type=ref,event=tag
 
       - name: Build and push API container image
         uses: docker/build-push-action@v7
@@ -83,13 +86,11 @@ jobs:
           context: ./prompt-babbler-service
           file: ./prompt-babbler-service/src/Api/Dockerfile
           push: true
-          tags: |
-            ghcr.io/plagueho/prompt-babbler-api:latest
-            ghcr.io/plagueho/prompt-babbler-api:${{ steps.version.outputs.version }}
+          tags: ${{ steps.metadata.outputs.tags }}
           labels: |
-            org.opencontainers.image.source=https://github.com/PlagueHO/prompt-babbler
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.description=Prompt Babbler API Service
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.version=${{ github.sha }}
 
   validate-infrastructure:
     name: Validate Infrastructure
@@ -97,6 +98,7 @@ jobs:
       - set-build-variables
       - lint-and-publish-bicep
       - lint-build-test-and-publish-backend-service
+      - build-and-push-api-container
     uses: ./.github/workflows/validate-infrastructure.yml
     with:
       ENVIRONMENT: test

@@ -232,23 +232,6 @@ module foundryService './cognitive-services/accounts/main.bicep' = {
       systemAssigned: true
     }
     publicNetworkAccess: enablePublicNetworkAccess ? 'Enabled' : 'Disabled'
-    privateEndpoints: [
-      {
-        name: foundryPrivateEndpointName
-        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[1] // privateEndpointSubnet
-        privateDnsZoneGroup: {
-          privateDnsZoneGroupConfigs: [
-            {
-              privateDnsZoneResourceId: foundryPrivateDnsZone.outputs.resourceId
-            }
-            {
-              privateDnsZoneResourceId: openAiPrivateDnsZone.outputs.resourceId
-            }
-          ]
-        }
-        service: 'account'
-      }
-    ]
     sku: 'S0'
     deployments: modelDeployments
     raiPolicies: [
@@ -314,6 +297,43 @@ module foundryRoleAssignments './core/security/role_foundry.bicep' = {
   params: {
     foundryName: foundryName
     roleAssignments: foundryRoleAssignmentsArray
+  }
+}
+
+// NOTE: The foundry private endpoint is deployed AFTER the foundryRoleAssignments module
+// completes to avoid a race condition where the account is still in "Accepted" state.
+module foundryPrivateEndpoint 'br/public:avm/res/network/private-endpoint:0.12.0' = {
+  name: 'foundry-private-endpoint-deployment-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    foundryRoleAssignments
+  ]
+  params: {
+    name: foundryPrivateEndpointName
+    location: location
+    tags: tags
+    subnetResourceId: virtualNetwork.outputs.subnetResourceIds[1] // privateEndpointSubnet
+    privateLinkServiceConnections: [
+      {
+        name: foundryPrivateEndpointName
+        properties: {
+          privateLinkServiceId: foundryService.outputs.resourceId
+          groupIds: [
+            'account'
+          ]
+        }
+      }
+    ]
+    privateDnsZoneGroup: {
+      privateDnsZoneGroupConfigs: [
+        {
+          privateDnsZoneResourceId: foundryPrivateDnsZone.outputs.resourceId
+        }
+        {
+          privateDnsZoneResourceId: openAiPrivateDnsZone.outputs.resourceId
+        }
+      ]
+    }
   }
 }
 
@@ -526,15 +546,14 @@ module containerAppFoundryRoles './core/security/role_foundry.bicep' = {
 
 // Assign Cosmos DB Built-in Data Contributor role to the Container App's managed identity
 // for data plane access. The built-in role GUID is 00000000-0000-0000-0000-000000000002.
-module containerAppCosmosDbRoles 'br/public:avm/res/document-db/database-account:0.19.0' = {
+module containerAppCosmosDbRoles './core/security/role_cosmosdb.bicep' = {
   name: 'container-app-cosmos-roles-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    cosmosDbAccount
+  ]
   params: {
-    name: cosmosDbAccountName
-    capabilitiesToAdd: [
-      'EnableServerless'
-    ]
-    enableBurstCapacity: false
+    cosmosDbAccountName: cosmosDbAccountName
     sqlRoleAssignments: [
       {
         principalId: containerApp.outputs.systemAssignedMIPrincipalId
@@ -545,18 +564,14 @@ module containerAppCosmosDbRoles 'br/public:avm/res/document-db/database-account
 }
 
 // Assign Cosmos DB Built-in Data Contributor to the deploying principal for local dev
-module principalCosmosDbRoles 'br/public:avm/res/document-db/database-account:0.19.0' = if (!empty(principalId)) {
+module principalCosmosDbRoles './core/security/role_cosmosdb.bicep' = if (!empty(principalId)) {
   name: 'principal-cosmos-roles-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
     cosmosDbAccount
   ]
   params: {
-    name: cosmosDbAccountName
-    capabilitiesToAdd: [
-      'EnableServerless'
-    ]
-    enableBurstCapacity: false
+    cosmosDbAccountName: cosmosDbAccountName
     sqlRoleAssignments: [
       {
         principalId: principalId
