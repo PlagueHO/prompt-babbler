@@ -41,6 +41,17 @@ param apiClientId string = ''
 @sys.description('Entra ID SPA app registration client ID. Leave empty to disable authentication.')
 param spaClientId string = ''
 
+@sys.description('Location for the Azure Static Web App. Must be one of the supported regions. Defaults to the primary location if not specified.')
+@allowed([
+  ''
+  'centralus'
+  'eastasia'
+  'eastus2'
+  'westeurope'
+  'westus2'
+])
+param staticWebAppLocation string = ''
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var modelDeployments = loadJsonContent('./model-deployments.json')
 
@@ -61,6 +72,7 @@ var defaultProjectName = 'promptbabbler'
 var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
 var containerAppName = '${abbrs.appContainerApps}${environmentName}-api'
 var staticWebAppName = '${abbrs.webStaticSites}${environmentName}'
+var effectiveStaticWebAppLocation = !empty(staticWebAppLocation) ? staticWebAppLocation : location
 var cosmosDbAccountName = '${abbrs.cosmosDBAccounts}${resourceToken}'
 var vnetName = '${abbrs.networkVirtualNetworks}${environmentName}'
 var acaSubnetName = '${abbrs.networkVirtualNetworksSubnets}${environmentName}-aca'
@@ -590,7 +602,7 @@ module staticWebApp 'br/public:avm/res/web/static-site:0.9.3' = {
   ]
   params: {
     name: staticWebAppName
-    location: location
+    location: effectiveStaticWebAppLocation
     tags: union(tags, {
       'azd-service-name': 'frontend'
     })

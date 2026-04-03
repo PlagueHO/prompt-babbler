@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "9038329454438907517"
+      "templateHash": "324456500579335461"
     },
     "name": "Cognitive Services",
     "description": "This module deploys a Cognitive Service account.\nThis is a temporary module for deploying Azure Foundry Cognitive Services accounts.\nIt is intended to be replaced by the Azure Verified Module (AVM) for Microsoft.CognitiveServices accounts\nonce it supports Foundry V2 (projects, connections etc)\nhttps://github.com/Azure/bicep-registry-modules/issues/5390\n"
@@ -8125,17 +8125,17 @@
       "type": "securestring",
       "nullable": true,
       "metadata": {
-        "description": "The primary access key."
+        "description": "The primary access key. Only available when disableLocalAuth is false and keys are explicitly retrieved."
       },
-      "value": "[if(not(parameters('disableLocalAuth')), listKeys('cognitiveService', '2025-10-01-preview').key1, null())]"
+      "value": null
     },
     "secondaryKey": {
       "type": "securestring",
       "nullable": true,
       "metadata": {
-        "description": "The secondary access key."
+        "description": "The secondary access key. Only available when disableLocalAuth is false and keys are explicitly retrieved."
       },
-      "value": "[if(not(parameters('disableLocalAuth')), listKeys('cognitiveService', '2025-10-01-preview').key2, null())]"
+      "value": null
     },
     "projects": {
       "type": "array",

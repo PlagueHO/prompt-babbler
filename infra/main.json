@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "17000741552617823066"
+      "templateHash": "14722157524622537323"
     }
   },
   "parameters": {
@@ -74,6 +74,21 @@
       "defaultValue": "",
       "metadata": {
         "description": "Entra ID SPA app registration client ID. Leave empty to disable authentication."
+      }
+    },
+    "staticWebAppLocation": {
+      "type": "string",
+      "defaultValue": "",
+      "allowedValues": [
+        "",
+        "centralus",
+        "eastasia",
+        "eastus2",
+        "westeurope",
+        "westus2"
+      ],
+      "metadata": {
+        "description": "Location for the Azure Static Web App. Must be one of the supported regions. Defaults to the primary location if not specified."
       }
     }
   },
@@ -244,6 +259,7 @@
     "containerAppsEnvironmentName": "[format('{0}{1}', variables('abbrs').appManagedEnvironments, parameters('environmentName'))]",
     "containerAppName": "[format('{0}{1}-api', variables('abbrs').appContainerApps, parameters('environmentName'))]",
     "staticWebAppName": "[format('{0}{1}', variables('abbrs').webStaticSites, parameters('environmentName'))]",
+    "effectiveStaticWebAppLocation": "[if(not(empty(parameters('staticWebAppLocation'))), parameters('staticWebAppLocation'), parameters('location'))]",
     "cosmosDbAccountName": "[format('{0}{1}', variables('abbrs').cosmosDBAccounts, variables('resourceToken'))]",
     "vnetName": "[format('{0}{1}', variables('abbrs').networkVirtualNetworks, parameters('environmentName'))]",
     "acaSubnetName": "[format('{0}{1}-aca', variables('abbrs').networkVirtualNetworksSubnets, parameters('environmentName'))]",
@@ -34941,7 +34957,7 @@
             "value": "[variables('staticWebAppName')]"
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[variables('effectiveStaticWebAppLocation')]"
           },
           "tags": {
             "value": "[union(variables('tags'), createObject('azd-service-name', 'frontend'))]"

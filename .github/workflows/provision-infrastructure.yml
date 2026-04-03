@@ -162,6 +162,12 @@ jobs:
         run: |
           azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
           azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
+          # Override Static Web App location when configured.
+          # Must be one of: centralus, eastasia, eastus2, westeurope, westus2.
+          SWA_LOCATION="${{ vars.AZURE_STATIC_WEB_APP_LOCATION }}"
+          if [ -n "$SWA_LOCATION" ]; then
+            azd env set AZURE_STATIC_WEB_APP_LOCATION "$SWA_LOCATION"
+          fi
           # Enable Entra ID app registrations via preprovision hook when configured.
           # Requires Application.ReadWrite.All Graph permission on the deploying identity.
           ENTRA_AUTH="${{ vars.ENABLE_ENTRA_AUTH }}"
