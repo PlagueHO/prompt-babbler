@@ -3,6 +3,10 @@ name: Smoke Test
 on:
   workflow_call:
     inputs:
+      ENVIRONMENT:
+        description: "The environment to use for the smoke test"
+        required: true
+        type: string
       AZURE_CONTAINER_APP_FQDN:
         description: "The FQDN of the deployed Azure Container App"
         required: true
@@ -35,6 +39,7 @@ jobs:
   smoke-test:
     name: Smoke Test
     runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
     permissions:
       checks: write
       contents: read

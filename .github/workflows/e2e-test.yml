@@ -85,6 +85,7 @@ jobs:
       contents: read
       id-token: write
     with:
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       AZURE_CONTAINER_APP_FQDN: ${{ needs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_FQDN }}
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
       AZURE_RESOURCE_GROUP: ${{ needs.provision-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
