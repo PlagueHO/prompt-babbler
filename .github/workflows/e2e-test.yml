@@ -32,8 +32,22 @@ on:
         required: true
 
 jobs:
+  validate-infrastructure:
+    name: Validate Infrastructure
+    uses: ./.github/workflows/validate-infrastructure.yml
+    with:
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+      BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
+      AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
+      AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
   provision-infrastructure:
     name: Provision Infrastructure
+    needs: [validate-infrastructure]
     # E2E tests provision without Entra ID (ENABLE_ENTRA_AUTH is NOT set).
     # This avoids requiring Application.ReadWrite.All Graph permission for ephemeral
     # test environments. The app runs in anonymous single-user mode.
