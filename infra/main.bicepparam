@@ -11,10 +11,10 @@ param principalIdType = toLower(readEnvironmentVariable('AZURE_PRINCIPAL_ID_TYPE
 // Network access parameter
 param enablePublicNetworkAccess = bool(readEnvironmentVariable('ENABLE_PUBLIC_NETWORK_ACCESS', 'true'))
 
-// Static Web App location override (must be one of: centralus, eastasia, eastus2, westeurope, westus2)
-// Leave empty to use the primary location.
-param staticWebAppLocation = readEnvironmentVariable('AZURE_STATIC_WEB_APP_LOCATION', '')
-
 // Entra ID app registration client IDs (set by preprovision hook when ENABLE_ENTRA_AUTH=true)
 param apiClientId = readEnvironmentVariable('AZURE_AD_API_CLIENT_ID', '')
 param spaClientId = readEnvironmentVariable('AZURE_AD_SPA_CLIENT_ID', '')
+
+// Static Web App location override (must be one of: centralus, eastasia, eastus2, westeurope, westus2)
+// Leave empty to use the primary location.
+param staticWebAppLocation = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_LOCATION', ''))
