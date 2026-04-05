@@ -52,6 +52,9 @@ param spaClientId string = ''
 ])
 param staticWebAppLocation string = ''
 
+@sys.description('Container image to deploy for the backend API Container App.')
+param containerImage string = 'ghcr.io/plagueho/prompt-babbler-api:latest'
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var modelDeployments = loadJsonContent('./model-deployments.json')
 
@@ -479,7 +482,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.21.0' = {
     containers: [
       {
         name: 'api'
-        image: 'ghcr.io/plagueho/prompt-babbler-api:latest'
+        image: containerImage
         resources: {
           cpu: '0.5'
           memory: '1Gi'

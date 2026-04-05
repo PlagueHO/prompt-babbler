@@ -19,6 +19,11 @@ on:
         description: "The name of the Azure environment"
         required: true
         type: string
+      CONTAINER_IMAGE:
+        description: "Container image to deploy (e.g., ghcr.io/owner/prompt-babbler-api:v1.0.0). Defaults to :latest."
+        required: false
+        type: string
+        default: ''
 
     outputs:
       AZURE_RESOURCE_GROUP:
@@ -99,7 +104,7 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME || inputs.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_PRINCIPAL_ID_TYPE: 'ServicePrincipal'
 
@@ -162,6 +167,10 @@ jobs:
         run: |
           azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
           azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
+          CONTAINER_IMAGE="${{ inputs.CONTAINER_IMAGE }}"
+          if [ -n "$CONTAINER_IMAGE" ]; then
+            azd env set AZURE_CONTAINER_APP_IMAGE "$CONTAINER_IMAGE"
+          fi
           # Override Static Web App location when configured.
           # Must be one of: centralus, eastasia, eastus2, westeurope, westus2.
           SWA_LOCATION="${{ vars.AZURE_STATIC_WEB_APP_LOCATION }}"

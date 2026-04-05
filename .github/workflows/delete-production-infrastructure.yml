@@ -1,0 +1,37 @@
+name: Delete Production Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DELETE-PRODUCTION to confirm destruction of the production environment'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  guard:
+    name: Confirm Deletion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation
+        if: inputs.confirm != 'DELETE-PRODUCTION'
+        run: |
+          echo "::error::Confirmation failed. You must type 'DELETE-PRODUCTION' to proceed."
+          exit 1
+
+  delete-production:
+    name: Delete Production Infrastructure
+    needs: guard
+    uses: ./.github/workflows/delete-infrastructure.yml
+    with:
+      ENVIRONMENT: prod
+      AZURE_ENV_NAME: prompt-babbler-prod
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
