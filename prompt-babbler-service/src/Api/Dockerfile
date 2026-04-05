@@ -1,4 +1,12 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS base
+
+# Install native dependencies required by Microsoft.CognitiveServices.Speech SDK
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libasound2t64 \
+        libssl3t64 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 EXPOSE 8080
 
