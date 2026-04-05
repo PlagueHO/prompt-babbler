@@ -5,11 +5,38 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Azure;
 using Microsoft.Identity.Web;
+using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Infrastructure;
+using PromptBabbler.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+// In non-Development environments (i.e. ACA with SystemAssigned managed identity), probe
+// ManagedIdentityCredential before constructing any Azure SDK clients. This avoids the
+// permanent credential-unavailable cache that DefaultAzureCredential creates when the
+// identity sidecar is not yet ready during cold start.
+if (!builder.Environment.IsDevelopment())
+{
+    var probeLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger("Startup");
+    const int maxProbes = 20;
+    for (var attempt = 1; attempt <= maxProbes; attempt++)
+    {
+        try
+        {
+            var probe = new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
+            await probe.GetTokenAsync(new TokenRequestContext(["https://management.azure.com/.default"]));
+            probeLogger.LogInformation("Managed identity ready (attempt {Attempt}/{MaxProbes})", attempt, maxProbes);
+            break;
+        }
+        catch (Exception ex) when (attempt < maxProbes)
+        {
+            probeLogger.LogWarning("Managed identity not ready (attempt {Attempt}/{MaxProbes}): {Error}", attempt, maxProbes, ex.Message);
+            await Task.Delay(TimeSpan.FromSeconds(3));
+        }
+    }
+}
 
 // Register Azure Cosmos DB client from Aspire connection (auto-configured from AppHost).
 builder.AddAzureCosmosClient("cosmos", configureClientOptions: options =>
@@ -34,25 +61,35 @@ builder.Services.AddControllers()
 // When Azure:TenantId is set (local dev), scope the credential to that tenant to avoid
 // DefaultAzureCredential picking up a credential from a different tenant.
 var tenantId = builder.Configuration["Azure:TenantId"];
-builder.AddAzureOpenAIClient("ai-foundry", configureClientBuilder: clientBuilder =>
-{
-    if (!string.IsNullOrEmpty(tenantId))
-    {
-        clientBuilder.WithCredential(new DefaultAzureCredential(
-            new DefaultAzureCredentialOptions
-            {
-                TenantId = tenantId,
-                ExcludeManagedIdentityCredential = true,
-            }));
-    }
-});
+var aiFoundryConnStr = builder.Configuration.GetConnectionString("ai-foundry") ?? "";
+var isAiConfigured = !string.IsNullOrWhiteSpace(aiFoundryConnStr);
 
-// Register IChatClient for the chat deployment via Microsoft.Extensions.AI.
-builder.Services.AddSingleton<IChatClient>(sp =>
+if (isAiConfigured)
 {
-    var openAiClient = sp.GetRequiredService<AzureOpenAIClient>();
-    return openAiClient.GetChatClient("chat").AsIChatClient();
-});
+    builder.AddAzureOpenAIClient("ai-foundry", configureClientBuilder: clientBuilder =>
+    {
+        if (!string.IsNullOrEmpty(tenantId))
+        {
+            clientBuilder.WithCredential(new DefaultAzureCredential(
+                new DefaultAzureCredentialOptions
+                {
+                    TenantId = tenantId,
+                    ExcludeManagedIdentityCredential = true,
+                }));
+        }
+    });
+
+    // Register IChatClient for the chat deployment via Microsoft.Extensions.AI.
+    builder.Services.AddSingleton<IChatClient>(sp =>
+    {
+        var openAiClient = sp.GetRequiredService<AzureOpenAIClient>();
+        return openAiClient.GetChatClient("chat").AsIChatClient();
+    });
+}
+else
+{
+    startupLogger.LogWarning("ConnectionStrings:ai-foundry is not configured. AI features (prompt generation, title generation) will be unavailable.");
+}
 
 // Register TokenCredential for Azure Speech Service and any other Azure SDK clients.
 // Uses the same DefaultAzureCredential pattern as the OpenAI client.
@@ -69,7 +106,6 @@ builder.Services.AddSingleton<TokenCredential>(sp =>
 
 // Parse the AI Services endpoint from the AI Foundry connection string for Speech Service
 // STS token exchange. The Speech SDK requires a Cognitive Services token, not a raw AAD token.
-var aiFoundryConnStr = builder.Configuration.GetConnectionString("ai-foundry") ?? "";
 var aiServicesEndpoint = "";
 foreach (var part in aiFoundryConnStr.Split(';', StringSplitOptions.RemoveEmptyEntries))
 {
@@ -91,6 +127,15 @@ if (string.IsNullOrEmpty(aiServicesEndpoint) &&
 builder.Services.AddInfrastructure(
     speechRegion: builder.Configuration["Speech:Region"] ?? string.Empty,
     aiServicesEndpoint: aiServicesEndpoint);
+
+// Register the dependency checker for the /api/status diagnostic endpoint.
+builder.Services.AddSingleton<IDependencyChecker>(sp =>
+{
+    var cosmosClient = sp.GetRequiredService<Microsoft.Azure.Cosmos.CosmosClient>();
+    var chatClient = sp.GetService<IChatClient>();
+    var logger = sp.GetRequiredService<ILogger<DependencyChecker>>();
+    return new DependencyChecker(cosmosClient, chatClient, logger);
+});
 
 var azureAdClientId = builder.Configuration["AzureAd:ClientId"];
 var isAuthEnabled = !string.IsNullOrEmpty(azureAdClientId);

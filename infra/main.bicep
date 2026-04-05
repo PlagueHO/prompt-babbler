@@ -518,6 +518,10 @@ module containerApp 'br/public:avm/res/app/container-app:0.21.0' = {
             name: 'ConnectionStrings__cosmos'
             value: 'AccountEndpoint=${cosmosDbAccount.outputs.endpoint}'
           }
+          {
+            name: 'ConnectionStrings__ai-foundry'
+            value: 'Endpoint=${foundryService.outputs.endpoint}'
+          }
           ...(!empty(apiClientId) ? [
             {
               name: 'AzureAd__ClientId'
@@ -578,14 +582,11 @@ module containerAppFoundryRoles './core/security/role_foundry.bicep' = {
 module containerAppCosmosDbRoles './core/security/role_cosmosdb.bicep' = {
   name: 'container-app-cosmos-roles-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
-  dependsOn: [
-    cosmosDbAccount
-  ]
   params: {
     cosmosDbAccountName: cosmosDbAccountName
     sqlRoleAssignments: [
       {
-        principalId: containerApp.outputs.systemAssignedMIPrincipalId
+        principalId: containerApp.outputs.?systemAssignedMIPrincipalId ?? ''
         roleDefinitionId: '00000000-0000-0000-0000-000000000002'
       }
     ]

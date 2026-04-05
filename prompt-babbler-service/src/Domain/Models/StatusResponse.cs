@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
-using PromptBabbler.Domain.Models;
 
-namespace PromptBabbler.Api.Models.Responses;
+namespace PromptBabbler.Domain.Models;
 
 public sealed record StatusResponse
 {
