@@ -9,8 +9,10 @@ param(
 Describe 'Backend API' {
     BeforeAll {
         # Wait for Container App cold start with retry on /health endpoint
-        $maxRetries = 10
-        $retryDelay = 10
+        # ACA cold-start from zero replicas + GHCR image pull can take 2+ minutes.
+        # ACA ingress propagation can also return 403 for up to ~3 minutes after provisioning.
+        $maxRetries = 30
+        $retryDelay = 15
         $healthy = $false
 
         for ($i = 1; $i -le $maxRetries; $i++) {
