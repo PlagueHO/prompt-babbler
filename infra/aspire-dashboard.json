@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "1483235548806619955"
+    }
+  },
+  "parameters": {
+    "containerAppsEnvironmentName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Container Apps Managed Environment to enable the Aspire Dashboard on."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/managedEnvironments/dotNetComponents",
+      "apiVersion": "2024-10-02-preview",
+      "name": "[format('{0}/{1}', parameters('containerAppsEnvironmentName'), 'aspire-dashboard')]",
+      "properties": {
+        "componentType": "AspireDashboard"
+      }
+    }
+  ]
+}

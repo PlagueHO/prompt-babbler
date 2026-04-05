@@ -459,6 +459,20 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.
     infrastructureSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[0] // acaSubnet
     // internal: false means the environment remains publicly accessible (external ingress)
     internal: false
+    // Allow public network access so smoke tests and external clients can reach the container apps
+    publicNetworkAccess: 'Enabled'
+  }
+}
+
+// --------- ASPIRE DASHBOARD ---------
+module aspireDashboard 'aspire-dashboard.bicep' = {
+  name: 'aspire-dashboard-deployment-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    containerAppsEnvironment
+  ]
+  params: {
+    containerAppsEnvironmentName: containerAppsEnvironmentName
   }
 }
 
