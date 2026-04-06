@@ -63,7 +63,8 @@ Describe 'Backend API' {
             throw "Backend /health did not become healthy after $healthRetries attempts. Last error: $finalError"
         }
 
-        # Phase 2: Wait for /api/status to report overall: Healthy (deep dependency check).
+        # Phase 2: Wait for /health to report all dependency checks as Healthy.
+        # The detailed health response includes per-check status for Cosmos DB, managed identity, and AI Foundry.
         $statusRetries = 20
         $statusDelay = 10
         $statusHealthy = $false
@@ -71,62 +72,44 @@ Describe 'Backend API' {
         for ($i = 1; $i -le $statusRetries; $i++) {
             $timestamp = Get-Date -Format 'HH:mm:ss'
             try {
-                $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/status" -UseBasicParsing -TimeoutSec 15
-                $status = $response.Content | ConvertFrom-Json
+                # Use -SkipHttpErrorCheck so we can read the response body even on 503
+                $response = Invoke-WebRequest -Uri "$ApiBaseUrl/health" -UseBasicParsing -TimeoutSec 30 -SkipHttpErrorCheck
+                $statusJson = $response.Content | ConvertFrom-Json
 
-                $miStatus = $status.managedIdentity.status
-                $cosmosStatus = $status.cosmosDb.status
-                $aiStatus = $status.aiFoundry.status
-                $overall = $status.overall
+                Write-Host "[$timestamp] Health check (attempt $i/$statusRetries) - HTTP $($response.StatusCode):"
+                Write-Host "  Overall:          $($statusJson.status)"
 
-                Write-Host "[$timestamp] Phase 2 attempt $i/${statusRetries}: overall=$overall, managedIdentity=$miStatus, cosmosDb=$cosmosStatus, aiFoundry=$aiStatus"
+                # Log individual check statuses when available
+                if ($statusJson.entries) {
+                    $statusJson.entries.PSObject.Properties | ForEach-Object {
+                        Write-Host "  $($_.Name): $($_.Value.status) - $($_.Value.description)"
+                    }
+                }
 
-                if ($overall -eq 'Healthy') {
+                if ($statusJson.status -eq 'Healthy') {
                     $statusHealthy = $true
                     break
                 }
-                else {
-                    # Log per-dependency errors for CI diagnostics
-                    if ($status.managedIdentity.error) { Write-Host "  managedIdentity error: $($status.managedIdentity.error)" }
-                    if ($status.cosmosDb.error) { Write-Host "  cosmosDb error: $($status.cosmosDb.error)" }
-                    if ($status.aiFoundry.error) { Write-Host "  aiFoundry error: $($status.aiFoundry.error)" }
-                    Start-Sleep -Seconds $statusDelay
-                }
+
+                Start-Sleep -Seconds $statusDelay
             }
             catch {
-                $errorDetail = $_.Exception.Message
-                if ($_.Exception.Response) {
-                    $errorDetail = "HTTP $([int]$_.Exception.Response.StatusCode)"
-                    try {
-                        $reader = [System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream())
-                        $body = $reader.ReadToEnd()
-                        $reader.Close()
-                        if ($body) {
-                            $errorDetail += " | $body"
-                            # Try to parse and show per-dependency status even from 503 response
-                            try {
-                                $errStatus = $body | ConvertFrom-Json
-                                Write-Host "[$timestamp] Phase 2 attempt $i/${statusRetries}: overall=$($errStatus.overall), managedIdentity=$($errStatus.managedIdentity.status), cosmosDb=$($errStatus.cosmosDb.status), aiFoundry=$($errStatus.aiFoundry.status)"
-                                if ($errStatus.managedIdentity.error) { Write-Host "  managedIdentity error: $($errStatus.managedIdentity.error)" }
-                                if ($errStatus.cosmosDb.error) { Write-Host "  cosmosDb error: $($errStatus.cosmosDb.error)" }
-                            } catch {}
-                        }
-                    } catch {}
-                }
-                Write-Host "[$timestamp] Phase 2 attempt $i/${statusRetries}: /api/status request failed ($errorDetail), retrying in ${statusDelay}s..."
+                Write-Host "[$timestamp] Attempt $i/${statusRetries}: /health request failed - $($_.Exception.Message)"
                 Start-Sleep -Seconds $statusDelay
             }
         }
 
         if (-not $statusHealthy) {
-            Write-Host "WARNING: /api/status did not report Healthy after $statusRetries attempts. Individual tests may fail with more specific errors."
+            Write-Host "WARNING: Dependencies not fully healthy after $statusRetries attempts. Individual tests may fail with more specific errors."
         }
     }
 
     It 'Health endpoint returns Healthy' {
         $response = Invoke-WebRequest -Uri "$ApiBaseUrl/health" -UseBasicParsing -TimeoutSec 10
         $response.StatusCode | Should -Be 200
-        $response.Content | Should -BeLike '*Healthy*'
+
+        $status = $response.Content | ConvertFrom-Json
+        $status.status | Should -Be 'Healthy'
     }
 
     It 'Liveness endpoint returns 200' {
@@ -134,14 +117,14 @@ Describe 'Backend API' {
         $response.StatusCode | Should -Be 200
     }
 
-    It 'Status endpoint reports all dependencies healthy' {
-        $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/status" -UseBasicParsing -TimeoutSec 15
+    It 'Health endpoint returns detailed dependency status' {
+        $response = Invoke-WebRequest -Uri "$ApiBaseUrl/health" -UseBasicParsing -TimeoutSec 30
         $response.StatusCode | Should -Be 200
 
         $status = $response.Content | ConvertFrom-Json
-        $status.overall | Should -Be 'Healthy'
-        $status.managedIdentity.status | Should -Be 'Healthy'
-        $status.cosmosDb.status | Should -Be 'Healthy'
+        $status.status | Should -Be 'Healthy'
+        $status.entries.'cosmosdb'.status | Should -Be 'Healthy'
+        $status.entries.'managed-identity'.status | Should -Be 'Healthy'
     }
 
     It 'Babbles API returns 200' {

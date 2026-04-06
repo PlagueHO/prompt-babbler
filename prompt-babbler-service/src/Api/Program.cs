@@ -5,44 +5,34 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Azure;
 using Microsoft.Identity.Web;
-using PromptBabbler.Domain.Interfaces;
+using PromptBabbler.Api.HealthChecks;
 using PromptBabbler.Infrastructure;
-using PromptBabbler.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// In non-Development environments (i.e. ACA with SystemAssigned managed identity), probe
-// ManagedIdentityCredential before constructing any Azure SDK clients. This avoids the
-// permanent credential-unavailable cache that DefaultAzureCredential creates when the
-// identity sidecar is not yet ready during cold start.
-if (!builder.Environment.IsDevelopment())
-{
-    var probeLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger("Startup");
-    const int maxProbes = 20;
-    for (var attempt = 1; attempt <= maxProbes; attempt++)
+// Cosmos DB client — use ManagedIdentityCredential directly in deployed environments.
+// DefaultAzureCredential permanently caches credential unavailability per the Azure Identity
+// SDK behavior. In ACA cold starts (scale from 0), the identity sidecar may not be ready on
+// the first credential probe, causing DAC to mark ManagedIdentityCredential as permanently
+// unavailable and fall through to VS/VSCode credentials which don't exist in a Linux container.
+// See: https://learn.microsoft.com/azure/container-apps/managed-identity?tabs=portal,dotnet
+builder.AddAzureCosmosClient("cosmos",
+    configureSettings: settings =>
     {
-        try
+        // In non-development environments (ACA), use ManagedIdentityCredential directly
+        // with system-assigned identity. DefaultAzureCredential is used in development
+        // where it picks up local credentials (Azure CLI, VS, etc.).
+        if (!builder.Environment.IsDevelopment())
         {
-            var probe = new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
-            await probe.GetTokenAsync(new TokenRequestContext(["https://management.azure.com/.default"]));
-            probeLogger.LogInformation("Managed identity ready (attempt {Attempt}/{MaxProbes})", attempt, maxProbes);
-            break;
+            settings.Credential = new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
         }
-        catch (Exception ex) when (attempt < maxProbes)
-        {
-            probeLogger.LogWarning("Managed identity not ready (attempt {Attempt}/{MaxProbes}): {Error}", attempt, maxProbes, ex.Message);
-            await Task.Delay(TimeSpan.FromSeconds(3));
-        }
-    }
-}
-
-// Register Azure Cosmos DB client from Aspire connection (auto-configured from AppHost).
-builder.AddAzureCosmosClient("cosmos", configureClientOptions: options =>
-{
-    options.UseSystemTextJsonSerializerWithOptions = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);
-});
+    },
+    configureClientOptions: options =>
+    {
+        options.UseSystemTextJsonSerializerWithOptions = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);
+    });
 
 // Log tenant configuration at startup for diagnostics.
 var startupLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger("Startup");
@@ -128,14 +118,17 @@ builder.Services.AddInfrastructure(
     speechRegion: builder.Configuration["Speech:Region"] ?? string.Empty,
     aiServicesEndpoint: aiServicesEndpoint);
 
-// Register the dependency checker for the /api/status diagnostic endpoint.
-builder.Services.AddSingleton<IDependencyChecker>(sp =>
+// Health checks for dependency monitoring
+builder.Services.AddHealthChecks()
+    .AddCheck<CosmosDbHealthCheck>("cosmosdb", tags: ["ready"])
+    .AddCheck<AiFoundryHealthCheck>("ai-foundry", tags: ["ready"]);
+
+// Managed identity health check only runs in deployed environments
+if (!builder.Environment.IsDevelopment())
 {
-    var cosmosClient = sp.GetRequiredService<Microsoft.Azure.Cosmos.CosmosClient>();
-    var chatClient = sp.GetService<IChatClient>();
-    var logger = sp.GetRequiredService<ILogger<DependencyChecker>>();
-    return new DependencyChecker(cosmosClient, chatClient, logger);
-});
+    builder.Services.AddHealthChecks()
+        .AddCheck<ManagedIdentityHealthCheck>("managed-identity", tags: ["ready"]);
+}
 
 var azureAdClientId = builder.Configuration["AzureAd:ClientId"];
 var isAuthEnabled = !string.IsNullOrEmpty(azureAdClientId);

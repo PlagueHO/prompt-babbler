@@ -1,0 +1,97 @@
+name: Deploy Production
+
+on:
+  workflow_call:
+    inputs:
+      BUILD_VERSION:
+        description: "The version of the build to deploy"
+        required: true
+        type: string
+      AZURE_LOCATION:
+        description: "The Azure region to deploy to"
+        required: true
+        type: string
+      CONTAINER_IMAGE:
+        description: "Container image to deploy (e.g., ghcr.io/owner/prompt-babbler-api:v1.0.0)"
+        required: true
+        type: string
+
+    secrets:
+      AZURE_TENANT_ID:
+        description: "The Azure tenant ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        description: "The Azure subscription ID to use for authentication to Azure for deployment"
+        required: true
+      AZURE_CLIENT_ID:
+        description: "The Azure client ID to use for authentication to Azure for deployment"
+        required: true
+
+jobs:
+  validate-prod-infrastructure:
+    name: Validate Prod Infrastructure
+    uses: ./.github/workflows/validate-infrastructure.yml
+    with:
+      ENVIRONMENT: prod
+      BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
+      AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
+      AZURE_ENV_NAME: prompt-babbler-prod
+      CONTAINER_IMAGE: ${{ inputs.CONTAINER_IMAGE }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
+  provision-prod-infrastructure:
+    name: Provision Prod Infrastructure
+    needs:
+      - validate-prod-infrastructure
+    uses: ./.github/workflows/provision-infrastructure.yml
+    with:
+      ENVIRONMENT: prod
+      BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
+      AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
+      AZURE_ENV_NAME: prompt-babbler-prod
+      CONTAINER_IMAGE: ${{ inputs.CONTAINER_IMAGE }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
+  deploy-prod-frontend:
+    name: Deploy Prod Frontend
+    needs:
+      - provision-prod-infrastructure
+    uses: ./.github/workflows/deploy-frontend-app.yml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      ENVIRONMENT: prod
+      AZURE_RESOURCE_GROUP: ${{ needs.provision-prod-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_STATIC_WEB_APP_NAME: ${{ needs.provision-prod-infrastructure.outputs.AZURE_STATIC_WEB_APP_NAME }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
+  smoke-test-prod:
+    name: Smoke Test Prod
+    needs:
+      - provision-prod-infrastructure
+      - deploy-prod-frontend
+    uses: ./.github/workflows/smoke-test.yml
+    permissions:
+      checks: write
+      contents: read
+      id-token: write
+    with:
+      ENVIRONMENT: prod
+      AZURE_CONTAINER_APP_FQDN: ${{ needs.provision-prod-infrastructure.outputs.AZURE_CONTAINER_APP_FQDN }}
+      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-prod-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
+      AZURE_RESOURCE_GROUP: ${{ needs.provision-prod-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
+      AZURE_CONTAINER_APP_NAME: ${{ needs.provision-prod-infrastructure.outputs.AZURE_CONTAINER_APP_NAME }}
+    secrets:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}

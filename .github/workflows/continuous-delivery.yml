@@ -92,29 +92,13 @@ jobs:
             org.opencontainers.image.description=Prompt Babbler API Service
             org.opencontainers.image.version=${{ github.sha }}
 
-  validate-infrastructure:
-    name: Validate Infrastructure
+  e2e-test:
+    name: E2E Test
     needs:
       - set-build-variables
       - lint-and-publish-bicep
       - lint-build-test-and-publish-backend-service
       - build-and-push-api-container
-    uses: ./.github/workflows/validate-infrastructure.yml
-    with:
-      ENVIRONMENT: test
-      BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
-      AZURE_ENV_NAME: ${{ format('pbblr-{0}', github.run_id) }}
-    secrets:
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-
-  e2e-test:
-    name: E2E Test
-    needs:
-      - set-build-variables
-      - validate-infrastructure
     uses: ./.github/workflows/e2e-test.yml
     with:
       ENVIRONMENT: test
@@ -128,81 +112,25 @@ jobs:
 
   # ────────────────────────────────────────────────────────────────────────────
   # Production deployment — only runs on v* tag pushes, after E2E tests pass.
-  # Uses a static environment name (prompt-babbler-prod) for idempotent deployments.
+  # Delegates to deploy-production.yml for validate, provision, deploy & smoke.
   # ────────────────────────────────────────────────────────────────────────────
 
-  validate-prod-infrastructure:
-    name: Validate Prod Infrastructure
+  deploy-production:
+    name: Deploy Production
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - set-build-variables
       - e2e-test
       - build-and-push-api-container
-    uses: ./.github/workflows/validate-infrastructure.yml
-    with:
-      ENVIRONMENT: prod
-      BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
-      AZURE_ENV_NAME: prompt-babbler-prod
-      CONTAINER_IMAGE: ghcr.io/${{ github.repository_owner }}/prompt-babbler-api:${{ github.ref_name }}
-    secrets:
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-
-  provision-prod-infrastructure:
-    name: Provision Prod Infrastructure
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - set-build-variables
-      - validate-prod-infrastructure
-    uses: ./.github/workflows/provision-infrastructure.yml
-    with:
-      ENVIRONMENT: prod
-      BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
-      AZURE_ENV_NAME: prompt-babbler-prod
-      CONTAINER_IMAGE: ghcr.io/${{ github.repository_owner }}/prompt-babbler-api:${{ github.ref_name }}
-    secrets:
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-
-  deploy-prod-frontend:
-    name: Deploy Prod Frontend
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - provision-prod-infrastructure
-    uses: ./.github/workflows/deploy-frontend-app.yml
+    uses: ./.github/workflows/deploy-production.yml
     permissions:
       id-token: write
       contents: read
-    with:
-      ENVIRONMENT: prod
-      AZURE_RESOURCE_GROUP: ${{ needs.provision-prod-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
-      AZURE_STATIC_WEB_APP_NAME: ${{ needs.provision-prod-infrastructure.outputs.AZURE_STATIC_WEB_APP_NAME }}
-    secrets:
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-
-  smoke-test-prod:
-    name: Smoke Test Prod
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - provision-prod-infrastructure
-      - deploy-prod-frontend
-    uses: ./.github/workflows/smoke-test.yml
-    permissions:
       checks: write
-      contents: read
-      id-token: write
     with:
-      ENVIRONMENT: prod
-      AZURE_CONTAINER_APP_FQDN: ${{ needs.provision-prod-infrastructure.outputs.AZURE_CONTAINER_APP_FQDN }}
-      AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-prod-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
-      AZURE_RESOURCE_GROUP: ${{ needs.provision-prod-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
-      AZURE_CONTAINER_APP_NAME: ${{ needs.provision-prod-infrastructure.outputs.AZURE_CONTAINER_APP_NAME }}
+      BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
+      CONTAINER_IMAGE: ghcr.io/${{ github.repository_owner }}/prompt-babbler-api:${{ github.ref_name }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
