@@ -76,7 +76,25 @@ azd env get-values | grep FRONTEND
 
 The app runs in **anonymous single-user mode** — no sign-in is required. All data is stored under a synthetic `_anonymous` user identity.
 
-## 5. Enable Entra ID authentication (optional)
+## 5. Protect with an access code (optional)
+
+In single-user mode the app is open by default. To restrict access, set an access code. When configured, the frontend shows a modal dialog requiring the code before any interaction, and the backend rejects API requests that don't provide it.
+
+```bash
+azd env set ACCESS_CODE "<your-access-code>"
+azd up
+```
+
+For CI/CD deployments, store the access code as a GitHub Actions secret named `ACCESS_CODE`. The delivery pipeline passes it through to the infrastructure provisioning step automatically.
+
+To remove access code protection, clear the value:
+
+```bash
+azd env set ACCESS_CODE ""
+azd up
+```
+
+## 6. Enable Entra ID authentication (optional)
 
 To enable multi-user support with Microsoft Entra ID (Azure AD) authentication, configure the deployment to create app registrations.
 
@@ -134,9 +152,9 @@ When client IDs are **not** configured (default), both the backend and frontend 
 
 The AI model deployment is defined in [`infra/model-deployments.json`](../infra/model-deployments.json):
 
-| Deployment | Model | SKU | Capacity |
-|------------|-------|-----|----------|
-| gpt-5.3-chat | gpt-5.3-chat | GlobalStandard | 50 |
+| Deployment | Model | Version | SKU | Capacity |
+|------------|-------|---------|-----|----------|
+| gpt-5.3-chat | gpt-5.3-chat | 2026-03-03 | GlobalStandard | 50 |
 
 Speech-to-text uses **Azure AI Speech Service** (real-time streaming), which is part of the same AIServices resource — no separate model deployment is needed.
 

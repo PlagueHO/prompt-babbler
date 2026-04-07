@@ -1,4 +1,5 @@
 import type {
+  AccessControlStatus,
   Babble,
   GeneratedPrompt,
   PagedResponse,
@@ -15,9 +16,29 @@ function getApiBaseUrl(): string {
   return typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : '';
 }
 
-function addAuthHeader(headers: HeadersInit = {}, accessToken?: string): HeadersInit {
-  if (!accessToken) return headers;
-  return { ...headers, Authorization: `Bearer ${accessToken}` };
+// Module-scoped access code state
+let currentAccessCode: string | null = null;
+
+export function setAccessCode(code: string | null): void {
+  currentAccessCode = code;
+}
+
+export function getAccessCode(): string | null {
+  return currentAccessCode;
+}
+
+function buildHeaders(contentType?: string, accessToken?: string): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (contentType) {
+    headers['Content-Type'] = contentType;
+  }
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  if (currentAccessCode) {
+    headers['X-Access-Code'] = currentAccessCode;
+  }
+  return headers;
 }
 
 function isHtmlResponse(res: Response): boolean {
@@ -37,13 +58,10 @@ async function fetchJson<T>(
   try {
     res = await fetch(`${base}${path}`, {
       ...init,
-      headers: addAuthHeader(
-        {
-          'Content-Type': 'application/json',
-          ...init?.headers,
-        },
-        accessToken,
-      ),
+      headers: {
+        ...buildHeaders('application/json', accessToken),
+        ...init?.headers,
+      },
     });
   } catch {
     throw new Error(BACKEND_UNAVAILABLE_MSG);
@@ -60,6 +78,10 @@ async function fetchJson<T>(
 
 export async function getStatus(): Promise<StatusResponse> {
   return fetchJson<StatusResponse>('/api/status');
+}
+
+export async function getAccessStatus(): Promise<AccessControlStatus> {
+  return fetchJson<AccessControlStatus>('/api/config/access-status');
 }
 
 // Template APIs
@@ -114,7 +136,7 @@ export async function deleteTemplate(id: string, accessToken?: string): Promise<
   try {
     res = await fetch(`${base}/api/templates/${encodeURIComponent(id)}`, {
       method: 'DELETE',
-      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+      headers: buildHeaders('application/json', accessToken),
     });
   } catch {
     throw new Error(BACKEND_UNAVAILABLE_MSG);
@@ -140,7 +162,7 @@ export async function generatePrompt(
   try {
     res = await fetch(`${base}/api/babbles/${encodeURIComponent(babbleId)}/generate`, {
       method: 'POST',
-      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+      headers: buildHeaders('application/json', accessToken),
       body: JSON.stringify({ templateId, promptFormat, allowEmojis }),
     });
   } catch {
@@ -236,7 +258,7 @@ export async function deleteBabble(id: string, accessToken?: string): Promise<vo
   try {
     res = await fetch(`${base}/api/babbles/${encodeURIComponent(id)}`, {
       method: 'DELETE',
-      headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+      headers: buildHeaders('application/json', accessToken),
     });
   } catch {
     throw new Error(BACKEND_UNAVAILABLE_MSG);
@@ -296,7 +318,7 @@ export async function deleteGeneratedPrompt(
       `${base}/api/babbles/${encodeURIComponent(babbleId)}/prompts/${encodeURIComponent(id)}`,
       {
         method: 'DELETE',
-        headers: addAuthHeader({ 'Content-Type': 'application/json' }, accessToken),
+        headers: buildHeaders('application/json', accessToken),
       },
     );
   } catch {
