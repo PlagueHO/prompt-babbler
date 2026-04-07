@@ -16,10 +16,8 @@
         "Azure__Location": "swedencentral",
         "Azure__CredentialSource": "AzureCli",
         "Azure__AllowResourceGroupCreation": "true",
-        "MicrosoftFoundry__chatModelName": "gpt-4.1",
-        "MicrosoftFoundry__chatModelVersion": "2025-04-14",
-        "MicrosoftFoundry__sttModelName": "gpt-4o-transcribe",
-        "MicrosoftFoundry__sttModelVersion": "2025-03-20"
+        "MicrosoftFoundry__chatModelName": "gpt-5.3-chat",
+        "MicrosoftFoundry__chatModelVersion": "2026-03-03"
       }
     },
     "http": {
@@ -37,10 +35,8 @@
         "Azure__Location": "swedencentral",
         "Azure__CredentialSource": "AzureCli",
         "Azure__AllowResourceGroupCreation": "true",
-        "MicrosoftFoundry__chatModelName": "gpt-4.1",
-        "MicrosoftFoundry__chatModelVersion": "2025-04-14",
-        "MicrosoftFoundry__sttModelName": "gpt-4o-transcribe",
-        "MicrosoftFoundry__sttModelVersion": "2025-03-20"
+        "MicrosoftFoundry__chatModelName": "gpt-5.3-chat",
+        "MicrosoftFoundry__chatModelVersion": "2026-03-03"
       }
     }
   }

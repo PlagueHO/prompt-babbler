@@ -21,3 +21,4 @@ param staticWebAppLocation = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_A
 
 // Backend container image to deploy to Azure Container Apps
 param containerImage = readEnvironmentVariable('AZURE_CONTAINER_APP_IMAGE', 'ghcr.io/plagueho/prompt-babbler-api:latest')
+param accessCode = readEnvironmentVariable('ACCESS_CODE', '')

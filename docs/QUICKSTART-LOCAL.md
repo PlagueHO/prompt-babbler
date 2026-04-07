@@ -125,6 +125,29 @@ The app runs in **anonymous single-user mode** — no sign-in is required. All A
 
 Open the **Aspire Dashboard** (URL shown in terminal output) to find all service endpoints.
 
+## Protect with an access code (optional)
+
+In single-user mode the app is open by default. To restrict access, set an access code. When configured, the frontend shows a modal dialog requiring the code before any interaction, and the backend rejects API requests that don't provide it.
+
+Set the `ACCESS_CODE` environment variable before running `aspire run`:
+
+```bash
+$env:ACCESS_CODE = "<your-access-code>"
+aspire run
+```
+
+Alternatively, set it in `prompt-babbler-service/src/Api/appsettings.Development.json`:
+
+```json
+{
+  "AccessControl": {
+    "AccessCode": "<your-access-code>"
+  }
+}
+```
+
+Leave the value empty (or omit the variable) to disable access code protection.
+
 ## 4. Create your first babble
 
 1. Open the frontend URL from the Aspire Dashboard
@@ -137,9 +160,9 @@ Open the **Aspire Dashboard** (URL shown in terminal output) to find all service
 
 The AppHost deploys one AI model by default:
 
-| Deployment | Model | SKU |
-|------------|-------|-----|
-| chat | gpt-4.1 | GlobalStandard |
+| Deployment | Model | Version | SKU |
+|------------|-------|---------|-----|
+| chat | gpt-5.3-chat | 2026-03-03 | GlobalStandard |
 
 Speech-to-text uses **Azure AI Speech Service** (real-time streaming), which is part of the same AIServices resource — no separate model deployment is needed.
 

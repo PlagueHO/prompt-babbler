@@ -49,6 +49,10 @@ export interface StatusResponse {
   status: string;
 }
 
+export interface AccessControlStatus {
+  accessCodeRequired: boolean;
+}
+
 export interface UserSettings {
   theme: ThemeMode;
   speechLanguage: string;
