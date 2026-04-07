@@ -6,11 +6,23 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Azure;
 using Microsoft.Identity.Web;
 using PromptBabbler.Api.HealthChecks;
+using PromptBabbler.Api.Middleware;
+using PromptBabbler.Domain.Configuration;
 using PromptBabbler.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Map ACCESS_CODE environment variable to AccessControl:AccessCode configuration key.
+var accessCodeEnvVar = Environment.GetEnvironmentVariable("ACCESS_CODE");
+if (!string.IsNullOrEmpty(accessCodeEnvVar))
+{
+    builder.Configuration["AccessControl:AccessCode"] = accessCodeEnvVar;
+}
+
 builder.AddServiceDefaults();
+
+// Register access control options.
+builder.Services.Configure<AccessControlOptions>(builder.Configuration.GetSection(AccessControlOptions.SectionName));
 
 // Cosmos DB client — use ManagedIdentityCredential directly in deployed environments.
 // DefaultAzureCredential permanently caches credential unavailability per the Azure Identity
@@ -222,6 +234,7 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseCors();
+app.UseMiddleware<AccessCodeMiddleware>();
 app.UseWebSockets();
 app.UseAuthentication();
 
@@ -248,6 +261,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapDefaultEndpoints();
+
+// Log access control status at startup.
+var accessCode = builder.Configuration["AccessControl:AccessCode"];
+startupLogger.LogInformation("Access control: {Status}", string.IsNullOrEmpty(accessCode) ? "disabled" : "enabled");
 
 app.Run();
 

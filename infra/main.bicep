@@ -55,6 +55,10 @@ param staticWebAppLocation string = ''
 @sys.description('Container image to deploy for the backend API Container App.')
 param containerImage string = 'ghcr.io/plagueho/prompt-babbler-api:latest'
 
+@sys.description('Optional access code for single-user mode protection. Leave empty to disable.')
+@secure()
+param accessCode string = ''
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var modelDeployments = loadJsonContent('./model-deployments.json')
 
@@ -540,6 +544,12 @@ module containerApp 'br/public:avm/res/app/container-app:0.21.0' = {
             name: 'CORS__AllowedOrigins'
             value: 'https://${staticWebApp.outputs.defaultHostname}'
           }
+          ...(!empty(accessCode) ? [
+            {
+              name: 'ACCESS_CODE'
+              value: accessCode
+            }
+          ] : [])
         ]
       }
     ]

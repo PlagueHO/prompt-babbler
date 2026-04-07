@@ -91,6 +91,9 @@ on:
       AZURE_CLIENT_ID:
         description: "The Azure client ID to use for authentication to Azure for deployment"
         required: true
+      ACCESS_CODE:
+        description: "Optional access code for single-user mode protection"
+        required: false
 
 jobs:
   provision-infrastructure:
@@ -182,6 +185,11 @@ jobs:
           ENTRA_AUTH="${{ vars.ENABLE_ENTRA_AUTH }}"
           if [ -n "$ENTRA_AUTH" ]; then
             azd env set ENABLE_ENTRA_AUTH "$ENTRA_AUTH"
+          fi
+          # Set optional access code for single-user mode protection.
+          ACCESS_CODE="${{ secrets.ACCESS_CODE }}"
+          if [ -n "$ACCESS_CODE" ]; then
+            azd env set ACCESS_CODE "$ACCESS_CODE"
           fi
 
       - name: Set hook scripts executable
