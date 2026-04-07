@@ -7,6 +7,7 @@
 
 import { SpanStatusCode } from '@opentelemetry/api';
 import { tracer } from '@/telemetry';
+import { getAccessCode } from '@/services/api-client';
 
 // Injected by Vite from Aspire service discovery at build/dev time
 declare const __API_BASE_URL__: string;
@@ -70,6 +71,9 @@ export class TranscriptionStream {
     const params = new URLSearchParams();
     if (language) params.append('language', language);
     if (accessToken) params.append('access_token', accessToken);
+
+    const accessCode = getAccessCode();
+    if (accessCode) params.append('access_code', accessCode);
 
     const queryString = params.toString();
     const url = `${base}/api/transcribe/stream${queryString ? `?${queryString}` : ''}`;
