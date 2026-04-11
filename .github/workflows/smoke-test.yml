@@ -34,6 +34,9 @@ on:
       AZURE_CLIENT_ID:
         description: "The Azure client ID for authentication"
         required: true
+      ACCESS_CODE:
+        description: "Optional access code for secured API endpoints (if configured)"
+        required: false
 
 jobs:
   smoke-test:
@@ -106,6 +109,7 @@ jobs:
           $container = New-PesterContainer -Path 'tests/smoke/Smoke.Tests.ps1' -Data @{
             ApiBaseUrl      = 'https://${{ inputs.AZURE_CONTAINER_APP_FQDN }}'
             FrontendBaseUrl = 'https://${{ inputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}'
+            AccessCode      = '${{ secrets.ACCESS_CODE }}'
           }
 
           $config = New-PesterConfiguration

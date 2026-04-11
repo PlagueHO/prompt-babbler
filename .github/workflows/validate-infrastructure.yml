@@ -35,9 +35,6 @@ on:
       AZURE_CLIENT_ID:
         description: "The Azure client ID to use for authentication to Azure for deployment"
         required: true
-      ACCESS_CODE:
-        description: "Optional access code for single-user mode protection"
-        required: false
 
 jobs:
   validate-infrastructure:
