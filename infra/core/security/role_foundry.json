@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "8008402785792412936"
+      "templateHash": "1134974922832758214"
     },
     "name": "Microsoft Foundry Role Assignments",
     "description": "Creates role assignments on a Microsoft Foundry account."
@@ -30,8 +30,9 @@
         },
         "principalId": {
           "type": "string",
+          "nullable": true,
           "metadata": {
-            "description": "Required. The principal ID of the principal (user/group/identity) to assign the role to."
+            "description": "Optional. The principal ID of the principal (user/group/identity) to assign the role to. Entries with empty values are ignored."
           }
         },
         "principalType": {
@@ -141,7 +142,8 @@
       "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
       "Role Based Access Control Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f58310d9-a9f6-439a-9e8d-f62e7b41a168')]",
       "User Access Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')]"
-    }
+    },
+    "validRoleAssignments": "[filter(variables('formattedRoleAssignments'), lambda('roleAssignment', not(empty(tryGet(lambdaVariables('roleAssignment'), 'principalId')))))]"
   },
   "resources": {
     "foundryAccount": {
@@ -153,20 +155,20 @@
     "foundry_roleAssignments": {
       "copy": {
         "name": "foundry_roleAssignments",
-        "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]"
+        "count": "[length(variables('validRoleAssignments'))]"
       },
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName'))]",
-      "name": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]",
+      "name": "[coalesce(tryGet(variables('validRoleAssignments')[copyIndex()], 'name'), guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), variables('validRoleAssignments')[copyIndex()].principalId, variables('validRoleAssignments')[copyIndex()].roleDefinitionId))]",
       "properties": {
-        "roleDefinitionId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId]",
-        "principalId": "[coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId]",
-        "description": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'description')]",
-        "principalType": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'principalType')]",
-        "condition": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition')]",
-        "conditionVersion": "[if(not(empty(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'condition'))), coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'conditionVersion'), '2.0'), null())]",
-        "delegatedManagedIdentityResourceId": "[tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'delegatedManagedIdentityResourceId')]"
+        "roleDefinitionId": "[variables('validRoleAssignments')[copyIndex()].roleDefinitionId]",
+        "principalId": "[variables('validRoleAssignments')[copyIndex()].principalId]",
+        "description": "[tryGet(variables('validRoleAssignments')[copyIndex()], 'description')]",
+        "principalType": "[tryGet(variables('validRoleAssignments')[copyIndex()], 'principalType')]",
+        "condition": "[tryGet(variables('validRoleAssignments')[copyIndex()], 'condition')]",
+        "conditionVersion": "[if(not(empty(tryGet(variables('validRoleAssignments')[copyIndex()], 'condition'))), coalesce(tryGet(variables('validRoleAssignments')[copyIndex()], 'conditionVersion'), '2.0'), null())]",
+        "delegatedManagedIdentityResourceId": "[tryGet(variables('validRoleAssignments')[copyIndex()], 'delegatedManagedIdentityResourceId')]"
       }
     }
   },
@@ -177,8 +179,8 @@
         "description": "The resource IDs of the role assignments."
       },
       "copy": {
-        "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]",
-        "input": "[extensionResourceId(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), 'Microsoft.Authorization/roleAssignments', coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId)))]"
+        "count": "[length(variables('validRoleAssignments'))]",
+        "input": "[extensionResourceId(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), 'Microsoft.Authorization/roleAssignments', coalesce(tryGet(variables('validRoleAssignments')[copyIndex()], 'name'), guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), variables('validRoleAssignments')[copyIndex()].principalId, variables('validRoleAssignments')[copyIndex()].roleDefinitionId)))]"
       }
     },
     "roleAssignmentNames": {
@@ -187,8 +189,8 @@
         "description": "The names of the role assignments."
       },
       "copy": {
-        "count": "[length(coalesce(variables('formattedRoleAssignments'), createArray()))]",
-        "input": "[coalesce(tryGet(coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()], 'name'), guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].principalId, coalesce(variables('formattedRoleAssignments'), createArray())[copyIndex()].roleDefinitionId))]"
+        "count": "[length(variables('validRoleAssignments'))]",
+        "input": "[coalesce(tryGet(variables('validRoleAssignments')[copyIndex()], 'name'), guid(resourceId('Microsoft.CognitiveServices/accounts', parameters('foundryName')), variables('validRoleAssignments')[copyIndex()].principalId, variables('validRoleAssignments')[copyIndex()].roleDefinitionId))]"
       }
     }
   }

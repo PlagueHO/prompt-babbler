@@ -4,9 +4,9 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Aspire -->
-    <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.1.1" />
-    <PackageVersion Include="Aspire.Hosting.Azure.AIFoundry" Version="13.1.3-preview.1.26166.8" />
-    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.2.1" />
+    <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.2.2" />
+    <PackageVersion Include="Aspire.Hosting.Foundry" Version="13.2.2-preview.1.26207.2" />
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.2.2" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.4.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.4.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.1" />
@@ -15,9 +15,9 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
     <!-- Azure / AI -->
-    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.2.1-preview.1.26180.6" />
-    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.2.1" />
-    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.2.1" />
+    <PackageVersion Include="Aspire.Azure.AI.Inference" Version="13.2.2-preview.1.26207.2" />
+    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.2.2" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.2.2" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.20.0" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.58.0" />
@@ -32,7 +32,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- Testing -->
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.1" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.2" />
     <PackageVersion Include="FluentAssertions" Version="8.9.0" />
     <PackageVersion Include="JsonSchema.Net" Version="9.1.4" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.1.0" />

@@ -132,12 +132,14 @@ var formattedRoleAssignments = [
   })
 ]
 
+var validRoleAssignments = filter(formattedRoleAssignments, roleAssignment => !empty(roleAssignment.?principalId))
+
 resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' existing = {
   name: foundryName
 }
 
 resource foundry_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
+  for (roleAssignment, index) in validRoleAssignments: {
     name: roleAssignment.?name ?? guid(
       foundryAccount.id,
       roleAssignment.principalId,
@@ -158,12 +160,12 @@ resource foundry_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-0
 
 @description('The resource IDs of the role assignments.')
 output roleAssignmentResourceIds array = [
-  for (roleAssignment, index) in (formattedRoleAssignments ?? []): foundry_roleAssignments[index].id
+  for (roleAssignment, index) in validRoleAssignments: foundry_roleAssignments[index].id
 ]
 
 @description('The names of the role assignments.')
 output roleAssignmentNames array = [
-  for (roleAssignment, index) in (formattedRoleAssignments ?? []): foundry_roleAssignments[index].name
+  for (roleAssignment, index) in validRoleAssignments: foundry_roleAssignments[index].name
 ]
 
 // =============== //
@@ -178,8 +180,8 @@ type roleAssignmentType = {
   @description('Required. The role to assign. You can provide either the display name of the role definition, the role definition GUID, or its fully qualified ID in the following format: \'/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11\'.')
   roleDefinitionIdOrName: string
 
-  @description('Required. The principal ID of the principal (user/group/identity) to assign the role to.')
-  principalId: string
+  @description('Optional. The principal ID of the principal (user/group/identity) to assign the role to. Entries with empty values are ignored.')
+  principalId: string?
 
   @description('Optional. The principal type of the assigned principal ID.')
   principalType: ('ServicePrincipal' | 'Group' | 'User' | 'ForeignGroup' | 'Device')?

@@ -1,11 +1,11 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.2.1">
+<Project Sdk="Aspire.AppHost.Sdk/13.2.2">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>PromptBabbler.AppHost</RootNamespace>
     <UserSecretsId>b9f1a7c4-3e52-4d18-a6f0-8c2d5e7b4a91</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Azure.AIFoundry" />
+    <PackageReference Include="Aspire.Hosting.Foundry" />
     <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" />
     <PackageReference Include="Aspire.Hosting.JavaScript" />
   </ItemGroup>

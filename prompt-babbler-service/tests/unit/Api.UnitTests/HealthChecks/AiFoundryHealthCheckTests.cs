@@ -23,7 +23,26 @@ public sealed class AiFoundryHealthCheckTests
     }
 
     [TestMethod]
-    public async Task CheckHealthAsync_WhenChatClientRegistered_ReturnsHealthy()
+    public async Task CheckHealthAsync_WhenChatClientUsesProjectEndpoint_ReturnsHealthy()
+    {
+        var chatClient = Substitute.For<IChatClient>();
+        var metadata = new ChatClientMetadata(
+            providerName: "test",
+            providerUri: new Uri("https://ai.example.com/api/projects/promptbabbler"),
+            defaultModelId: "gpt-4o");
+        chatClient.GetService<ChatClientMetadata>().Returns(metadata);
+
+        var healthCheck = new AiFoundryHealthCheck(chatClient);
+
+        var result = await healthCheck.CheckHealthAsync(
+            new HealthCheckContext(), CancellationToken.None);
+
+        result.Status.Should().Be(HealthStatus.Healthy);
+        result.Description.Should().Contain("/api/projects/promptbabbler");
+    }
+
+    [TestMethod]
+    public async Task CheckHealthAsync_WhenChatClientUsesAccountEndpoint_ReturnsUnhealthy()
     {
         var chatClient = Substitute.For<IChatClient>();
         var metadata = new ChatClientMetadata(
@@ -37,8 +56,8 @@ public sealed class AiFoundryHealthCheckTests
         var result = await healthCheck.CheckHealthAsync(
             new HealthCheckContext(), CancellationToken.None);
 
-        result.Status.Should().Be(HealthStatus.Healthy);
-        result.Description.Should().Contain("https://ai.example.com");
+        result.Status.Should().Be(HealthStatus.Unhealthy);
+        result.Description.Should().Contain("does not target a Foundry project");
     }
 
     [TestMethod]
@@ -53,6 +72,6 @@ public sealed class AiFoundryHealthCheckTests
             new HealthCheckContext(), CancellationToken.None);
 
         result.Status.Should().Be(HealthStatus.Healthy);
-        result.Description.Should().Contain("unknown");
+        result.Description.Should().Contain("Configured");
     }
 }

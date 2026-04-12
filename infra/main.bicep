@@ -285,6 +285,11 @@ module foundryService './cognitive-services/accounts/main.bicep' = {
   }
 }
 
+var foundryEndpointWithSlash = endsWith(foundryService.outputs.endpoint, '/')
+  ? foundryService.outputs.endpoint
+  : '${foundryService.outputs.endpoint}/'
+var foundryProjectEndpoint = foundryService.outputs.?defaultProjectEndpoint ?? '${foundryEndpointWithSlash}api/projects/${defaultProjectName}'
+
 // Foundry role assignments for the deploying principal
 var foundryRoleAssignmentsArray = [
   ...(!empty(principalId) ? [
@@ -516,15 +521,19 @@ module containerApp 'br/public:avm/res/app/container-app:0.22.0' = {
           }
           {
             name: 'AZURE_AI_FOUNDRY_PROJECT_ENDPOINT'
-            value: 'https://${foundryCustomSubDomainName}.services.ai.azure.com/api/projects/${defaultProjectName}'
+            value: foundryProjectEndpoint
           }
           {
             name: 'ConnectionStrings__cosmos'
             value: 'AccountEndpoint=${cosmosDbAccount.outputs.endpoint}'
           }
           {
-            name: 'ConnectionStrings__ai-foundry'
+            name: 'ConnectionStrings__foundry'
             value: 'Endpoint=${foundryService.outputs.endpoint}'
+          }
+          {
+            name: 'ConnectionStrings__ai-foundry'
+            value: 'Endpoint=${foundryProjectEndpoint}'
           }
           ...(!empty(apiClientId) ? [
             {
@@ -656,7 +665,7 @@ output AZURE_AI_FOUNDRY_NAME string = foundryService.outputs.name
 output AZURE_AI_FOUNDRY_ID string = foundryService.outputs.resourceId
 output AZURE_AI_FOUNDRY_ENDPOINT string = foundryService.outputs.endpoint
 output AZURE_AI_FOUNDRY_RESOURCE_ID string = foundryService.outputs.resourceId
-output AZURE_AI_FOUNDRY_PROJECT_ENDPOINT string = 'https://${foundryCustomSubDomainName}.services.ai.azure.com/api/projects/${defaultProjectName}'
+output AZURE_AI_FOUNDRY_PROJECT_ENDPOINT string = foundryProjectEndpoint
 
 // Container App (API)
 output AZURE_CONTAINER_APP_NAME string = containerApp.outputs.name

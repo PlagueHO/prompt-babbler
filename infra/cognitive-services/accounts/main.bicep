@@ -702,6 +702,9 @@ module secretsExport 'modules/keyVaultExport.bicep' = if (secretsExportConfigura
   }
 }
 
+var accountEndpoint = cognitiveService.properties.endpoint
+var accountEndpointWithSlash = endsWith(accountEndpoint, '/') ? accountEndpoint : '${accountEndpoint}/'
+
 @description('The name of the cognitive services account.')
 output name string = cognitiveService.name
 
@@ -713,6 +716,14 @@ output resourceGroupName string = resourceGroup().name
 
 @description('The service endpoint of the cognitive services account.')
 output endpoint string = cognitiveService.properties.endpoint
+
+@description('The default Foundry project name configured for the account, if set.')
+output defaultProjectName string? = defaultProject
+
+@description('The default Foundry project endpoint, if a default project is configured.')
+output defaultProjectEndpoint string? = !empty(defaultProject)
+  ? '${accountEndpointWithSlash}api/projects/${defaultProject}'
+  : null
 
 @description('All endpoints available for the cognitive services account, types depends on the cognitive service kind.')
 output endpoints endpointType = cognitiveService.properties.endpoints

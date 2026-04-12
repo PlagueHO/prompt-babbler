@@ -13,10 +13,6 @@
         "@upstash/context7-mcp@latest"
       ]
     },
-    "github": {
-      "url": "https://api.githubcopilot.com/mcp/",
-      "type": "http"
-    },
     "github-agentic-workflows": {
       "command": "gh",
       "args": [
@@ -58,14 +54,6 @@
       "type": "sse"
     },
     "playwright": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ]
-    },
-    "playwright-test": {
       "type": "stdio",
       "command": "npx",
       "args": [

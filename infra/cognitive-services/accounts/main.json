@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "3794990909421034219"
+      "templateHash": "9077702925906592491"
     },
     "name": "Cognitive Services",
     "description": "This module deploys a Cognitive Service account.\nThis is a temporary module for deploying Azure Foundry Cognitive Services accounts.\nIt is intended to be replaced by the Azure Verified Module (AVM) for Microsoft.CognitiveServices accounts\nonce it supports Foundry V2 (projects, connections etc)\nhttps://github.com/Azure/bicep-registry-modules/issues/5390\n"
@@ -8072,6 +8072,22 @@
         "description": "The service endpoint of the cognitive services account."
       },
       "value": "[reference('cognitiveService').endpoint]"
+    },
+    "defaultProjectName": {
+      "type": "string",
+      "nullable": true,
+      "metadata": {
+        "description": "The default Foundry project name configured for the account, if set."
+      },
+      "value": "[parameters('defaultProject')]"
+    },
+    "defaultProjectEndpoint": {
+      "type": "string",
+      "nullable": true,
+      "metadata": {
+        "description": "The default Foundry project endpoint, if a default project is configured."
+      },
+      "value": "[if(not(empty(parameters('defaultProject'))), format('{0}api/projects/{1}', if(endsWith(reference('cognitiveService').endpoint, '/'), reference('cognitiveService').endpoint, format('{0}/', reference('cognitiveService').endpoint)), parameters('defaultProject')), null())]"
     },
     "endpoints": {
       "$ref": "#/definitions/endpointType",

@@ -1,10 +1,10 @@
-using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Azure;
 using Microsoft.Identity.Web;
+using PromptBabbler.Api.Authentication;
 using PromptBabbler.Api.HealthChecks;
 using PromptBabbler.Api.Middleware;
 using PromptBabbler.Domain.Configuration;
@@ -59,34 +59,28 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
-// Register AzureOpenAIClient from Aspire connection (auto-configured from AppHost).
-// When Azure:TenantId is set (local dev), scope the credential to that tenant to avoid
-// DefaultAzureCredential picking up a credential from a different tenant.
 var tenantId = builder.Configuration["Azure:TenantId"];
 var aiFoundryConnStr = builder.Configuration.GetConnectionString("ai-foundry") ?? "";
 var isAiConfigured = !string.IsNullOrWhiteSpace(aiFoundryConnStr);
+TokenCredential runtimeTokenCredential = builder.Environment.IsDevelopment()
+    ? (!string.IsNullOrEmpty(tenantId)
+        ? new DefaultAzureCredential(new DefaultAzureCredentialOptions
+        {
+            TenantId = tenantId,
+            ExcludeManagedIdentityCredential = true,
+        })
+        : new DefaultAzureCredential())
+    : new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
 
 if (isAiConfigured)
 {
-    builder.AddAzureOpenAIClient("ai-foundry", configureClientBuilder: clientBuilder =>
-    {
-        if (!string.IsNullOrEmpty(tenantId))
-        {
-            clientBuilder.WithCredential(new DefaultAzureCredential(
-                new DefaultAzureCredentialOptions
-                {
-                    TenantId = tenantId,
-                    ExcludeManagedIdentityCredential = true,
-                }));
-        }
-    });
+    var aiTokenCredential = new AiFoundryTokenCredential(runtimeTokenCredential);
 
-    // Register IChatClient for the chat deployment via Microsoft.Extensions.AI.
-    builder.Services.AddSingleton<IChatClient>(sp =>
+    builder.AddAzureChatCompletionsClient("ai-foundry", configureSettings: settings =>
     {
-        var openAiClient = sp.GetRequiredService<AzureOpenAIClient>();
-        return openAiClient.GetChatClient("chat").AsIChatClient();
-    });
+        settings.TokenCredential = aiTokenCredential;
+    })
+    .AddChatClient("chat");
 }
 else
 {
@@ -94,22 +88,19 @@ else
 }
 
 // Register TokenCredential for Azure Speech Service and any other Azure SDK clients.
-// Uses the same DefaultAzureCredential pattern as the OpenAI client.
-builder.Services.AddSingleton<TokenCredential>(sp =>
-{
-    return !string.IsNullOrEmpty(tenantId)
-        ? new DefaultAzureCredential(new DefaultAzureCredentialOptions
-        {
-            TenantId = tenantId,
-            ExcludeManagedIdentityCredential = true,
-        })
-        : new DefaultAzureCredential();
-});
+// Uses the same runtime credential policy as the rest of the Azure SDK clients.
+builder.Services.AddSingleton<TokenCredential>(runtimeTokenCredential);
 
 // Parse the AI Services endpoint from the AI Foundry connection string for Speech Service
 // STS token exchange. The Speech SDK requires a Cognitive Services token, not a raw AAD token.
+var foundryAccountConnStr = builder.Configuration.GetConnectionString("foundry")
+    ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT")
+    ?? "";
+var aiServicesConnStr = !string.IsNullOrWhiteSpace(foundryAccountConnStr)
+    ? foundryAccountConnStr
+    : aiFoundryConnStr;
 var aiServicesEndpoint = "";
-foreach (var part in aiFoundryConnStr.Split(';', StringSplitOptions.RemoveEmptyEntries))
+foreach (var part in aiServicesConnStr.Split(';', StringSplitOptions.RemoveEmptyEntries))
 {
     var trimmed = part.Trim();
     if (trimmed.StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
@@ -121,9 +112,9 @@ foreach (var part in aiFoundryConnStr.Split(';', StringSplitOptions.RemoveEmptyE
 
 // Fall back to treating the whole string as a URL if no Endpoint= prefix found.
 if (string.IsNullOrEmpty(aiServicesEndpoint) &&
-    aiFoundryConnStr.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+    aiServicesConnStr.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
 {
-    aiServicesEndpoint = aiFoundryConnStr.Split(';')[0].TrimEnd('/');
+    aiServicesEndpoint = aiServicesConnStr.Split(';')[0].TrimEnd('/');
 }
 
 builder.Services.AddInfrastructure(
