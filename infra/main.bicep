@@ -481,7 +481,7 @@ module aspireDashboard 'aspire-dashboard.bicep' = {
 }
 
 // --------- CONTAINER APP (API) ---------
-module containerApp 'br/public:avm/res/app/container-app:0.21.0' = {
+module containerApp 'br/public:avm/res/app/container-app:0.22.0' = {
   name: 'container-app-api-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -502,7 +502,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.21.0' = {
         name: 'api'
         image: containerImage
         resources: {
-          cpu: '0.5'
+          cpu: json('0.5')
           memory: '1Gi'
         }
         env: [
@@ -569,12 +569,12 @@ var containerAppFoundryRoleAssignments = [
   {
     roleDefinitionIdOrName: 'Cognitive Services OpenAI User'
     principalType: 'ServicePrincipal'
-    principalId: containerApp.outputs.systemAssignedMIPrincipalId
+    principalId: containerApp.outputs.?systemAssignedMIPrincipalId ?? ''
   }
   {
     roleDefinitionIdOrName: 'Cognitive Services Speech User'
     principalType: 'ServicePrincipal'
-    principalId: containerApp.outputs.systemAssignedMIPrincipalId
+    principalId: containerApp.outputs.?systemAssignedMIPrincipalId ?? ''
   }
 ]
 
