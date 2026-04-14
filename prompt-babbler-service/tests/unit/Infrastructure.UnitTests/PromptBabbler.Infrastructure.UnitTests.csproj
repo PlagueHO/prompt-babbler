@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk/4.1.0">
+<Project Sdk="MSTest.Sdk/4.2.1">
   <PropertyGroup>
     <RootNamespace>PromptBabbler.Infrastructure.UnitTests</RootNamespace>
   </PropertyGroup>
@@ -11,7 +11,6 @@
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MSTest.TestFramework" />
     <ProjectReference Include="..\..\..\src\Infrastructure\PromptBabbler.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

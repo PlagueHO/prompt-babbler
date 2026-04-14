@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk/4.1.0">
+<Project Sdk="MSTest.Sdk/4.2.1">
   <PropertyGroup>
     <RootNamespace>PromptBabbler.Orchestration.IntegrationTests</RootNamespace>
   </PropertyGroup>
@@ -15,7 +15,6 @@
     <Using Include="Aspire.Hosting.Testing" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MSTest.TestFramework" />
     <ProjectReference Include="..\..\..\src\Orchestration\AppHost\PromptBabbler.AppHost.csproj" />
     <ProjectReference Include="..\IntegrationTests.Shared\PromptBabbler.IntegrationTests.Shared.csproj" />
   </ItemGroup>
