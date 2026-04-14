@@ -11,6 +11,7 @@
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" />
     <ProjectReference Include="..\..\..\src\Infrastructure\PromptBabbler.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

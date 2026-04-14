@@ -18,6 +18,7 @@
     <Using Include="NSubstitute" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" />
     <ProjectReference Include="..\..\..\src\Orchestration\AppHost\PromptBabbler.AppHost.csproj" />
     <ProjectReference Include="..\..\..\src\Domain\PromptBabbler.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Infrastructure\PromptBabbler.Infrastructure.csproj" />

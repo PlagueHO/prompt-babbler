@@ -8,6 +8,7 @@
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" />
     <ProjectReference Include="..\..\..\src\Api\PromptBabbler.Api.csproj" />
   </ItemGroup>
 </Project>

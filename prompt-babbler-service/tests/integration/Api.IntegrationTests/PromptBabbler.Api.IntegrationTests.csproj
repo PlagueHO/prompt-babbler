@@ -18,6 +18,7 @@
     <Using Include="Aspire.Hosting.Testing" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" />
     <ProjectReference Include="..\..\..\src\Api\PromptBabbler.Api.csproj" />
     <ProjectReference Include="..\IntegrationTests.Shared\PromptBabbler.IntegrationTests.Shared.csproj" />
   </ItemGroup>
