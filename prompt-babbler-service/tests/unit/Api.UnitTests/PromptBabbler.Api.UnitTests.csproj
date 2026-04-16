@@ -5,6 +5,8 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="NSubstitute" />
+    <!-- Transitive pin: patch CVE-2026-33116 / GHSA-37gx-xxp4-5rgx. -->
+    <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
