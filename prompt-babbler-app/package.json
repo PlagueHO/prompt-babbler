@@ -66,5 +66,14 @@
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.8",
     "vitest": "^4.1.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "^8.0.0-beta.13"
+    },
+    "onlyBuiltDependencies": [
+      "msw",
+      "protobufjs"
+    ]
   }
 }
