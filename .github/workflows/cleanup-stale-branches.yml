@@ -1,0 +1,112 @@
+name: Cleanup Stale Branches
+
+on:
+  pull_request:
+    types: [closed]
+
+  schedule:
+    # Weekly sweep every Monday at 02:00 UTC
+    - cron: '0 2 * * 1'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  delete-pr-branch:
+    name: Delete PR Head Branch
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete merged PR branch
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const protectedBranches = ['main'];
+
+            if (protectedBranches.includes(branch)) {
+              core.info(`Branch '${branch}' is protected — skipping deletion`);
+              return;
+            }
+
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${branch}`
+              });
+              core.info(`Deleted branch: ${branch}`);
+            } catch (e) {
+              if (e.status === 422) {
+                core.info(`Branch '${branch}' is already deleted`);
+              } else {
+                core.warning(`Failed to delete branch '${branch}': ${e.message}`);
+              }
+            }
+
+  sweep-merged-branches:
+    name: Sweep Merged Branches
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all branches merged into main
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const protectedBranches = ['main'];
+            const skipPrefixes = ['dependabot/'];
+
+            // Paginate through all branches
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            let deleted = 0;
+            let skipped = 0;
+
+            for (const branch of branches) {
+              const name = branch.name;
+
+              if (protectedBranches.includes(name)) {
+                core.info(`Skipping protected branch: ${name}`);
+                skipped++;
+                continue;
+              }
+
+              if (skipPrefixes.some(prefix => name.startsWith(prefix))) {
+                core.info(`Skipping Dependabot branch: ${name}`);
+                skipped++;
+                continue;
+              }
+
+              // Check if the branch has been merged into main
+              try {
+                const comparison = await github.rest.repos.compareCommitsWithBasehead({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  basehead: `main...${name}`
+                });
+
+                if (comparison.data.status === 'behind' || comparison.data.ahead_by === 0) {
+                  await github.rest.git.deleteRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `heads/${name}`
+                  });
+                  core.info(`Deleted merged branch: ${name}`);
+                  deleted++;
+                } else {
+                  core.info(`Branch '${name}' has ${comparison.data.ahead_by} commit(s) ahead of main — keeping`);
+                  skipped++;
+                }
+              } catch (e) {
+                core.warning(`Error processing branch '${name}': ${e.message}`);
+                skipped++;
+              }
+            }
+
+            core.info(`Summary: ${deleted} branch(es) deleted, ${skipped} skipped`);
