@@ -21,7 +21,7 @@
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.58.0" />
-    <PackageVersion Include="Microsoft.CognitiveServices.Speech" Version="1.48.2" />
+    <PackageVersion Include="Microsoft.CognitiveServices.Speech" Version="1.49.1" />
     <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.1.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.7.0" />
