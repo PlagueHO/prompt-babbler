@@ -21,12 +21,12 @@
       ],
       "cwd": "${workspaceFolder}"
     },
-    "microsoft-aspire": {
+    "aspire": {
       "type": "stdio",
       "command": "aspire",
       "args": [
-        "mcp",
-        "start"
+        "agent",
+        "mcp"
       ]
     },
     "microsoft-agent-framework": {
@@ -38,8 +38,8 @@
       "type": "http"
     },
     "microsoft-foundry": {
-        "type": "http",
-        "url": "https://mcp.ai.azure.com"
+      "type": "http",
+      "url": "https://mcp.ai.azure.com"
     },
     "react-repo": {
       "url": "https://gitmcp.io/facebook/react",
