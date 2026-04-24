@@ -7,7 +7,7 @@
     <!-- Aspire -->
     <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.2.2" />
     <PackageVersion Include="Aspire.Hosting.Foundry" Version="13.2.3-preview.1.26217.6" />
-    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.2.3" />
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.2.4" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.4.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.4.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
@@ -17,8 +17,8 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
     <!-- Azure / AI -->
     <PackageVersion Include="Aspire.Azure.AI.Inference" Version="13.2.3-preview.1.26217.6" />
-    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.2.3" />
-    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.2.3" />
+    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.2.4" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.2.4" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.58.0" />
@@ -33,7 +33,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- Testing -->
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.2" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.4" />
     <PackageVersion Include="FluentAssertions" Version="8.9.0" />
     <PackageVersion Include="JsonSchema.Net" Version="9.2.0" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.2.1" />
