@@ -76,11 +76,15 @@ if (isAiConfigured)
 {
     var aiTokenCredential = new AiFoundryTokenCredential(runtimeTokenCredential);
 
-    builder.AddAzureChatCompletionsClient("ai-foundry", configureSettings: settings =>
+    // Use the "chat" deployment connection string (not the "ai-foundry" project connection string).
+    // The deployment connection string inherits the foundry account's Endpoint and EndpointAIInference,
+    // and adds Deployment=chat. The Foundry project endpoint (/api/projects/{name}) does not accept
+    // AI Inference SDK requests and returns "API version not supported".
+    builder.AddAzureChatCompletionsClient("chat", configureSettings: settings =>
     {
         settings.TokenCredential = aiTokenCredential;
     })
-    .AddChatClient("chat");
+    .AddChatClient();
 }
 else
 {
