@@ -58,6 +58,15 @@ updates:
     labels:
       - dependencies
       - npm
+    ignore:
+      # Transitive deps from shadcn CLI -> @modelcontextprotocol/sdk.
+      # These will update naturally when shadcn is updated directly.
+      - dependency-name: "hono"
+      - dependency-name: "@hono/node-server"
+      # Transitive dep from tailwindcss/vite; updated via tailwind group below.
+      - dependency-name: "postcss"
+      # Transitive dep from @opentelemetry/* packages; updated via otel updates.
+      - dependency-name: "protobufjs"
     groups:
       react:
         patterns:
