@@ -17,8 +17,8 @@ This repository uses Aspire to orchestrate its distributed application. Resource
 | Wait for resource healthy | `aspire wait <resource>` |
 | Stop the app | `aspire stop` |
 | List resources | `aspire describe` or `aspire resources` |
-| Run resource command | `aspire resource <resource> <command>` |
-| Start/stop/restart resource | `aspire resource <resource> start|stop|restart` |
+| Run resource command | `aspire resource {resource} {command}` |
+| Start/stop/restart resource | `aspire resource {resource} start\|stop\|restart` |
 | Rebuild a .NET project resource | `aspire resource <resource> rebuild` |
 | View console logs | `aspire logs [resource]` |
 | View structured logs | `aspire otel logs [resource]` |
@@ -70,9 +70,9 @@ Choose the right action based on what changed:
 Before making code changes, inspect the app state:
 
 1. `aspire describe` — check resource status
-2. `aspire otel logs <resource>` — view structured logs
-3. `aspire logs <resource>` — view console output
-4. `aspire otel traces <resource>` — view distributed traces
+1. `aspire otel logs <resource>` — view structured logs
+1. `aspire logs <resource>` — view console output
+1. `aspire otel traces <resource>` — view distributed traces
 
 ### Adding integrations
 

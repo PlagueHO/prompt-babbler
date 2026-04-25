@@ -24,6 +24,7 @@ When you start tracing, Playwright creates a `traces/` directory with several fi
 ### `trace-{timestamp}.trace`
 
 **Action log** - The main trace file containing:
+
 - Every action performed (clicks, fills, navigations)
 - DOM snapshots before and after each action
 - Screenshots at each step
@@ -34,6 +35,7 @@ When you start tracing, Playwright creates a `traces/` directory with several fi
 ### `trace-{timestamp}.network`
 
 **Network log** - Complete network activity:
+
 - All HTTP requests and responses
 - Request headers and bodies
 - Response headers and bodies
@@ -44,6 +46,7 @@ When you start tracing, Playwright creates a `traces/` directory with several fi
 ### `resources/`
 
 **Resources directory** - Cached resources:
+
 - Images, fonts, stylesheets, scripts
 - Response bodies for replay
 - Assets needed to reconstruct page state

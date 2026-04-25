@@ -176,6 +176,7 @@ playwright-cli --raw localstorage-get theme
 ```
 
 ## Open parameters
+
 ```bash
 # Use specific browser when creating session
 playwright-cli open --browser=chrome

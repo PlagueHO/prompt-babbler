@@ -51,6 +51,7 @@
 ### Home Screen Redesign (2026-03-19)
 
 **What changed:**
+
 - `Babble.isPinned: boolean` added to `src/types/index.ts`
 - `getBabbles()` in `src/services/api-client.ts` updated to options-object signature: `getBabbles(options?: GetBabblesOptions, accessToken?)`; `updateBabble` now accepts `isPinned?` in request body
 - `src/hooks/useBabbles.ts` fully rewritten — dual-section state (bubbles + list), search/sort/filter, optimistic `togglePin`, `didMount` ref pattern to skip search/sort effect on initial mount
@@ -60,6 +61,7 @@
 - `src/pages/HomePage.tsx` rewritten to compose BabbleBubbles + BabbleListSection
 
 **Patterns established:**
+
 - **Dual API calls for bubbles**: parallel fetch of `isPinned: true` + `isPinned: false` babbles, combined client-side to pinned-first top-6
 - **`didMount` ref pattern**: prevents search/sort `useEffect` from firing on initial mount (set after initial load completes)
 - **Debounce via ref+timeout**: `BabbleListSection` uses `defaultValue` + `onChange` with a 300ms debounce ref (not controlled input) to avoid re-renders on every keystroke
@@ -68,6 +70,7 @@
 - **Pin icon visibility**: ghost button `opacity-0 group-hover:opacity-100` via Tailwind group, always visible (`opacity-100`) when pinned
 
 **Key file paths:**
+
 - `src/components/babbles/BabbleBubbles.tsx`
 - `src/components/babbles/BabbleListItem.tsx`
 - `src/components/babbles/BabbleListSection.tsx`
@@ -77,6 +80,7 @@
 ### Home Screen Redesign (2026-03-21)
 
 **Session completion:**
+
 - Backend: Full search/sort/filter support with dynamic query builder in Cosmos DB repository
 - Frontend: Dual-section UI with 6 pinned bubbles, infinite-scroll unpinned list, debounced search, dropdown sort
 - Tests: Full validation of new useBabbles API with dual-state management
@@ -87,10 +91,12 @@
 ### pinBabble API migration (2026-03-21)
 
 **What changed:**
+
 - Added `pinBabble(id, isPinned, accessToken?)` to `src/services/api-client.ts` — uses `PATCH /api/babbles/{id}/pin` instead of full `PUT`
 - Updated `togglePin` in `src/hooks/useBabbles.ts` to call `api.pinBabble()` instead of `api.updateBabble()` with full payload
 - Added `pinBabble` mock to `tests/hooks/useBabbles.test.ts`; removed unused `PagedResponse` import (tech debt cleanup)
 
 **Patterns established:**
+
 - **Surgical PATCH endpoints**: prefer PATCH with minimal body over PUT with full entity for single-field mutations — avoids concurrent edit conflicts
 - **Test mock hygiene**: when swapping API calls in hooks, always update test mocks to include the new function
