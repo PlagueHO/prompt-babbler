@@ -1,10 +1,10 @@
+using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Azure;
 using Microsoft.Identity.Web;
-using PromptBabbler.Api.Authentication;
 using PromptBabbler.Api.HealthChecks;
 using PromptBabbler.Api.Middleware;
 using PromptBabbler.Domain.Configuration;
@@ -74,17 +74,43 @@ TokenCredential runtimeTokenCredential = builder.Environment.IsDevelopment()
 
 if (isAiConfigured)
 {
-    var aiTokenCredential = new AiFoundryTokenCredential(runtimeTokenCredential);
-
-    // Use the "chat" deployment connection string (not the "ai-foundry" project connection string).
-    // The deployment connection string inherits the foundry account's Endpoint and EndpointAIInference,
-    // and adds Deployment=chat. The Foundry project endpoint (/api/projects/{name}) does not accept
-    // AI Inference SDK requests and returns "API version not supported".
-    builder.AddAzureChatCompletionsClient("chat", configureSettings: settings =>
+    // Use AzureOpenAIClient from Azure.AI.OpenAI — this SDK targets the
+    // /openai/deployments/{deployment}/chat/completions route which is what
+    // Azure AI Foundry supports. The older Azure.AI.Inference SDK only sends
+    // api-version=2024-05-01-preview which Foundry has deprecated ("API version not supported").
+    //
+    // The "ai-foundry" connection string points to the project endpoint
+    // (https://{resource}.services.ai.azure.com/api/projects/{name}), but
+    // AzureOpenAIClient needs the account-level endpoint. Strip the /api/projects/... path.
+    var aiEndpoint = "";
+    foreach (var part in aiFoundryConnStr.Split(';', StringSplitOptions.RemoveEmptyEntries))
     {
-        settings.TokenCredential = aiTokenCredential;
-    })
-    .AddChatClient();
+        var trimmed = part.Trim();
+        if (trimmed.StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
+        {
+            aiEndpoint = trimmed["Endpoint=".Length..].TrimEnd('/');
+            break;
+        }
+    }
+    if (string.IsNullOrEmpty(aiEndpoint) &&
+        aiFoundryConnStr.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+    {
+        aiEndpoint = aiFoundryConnStr.Split(';')[0].TrimEnd('/');
+    }
+
+    // Strip /api/projects/{name} to get the account endpoint that AzureOpenAIClient expects.
+    if (Uri.TryCreate(aiEndpoint, UriKind.Absolute, out var parsedEndpoint))
+    {
+        var accountEndpoint = new UriBuilder(parsedEndpoint.Scheme, parsedEndpoint.Host, parsedEndpoint.Port).Uri;
+        var openAiClient = new AzureOpenAIClient(accountEndpoint, runtimeTokenCredential);
+        var chatClient = openAiClient.GetChatClient("chat").AsIChatClient();
+        builder.Services.AddSingleton<IChatClient>(chatClient);
+        builder.Services.AddSingleton(openAiClient);
+    }
+    else
+    {
+        startupLogger.LogWarning("Unable to parse ai-foundry endpoint '{Endpoint}'. AI features will be unavailable.", aiEndpoint);
+    }
 }
 else
 {

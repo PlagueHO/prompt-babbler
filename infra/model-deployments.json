@@ -5,7 +5,7 @@
       "name": "gpt-5.3-chat",
       "version": "2026-03-03"
     },
-    "name": "gpt-5.3-chat",
+    "name": "chat",
     "sku": {
       "name": "GlobalStandard",
       "capacity": 50

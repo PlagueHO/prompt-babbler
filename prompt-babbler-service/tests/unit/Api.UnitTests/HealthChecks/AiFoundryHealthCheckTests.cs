@@ -42,25 +42,6 @@ public sealed class AiFoundryHealthCheckTests
     }
 
     [TestMethod]
-    public async Task CheckHealthAsync_WhenChatClientUsesAccountEndpoint_ReturnsUnhealthy()
-    {
-        var chatClient = Substitute.For<IChatClient>();
-        var metadata = new ChatClientMetadata(
-            providerName: "test",
-            providerUri: new Uri("https://ai.example.com"),
-            defaultModelId: "gpt-4o");
-        chatClient.GetService<ChatClientMetadata>().Returns(metadata);
-
-        var healthCheck = new AiFoundryHealthCheck(chatClient);
-
-        var result = await healthCheck.CheckHealthAsync(
-            new HealthCheckContext(), CancellationToken.None);
-
-        result.Status.Should().Be(HealthStatus.Unhealthy);
-        result.Description.Should().Contain("does not target a Foundry project");
-    }
-
-    [TestMethod]
     public async Task CheckHealthAsync_WhenChatClientHasNoMetadata_ReturnsHealthy()
     {
         var chatClient = Substitute.For<IChatClient>();

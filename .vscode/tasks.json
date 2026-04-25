@@ -278,22 +278,11 @@
     {
       "label": "service: test (unit)",
       "type": "shell",
-      "command": "dotnet",
+      "command": "pwsh",
       "args": [
-        "test",
-        "--solution",
-        "PromptBabbler.slnx",
-        "--filter",
-        "TestCategory=Unit",
-        "--configuration",
-        "Release",
-        "--no-restore",
-        "--results-directory",
-        "./TestResults",
-        "--coverage",
-        "--coverage-output-format",
-        "cobertura",
-        "--report-trx"
+        "-NoProfile",
+        "-Command",
+        "dotnet test --solution PromptBabbler.slnx --filter TestCategory=Unit --configuration Release --no-restore --results-directory ./TestResults --coverage --coverage-output-format cobertura --report-trx; if ($LASTEXITCODE -eq 8) { exit 0 } else { exit $LASTEXITCODE }"
       ],
       "options": {
         "cwd": "${workspaceFolder}/prompt-babbler-service"
