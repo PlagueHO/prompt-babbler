@@ -99,7 +99,7 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
 
 // --------- NETWORKING RESOURCES ---------
 // Virtual Network with subnets for Container Apps Environment and Private Endpoints
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.8.0' = {
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.8.1' = {
   name: 'virtual-network-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -449,7 +449,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
 }
 
 // --------- CONTAINER APPS ENVIRONMENT ---------
-module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.1' = {
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.2' = {
   name: 'container-apps-environment-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -486,7 +486,7 @@ module aspireDashboard 'aspire-dashboard.bicep' = {
 }
 
 // --------- CONTAINER APP (API) ---------
-module containerApp 'br/public:avm/res/app/container-app:0.22.0' = {
+module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
   name: 'container-app-api-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -631,7 +631,7 @@ module principalCosmosDbRoles './core/security/role_cosmosdb.bicep' = if (!empty
 }
 
 // --------- STATIC WEB APP (FRONTEND) ---------
-module staticWebApp 'br/public:avm/res/web/static-site:0.9.3' = {
+module staticWebApp 'br/public:avm/res/web/static-site:0.9.4' = {
   name: 'static-web-app-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [

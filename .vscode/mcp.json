@@ -9,10 +9,6 @@
         "mcp"
       ]
     },
-    "azure-verified-module-bicep": {
-      "type": "sse",
-      "url": "https://gitmcp.io/Azure/bicep-registry-modules"
-    },
     "context7": {
       "type": "stdio",
       "command": "npx",
@@ -29,10 +25,6 @@
       ],
       "cwd": "${workspaceFolder}"
     },
-    "microsoft-agent-framework": {
-      "url": "https://gitmcp.io/microsoft/agent-framework",
-      "type": "sse"
-    },
     "microsoft-learn": {
       "url": "https://learn.microsoft.com/api/mcp",
       "type": "http"
@@ -41,18 +33,6 @@
       "type": "http",
       "url": "https://mcp.ai.azure.com"
     },
-    "react-repo": {
-      "url": "https://gitmcp.io/facebook/react",
-      "type": "sse"
-    },
-    "typescript-repo": {
-      "url": "https://gitmcp.io/microsoft/TypeScript",
-      "type": "sse"
-    },
-    "nodejs-repo": {
-      "url": "https://gitmcp.io/nodejs/node",
-      "type": "sse"
-    },
     "playwright": {
       "type": "stdio",
       "command": "npx",
@@ -60,10 +40,6 @@
         "playwright",
         "run-test-mcp-server"
       ]
-    },
-    "shadcnui-repo": {
-      "url": "https://gitmcp.io/shadcn-ui/ui",
-      "type": "sse"
     }
   }
 }
