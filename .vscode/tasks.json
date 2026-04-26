@@ -96,7 +96,7 @@
       },
       "group": "test",
       "icon": {
-        "id": "accessibility",
+        "id": "eye",
         "color": "terminal.ansiMagenta"
       }
     },

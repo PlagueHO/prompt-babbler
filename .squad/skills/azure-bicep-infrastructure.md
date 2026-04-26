@@ -62,7 +62,7 @@ Subscription-level deployment (`targetScope = 'subscription'`). Resource group i
 ### Parameters
 
 ```bicep
-param environmentName string          // 1-34 chars, used in all resource names
+param environmentName string          // 1-24 chars, used in all resource names
 param location string                 // Azure region
 param principalId string              // User/SP for role assignments
 param enablePublicNetworkAccess bool  // Network access control (default: true)

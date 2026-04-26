@@ -1,6 +1,14 @@
 {
   "inputs": [],
   "servers": {
+    "aspire": {
+      "type": "stdio",
+      "command": "aspire",
+      "args": [
+        "agent",
+        "mcp"
+      ]
+    },
     "azure-verified-module-bicep": {
       "type": "sse",
       "url": "https://gitmcp.io/Azure/bicep-registry-modules"
@@ -20,14 +28,6 @@
         "mcp-server"
       ],
       "cwd": "${workspaceFolder}"
-    },
-    "aspire": {
-      "type": "stdio",
-      "command": "aspire",
-      "args": [
-        "agent",
-        "mcp"
-      ]
     },
     "microsoft-agent-framework": {
       "url": "https://gitmcp.io/microsoft/agent-framework",

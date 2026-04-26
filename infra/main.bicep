@@ -2,7 +2,7 @@ targetScope = 'subscription'
 
 @sys.description('Name of the environment which is used to generate a short unique hash used in all resources.')
 @minLength(1)
-@maxLength(34)
+@maxLength(24)
 param environmentName string
 
 @sys.description('Location for all resources.')

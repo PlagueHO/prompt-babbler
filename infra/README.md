@@ -58,7 +58,7 @@ All parameters are supplied via `main.bicepparam` using `readEnvironmentVariable
 
 | Parameter | Environment Variable | Default | Description |
 |---|---|---|---|
-| `environmentName` | `AZURE_ENV_NAME` | `azdtemp` | Environment name used in resource naming |
+| `environmentName` | `AZURE_ENV_NAME` | `azdtemp` | Environment name used in resource naming (1-24 characters) |
 | `location` | `AZURE_LOCATION` | `EastUS2` | Azure region for all resources |
 | `principalId` | `AZURE_PRINCIPAL_ID` | — | Deploying user/service principal object ID |
 | `principalIdType` | `AZURE_PRINCIPAL_ID_TYPE` | `User` | `User` or `ServicePrincipal` |

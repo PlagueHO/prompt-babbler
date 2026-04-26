@@ -6,14 +6,14 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "12034551731149540993"
+      "templateHash": "10157463214299496871"
     }
   },
   "parameters": {
     "environmentName": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 34,
+      "maxLength": 24,
       "metadata": {
         "description": "Name of the environment which is used to generate a short unique hash used in all resources."
       }

@@ -35,6 +35,7 @@
         "ms-dotnettools.csharp",
         "ms-dotnettools.vscode-dotnet-pack",
         "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-playwright.playwright",
         "ms-vscode-remote.remote-containers",
         "ms-vscode.azure-repos",
         "ms-vscode.powershell",
