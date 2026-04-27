@@ -71,6 +71,9 @@ var tags = {
 // Generate a unique token to be used in naming resources.
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 
+// Cosmos DB database name used across AVM module and standalone container modules.
+var cosmosDbDatabaseName = 'prompt-babbler'
+
 var logAnalyticsWorkspaceName = '${abbrs.operationalInsightsWorkspaces}${environmentName}'
 var applicationInsightsName = '${abbrs.insightsComponents}${environmentName}'
 var foundryName = '${abbrs.aiFoundryAccounts}${environmentName}'
@@ -374,6 +377,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
     tags: tags
     capabilitiesToAdd: [
       'EnableServerless'
+      'EnableNoSQLVectorSearch'
     ]
     enableBurstCapacity: false
     disableLocalAuthentication: false
@@ -416,7 +420,7 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
     ]
     sqlDatabases: [
       {
-        name: 'prompt-babbler'
+        name: cosmosDbDatabaseName
         containers: [
           {
             name: 'prompt-templates'
@@ -424,12 +428,8 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
               '/userId'
             ]
           }
-          {
-            name: 'babbles'
-            paths: [
-              '/userId'
-            ]
-          }
+          // babbles container is deployed separately via babblesVectorContainer module
+          // with vector search config. See: https://github.com/PlagueHO/prompt-babbler/issues/107
           {
             name: 'generated-prompts'
             paths: [
@@ -445,6 +445,25 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
         ]
       }
     ]
+  }
+}
+
+// --------- COSMOS DB BABBLES VECTOR CONTAINER ---------
+// Workaround: AVM document-db/database-account 0.19.0 does not support vectorEmbeddingPolicy
+// on containers. This standalone module deploys the babbles container with vector search config
+// using the raw ARM resource type. Remove when AVM 0.19.1 is published to MCR.
+// Tracking issue: https://github.com/PlagueHO/prompt-babbler/issues/107
+module babblesVectorContainer './cosmos-babbles-vector-container.bicep' = {
+  name: 'cosmos-babbles-vector-container-deployment-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [
+    cosmosDbAccount
+  ]
+  params: {
+    cosmosDbAccountName: cosmosDbAccountName
+    databaseName: cosmosDbDatabaseName
+    location: location
+    tags: tags
   }
 }
 

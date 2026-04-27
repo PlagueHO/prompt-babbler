@@ -1,0 +1,110 @@
+[
+  {
+    "DocumentId": {
+      "ProjectId": {
+        "Id": "71a48d78-19e1-4a8b-b419-14eaee5e91c0"
+      },
+      "Id": "15d3b6ae-4405-430a-bafd-013fd70d70d2"
+    },
+    "FileName": "SelfRegisteredExtensions.cs",
+    "FilePath": "D:\\source\\GitHub\\PlagueHO\\prompt-babbler\\prompt-babbler-service\\tests\\integration\\Api.IntegrationTests\\obj\\Debug\\net10.0\\SelfRegisteredExtensions.cs",
+    "FileChanges": [
+      {
+        "LineNumber": 1,
+        "CharNumber": 1,
+        "DiagnosticId": "WHITESPACE",
+        "FormatDescription": "Fix whitespace formatting."
+      }
+    ]
+  },
+  {
+    "DocumentId": {
+      "ProjectId": {
+        "Id": "fd933a7a-b5e7-4654-b82a-3b136819e0d4"
+      },
+      "Id": "e848aa37-6afc-4c8b-9ea9-e6470d0b163c"
+    },
+    "FileName": "SelfRegisteredExtensions.cs",
+    "FilePath": "D:\\source\\GitHub\\PlagueHO\\prompt-babbler\\prompt-babbler-service\\tests\\integration\\Infrastructure.IntegrationTests\\obj\\Debug\\net10.0\\SelfRegisteredExtensions.cs",
+    "FileChanges": [
+      {
+        "LineNumber": 1,
+        "CharNumber": 1,
+        "DiagnosticId": "WHITESPACE",
+        "FormatDescription": "Fix whitespace formatting."
+      }
+    ]
+  },
+  {
+    "DocumentId": {
+      "ProjectId": {
+        "Id": "4c1b43cb-5c4c-48f3-a66a-1e2165afb057"
+      },
+      "Id": "8200fda8-28f8-4ec9-b029-3657736c7221"
+    },
+    "FileName": "SelfRegisteredExtensions.cs",
+    "FilePath": "D:\\source\\GitHub\\PlagueHO\\prompt-babbler\\prompt-babbler-service\\tests\\integration\\Orchestration.IntegrationTests\\obj\\Debug\\net10.0\\SelfRegisteredExtensions.cs",
+    "FileChanges": [
+      {
+        "LineNumber": 1,
+        "CharNumber": 1,
+        "DiagnosticId": "WHITESPACE",
+        "FormatDescription": "Fix whitespace formatting."
+      }
+    ]
+  },
+  {
+    "DocumentId": {
+      "ProjectId": {
+        "Id": "e76c64a8-26cf-4576-bc1b-c1a63d1523c3"
+      },
+      "Id": "391fb191-8a91-47f1-a859-0661900b6656"
+    },
+    "FileName": "SelfRegisteredExtensions.cs",
+    "FilePath": "D:\\source\\GitHub\\PlagueHO\\prompt-babbler\\prompt-babbler-service\\tests\\unit\\Api.UnitTests\\obj\\Debug\\net10.0\\SelfRegisteredExtensions.cs",
+    "FileChanges": [
+      {
+        "LineNumber": 1,
+        "CharNumber": 1,
+        "DiagnosticId": "WHITESPACE",
+        "FormatDescription": "Fix whitespace formatting."
+      }
+    ]
+  },
+  {
+    "DocumentId": {
+      "ProjectId": {
+        "Id": "0d419188-0b5a-4976-8d2c-286fb2cfb28d"
+      },
+      "Id": "6b816871-ebc5-4e1e-a448-92c5048bea1c"
+    },
+    "FileName": "SelfRegisteredExtensions.cs",
+    "FilePath": "D:\\source\\GitHub\\PlagueHO\\prompt-babbler\\prompt-babbler-service\\tests\\unit\\Domain.UnitTests\\obj\\Debug\\net10.0\\SelfRegisteredExtensions.cs",
+    "FileChanges": [
+      {
+        "LineNumber": 1,
+        "CharNumber": 1,
+        "DiagnosticId": "WHITESPACE",
+        "FormatDescription": "Fix whitespace formatting."
+      }
+    ]
+  },
+  {
+    "DocumentId": {
+      "ProjectId": {
+        "Id": "9392e7b8-3007-4c42-bf35-edbe7f1e6f89"
+      },
+      "Id": "d7e7b5bd-43c0-47dd-b68b-c2bc7e4c0039"
+    },
+    "FileName": "SelfRegisteredExtensions.cs",
+    "FilePath": "D:\\source\\GitHub\\PlagueHO\\prompt-babbler\\prompt-babbler-service\\tests\\unit\\Infrastructure.UnitTests\\obj\\Debug\\net10.0\\SelfRegisteredExtensions.cs",
+    "FileChanges": [
+      {
+        "LineNumber": 1,
+        "CharNumber": 1,
+        "DiagnosticId": "WHITESPACE",
+        "FormatDescription": "Fix whitespace formatting."
+      }
+    ]
+  }
+]
