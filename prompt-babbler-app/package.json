@@ -27,7 +27,7 @@
     "@opentelemetry/resources": "^2.6.0",
     "@opentelemetry/sdk-metrics": "^2.6.0",
     "@opentelemetry/sdk-trace-base": "^2.7.0",
-    "@opentelemetry/sdk-trace-web": "^2.6.0",
+    "@opentelemetry/sdk-trace-web": "^2.7.0",
     "@opentelemetry/semantic-conventions": "^1.40.0",
     "@tailwindcss/vite": "^4.2.4",
     "class-variance-authority": "^0.7.1",
