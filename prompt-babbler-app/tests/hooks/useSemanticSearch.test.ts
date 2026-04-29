@@ -59,7 +59,7 @@ describe('useSemanticSearch', () => {
     expect(result.current.results).toEqual([]);
   });
 
-  it('should debounce API calls by 300ms', () => {
+  it('should debounce API calls by 300ms', async () => {
     vi.useFakeTimers();
 
     const { result } = renderHook(() => useSemanticSearch('test query'));
@@ -69,16 +69,16 @@ describe('useSemanticSearch', () => {
     expect(result.current.loading).toBe(true);
 
     // Advance by less than debounce window — still no call
-    act(() => { vi.advanceTimersByTime(299); });
+    await act(async () => { vi.advanceTimersByTime(299); });
     expect(mockSearchBabbles).not.toHaveBeenCalled();
 
     // Advance past debounce window — call fires
-    act(() => { vi.advanceTimersByTime(1); });
+    await act(async () => { vi.advanceTimersByTime(1); });
     expect(mockSearchBabbles).toHaveBeenCalledTimes(1);
     expect(mockSearchBabbles).toHaveBeenCalledWith('test query', 10, expect.any(AbortSignal));
   });
 
-  it('should cancel previous debounced call when query changes rapidly', () => {
+  it('should cancel previous debounced call when query changes rapidly', async () => {
     vi.useFakeTimers();
 
     const { rerender } = renderHook(
@@ -87,21 +87,21 @@ describe('useSemanticSearch', () => {
     );
 
     // Change query before debounce fires
-    act(() => { vi.advanceTimersByTime(150); });
+    await act(async () => { vi.advanceTimersByTime(150); });
     rerender({ query: 'first query' });
 
     // Only the final query should trigger the API call
-    act(() => { vi.advanceTimersByTime(300); });
+    await act(async () => { vi.advanceTimersByTime(300); });
     expect(mockSearchBabbles).toHaveBeenCalledTimes(1);
     expect(mockSearchBabbles).toHaveBeenCalledWith('first query', 10, expect.any(AbortSignal));
   });
 
-  it('should pass abort signal to API call', () => {
+  it('should pass abort signal to API call', async () => {
     vi.useFakeTimers();
 
     renderHook(() => useSemanticSearch('test query'));
 
-    act(() => { vi.advanceTimersByTime(300); });
+    await act(async () => { vi.advanceTimersByTime(300); });
 
     expect(mockSearchBabbles).toHaveBeenCalledWith(
       'test query',
