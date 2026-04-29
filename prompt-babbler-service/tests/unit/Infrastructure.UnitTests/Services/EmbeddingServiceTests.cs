@@ -34,7 +34,7 @@ public sealed class EmbeddingServiceTests
 
         var result = await _service.GenerateEmbeddingAsync("test text");
 
-        result.ToArray().Should().BeEquivalentTo(testVector);
+        result.ToArray().Should().Equal(testVector);
     }
 
     [TestMethod]

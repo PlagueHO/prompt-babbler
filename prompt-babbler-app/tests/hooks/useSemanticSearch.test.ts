@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useSemanticSearch } from '@/hooks/useSemanticSearch';
 
-vi.mock('@/services/api-client', () => ({
-  searchBabbles: vi.fn().mockResolvedValue({
+const mockSearchBabbles = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
     results: [
       {
         id: 'b1',
@@ -15,12 +15,17 @@ vi.mock('@/services/api-client', () => ({
         score: 0.95,
       },
     ],
-  }),
+  })
+);
+
+vi.mock('@/services/api-client', () => ({
+  searchBabbles: mockSearchBabbles,
 }));
 
 describe('useSemanticSearch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it('should return empty results for query under 2 characters', () => {
@@ -43,8 +48,7 @@ describe('useSemanticSearch', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    const { searchBabbles } = await import('@/services/api-client');
-    (searchBabbles as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+    mockSearchBabbles.mockRejectedValueOnce(new Error('Network error'));
 
     const { result } = renderHook(() => useSemanticSearch('test query'));
 
@@ -53,5 +57,56 @@ describe('useSemanticSearch', () => {
     }, { timeout: 2000 });
 
     expect(result.current.results).toEqual([]);
+  });
+
+  it('should debounce API calls by 300ms', () => {
+    vi.useFakeTimers();
+
+    const { result } = renderHook(() => useSemanticSearch('test query'));
+
+    // API should not be called immediately
+    expect(mockSearchBabbles).not.toHaveBeenCalled();
+    expect(result.current.loading).toBe(true);
+
+    // Advance by less than debounce window — still no call
+    act(() => { vi.advanceTimersByTime(299); });
+    expect(mockSearchBabbles).not.toHaveBeenCalled();
+
+    // Advance past debounce window — call fires
+    act(() => { vi.advanceTimersByTime(1); });
+    expect(mockSearchBabbles).toHaveBeenCalledTimes(1);
+    expect(mockSearchBabbles).toHaveBeenCalledWith('test query', 10, expect.any(AbortSignal));
+  });
+
+  it('should cancel previous debounced call when query changes rapidly', () => {
+    vi.useFakeTimers();
+
+    const { rerender } = renderHook(
+      ({ query }: { query: string }) => useSemanticSearch(query),
+      { initialProps: { query: 'fir' } }
+    );
+
+    // Change query before debounce fires
+    act(() => { vi.advanceTimersByTime(150); });
+    rerender({ query: 'first query' });
+
+    // Only the final query should trigger the API call
+    act(() => { vi.advanceTimersByTime(300); });
+    expect(mockSearchBabbles).toHaveBeenCalledTimes(1);
+    expect(mockSearchBabbles).toHaveBeenCalledWith('first query', 10, expect.any(AbortSignal));
+  });
+
+  it('should pass abort signal to API call', () => {
+    vi.useFakeTimers();
+
+    renderHook(() => useSemanticSearch('test query'));
+
+    act(() => { vi.advanceTimersByTime(300); });
+
+    expect(mockSearchBabbles).toHaveBeenCalledWith(
+      'test query',
+      10,
+      expect.any(AbortSignal)
+    );
   });
 });

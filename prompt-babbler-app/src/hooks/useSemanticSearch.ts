@@ -22,7 +22,7 @@ export function useSemanticSearch(query: string, topK: number = 10) {
       abortControllerRef.current = new AbortController();
 
       try {
-        const response = await searchBabbles(query, topK);
+        const response = await searchBabbles(query, topK, abortControllerRef.current.signal);
         setResults(response.results);
         setError(null);
       } catch (err) {
@@ -34,7 +34,10 @@ export function useSemanticSearch(query: string, topK: number = 10) {
       }
     }, 300);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      abortControllerRef.current?.abort();
+    };
   }, [query, topK]);
 
   return { results, loading, error };
