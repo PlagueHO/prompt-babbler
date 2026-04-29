@@ -1,5 +1,9 @@
 # Prompt Babbler — Agent Instructions
 
+> [!IMPORTANT]
+> The AGENT mantra:
+> Every line of code is tech debt. Always pay down tech debt whenever adding new features. Simplicity, readability, testability and maintainability are more important than cleverness or optimization. SOLID, DRY, KISS, YAGNI, and other good software design principles are your friends. If it hurts, refactor.
+
 See `.github/copilot-instructions.md` for code style and patterns.
 
 ## Layout
