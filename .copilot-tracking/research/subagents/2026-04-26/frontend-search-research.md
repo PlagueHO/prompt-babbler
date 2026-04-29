@@ -24,7 +24,7 @@
   - `/settings` — `SettingsPage`
 - **Layout hierarchy:**
 
-  ```
+  ```text
   App
   └── ErrorBoundary
       └── ThemeProvider
@@ -41,7 +41,7 @@
 
 ### Components Directory
 
-```
+```text
 components/
 ├── babbles/
 │   ├── BabbleBubbles.tsx      — Grid of pinned/recent cards (top section)
@@ -104,7 +104,7 @@ components/
 
 ### Services
 
-```
+```text
 services/
 ├── api-client.ts            — All API calls (babbles, templates, prompts, user)
 ├── default-templates.ts     — Default prompt template definitions
@@ -115,7 +115,7 @@ services/
 
 ### Hooks
 
-```
+```text
 hooks/
 ├── useAccessCode.ts       — Access code verification
 ├── useAudioRecording.ts   — Microphone recording
@@ -211,7 +211,7 @@ async function getBabbles(options, accessToken?): Promise<PagedResponse<Babble>>
 
 ### Data Flow
 
-```
+```text
 HomePage
   └── useBabbles() hook
         ├── [search, setSearch] state
@@ -327,7 +327,7 @@ Displayed via `<ErrorBanner error={error} onRetry={refresh} />`.
 
 ### Header Structure
 
-```
+```text
 <header className="border-b bg-background">
   <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
     ├── Logo link ("Prompt Babbler")
@@ -433,7 +433,7 @@ Displayed via `<ErrorBanner error={error} onRetry={refresh} />`.
 
 ### New Files to Create
 
-```
+```text
 components/
 └── search/
     └── SearchCommand.tsx     — Main command palette component

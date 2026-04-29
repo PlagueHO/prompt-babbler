@@ -4,7 +4,7 @@
 
 ---
 
-### {timestamp} — {task summary}
+## {timestamp} — {task summary}
 
 | Field | Value |
 |-------|-------|
@@ -21,7 +21,7 @@
 ## Rules
 
 1. **One file per agent spawn.** Named `{timestamp}-{agent-name}.md`.
-2. **Log BEFORE spawning.** The entry must exist before the agent runs.
-3. **Update outcome AFTER the agent completes.** Fill in the Outcome field.
-4. **Never delete or edit past entries.** Append-only.
-5. **If a reviewer rejects work,** log the rejection as a new entry with the revision agent.
+1. **Log BEFORE spawning.** The entry must exist before the agent runs.
+1. **Update outcome AFTER the agent completes.** Fill in the Outcome field.
+1. **Never delete or edit past entries.** Append-only.
+1. **If a reviewer rejects work,** log the rejection as a new entry with the revision agent.

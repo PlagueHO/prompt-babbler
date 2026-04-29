@@ -24,12 +24,14 @@
 
 - **Severity**: N/A — correct behavior
 - **Evidence**: `infra/main.bicep` lines 453–464 reference `cosmos-babbles-vector-container.bicep` as a module:
-  ```
+
+  ```bicep
   module babblesVectorContainer './cosmos-babbles-vector-container.bicep' = {
     name: 'cosmos-babbles-vector-container-deployment-${resourceToken}'
     ...
   }
   ```
+
 - **Analysis**: The original plan assumed Phase 1 would inline vector config via AVM 0.19.1, making the standalone file orphaned. Since AVM 0.19.1 was not published to MCR (DD-04 in planning log), Option B was selected (DD-06, user decision ID-01). Option B wires the standalone `.bicep` as a module dependency in `main.bicep`. Deleting it would break the deployment.
 - **Verdict**: Phase 2 Step 2.1 was correctly NOT executed. The deviation is well-documented in the changes log under "Additional or Deviating Changes" and in the planning log (DD-06, ID-01). GitHub issue [#107](https://github.com/PlagueHO/prompt-babbler/issues/107) tracks future migration to AVM inline.
 
@@ -54,10 +56,12 @@
 
 - **Severity**: Minor
 - **Evidence**: Plan file Phase 2 checklist shows both steps as `[ ]` (unchecked):
-  ```
+
+  ```markdown
   - [ ] Step 2.1: Delete `infra/cosmos-babbles-vector-container.bicep`
   - [ ] Step 2.2: Delete `infra/cosmos-babbles-vector-container.json`
   ```
+
 - **Analysis**: Step 2.1 should ideally be marked with a deviation annotation (e.g., `SKIPPED — file no longer orphaned per Option B`) rather than left unchecked, which could imply it is still pending. Step 2.2 is genuinely still pending. The planning log (DD-06) documents the rationale, but the checklist itself does not reflect the status change.
 - **Recommendation**: Annotate Step 2.1 in the plan checklist to distinguish "skipped by design" from "not yet started."
 

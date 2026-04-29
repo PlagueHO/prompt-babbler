@@ -45,6 +45,7 @@
 
 {Paste agent's verbatim response here, unedited}
 
+<!-- markdownlint-disable-next-line MD024 -->
 ### {Name} ({Role}) — Raw Output
 
 {Paste agent's verbatim response here, unedited}

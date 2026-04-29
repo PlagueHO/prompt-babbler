@@ -717,7 +717,7 @@ private static Babble CreateBabble(
 
 ### Create Flow
 
-```
+```text
 POST /api/babbles
   → BabbleController.CreateBabble()
     → User.GetUserIdOrAnonymous() → userId
@@ -730,7 +730,7 @@ POST /api/babbles
 
 ### Search Flow (Current)
 
-```
+```text
 GET /api/babbles?search=keyword&sortBy=createdAt&sortDirection=desc
   → BabbleController.GetBabbles()
     → userId = User.GetUserIdOrAnonymous()
@@ -744,7 +744,7 @@ GET /api/babbles?search=keyword&sortBy=createdAt&sortDirection=desc
 
 ### Update Flow
 
-```
+```text
 PUT /api/babbles/{id}
   → BabbleController.UpdateBabble()
     → IBabbleService.GetByIdAsync() → existence check
