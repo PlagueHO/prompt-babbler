@@ -16,6 +16,7 @@ Describe what your squad should do every time the loop wakes up. Be specific —
 the more context you give, the better your squad performs.
 
 Examples:
+
 - Check for new messages in a Teams channel and summarize action items
 - Review recent pull requests and flag anything needing attention
 - Run a health check on staging and report anomalies
