@@ -28,7 +28,7 @@ On-demand reference for Squad's casting system. Loaded during Init Mode or when 
 
 Universe selection is deterministic. Score each universe and pick the highest:
 
-```
+```text
 score = size_fit + shape_fit + resonance_fit + LRU
 ```
 

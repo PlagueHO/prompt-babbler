@@ -75,3 +75,17 @@ export interface PromptOptions {
   promptFormat: PromptFormat;
   allowEmojis: boolean;
 }
+
+export interface BabbleSearchResultItem {
+  id: string;
+  title: string;
+  snippet: string;
+  tags?: string[];
+  createdAt: string;
+  isPinned: boolean;
+  score: number;
+}
+
+export interface BabbleSearchResponse {
+  results: BabbleSearchResultItem[];
+}

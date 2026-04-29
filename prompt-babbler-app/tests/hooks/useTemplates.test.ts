@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useTemplates } from '@/hooks/useTemplates';
 import type { PromptTemplate } from '@/types';
 
@@ -56,10 +56,12 @@ describe('useTemplates', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    await result.current.createTemplate({
-      name: 'Custom Template',
-      description: 'A custom template',
-      instructions: 'Do something',
+    await act(async () => {
+      await result.current.createTemplate({
+        name: 'Custom Template',
+        description: 'A custom template',
+        instructions: 'Do something',
+      });
     });
 
     const { createTemplate } = await import('@/services/api-client');

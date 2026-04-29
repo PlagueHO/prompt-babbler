@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "232573613636726410"
+      "templateHash": "16033638875112070740"
     }
   },
   "parameters": {
@@ -265,6 +265,7 @@
       "project": "prompt-babbler"
     },
     "resourceToken": "[toLower(uniqueString(subscription().id, parameters('environmentName'), parameters('location')))]",
+    "cosmosDbDatabaseName": "prompt-babbler",
     "logAnalyticsWorkspaceName": "[format('{0}{1}', variables('abbrs').operationalInsightsWorkspaces, parameters('environmentName'))]",
     "applicationInsightsName": "[format('{0}{1}', variables('abbrs').insightsComponents, parameters('environmentName'))]",
     "foundryName": "[format('{0}{1}', variables('abbrs').aiFoundryAccounts, parameters('environmentName'))]",
@@ -25865,7 +25866,8 @@
           },
           "capabilitiesToAdd": {
             "value": [
-              "EnableServerless"
+              "EnableServerless",
+              "EnableNoSQLVectorSearch"
             ]
           },
           "enableBurstCapacity": {
@@ -25924,16 +25926,10 @@
           "sqlDatabases": {
             "value": [
               {
-                "name": "prompt-babbler",
+                "name": "[variables('cosmosDbDatabaseName')]",
                 "containers": [
                   {
                     "name": "prompt-templates",
-                    "paths": [
-                      "/userId"
-                    ]
-                  },
-                  {
-                    "name": "babbles",
                     "paths": [
                       "/userId"
                     ]
@@ -31871,6 +31867,127 @@
         "virtualNetwork"
       ]
     },
+    "babblesVectorContainer": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('cosmos-babbles-vector-container-deployment-{0}', variables('resourceToken'))]",
+      "resourceGroup": "[parameters('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "cosmosDbAccountName": {
+            "value": "[variables('cosmosDbAccountName')]"
+          },
+          "databaseName": {
+            "value": "[variables('cosmosDbDatabaseName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "7136699079929145737"
+            }
+          },
+          "parameters": {
+            "cosmosDbAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Cosmos DB account."
+              }
+            },
+            "databaseName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the SQL database."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for the resource."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags to apply to the resource."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+              "apiVersion": "2024-11-15",
+              "name": "[format('{0}/{1}/{2}', parameters('cosmosDbAccountName'), parameters('databaseName'), 'babbles')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "resource": {
+                  "id": "babbles",
+                  "partitionKey": {
+                    "paths": [
+                      "/userId"
+                    ],
+                    "kind": "Hash",
+                    "version": 2
+                  },
+                  "indexingPolicy": {
+                    "indexingMode": "consistent",
+                    "automatic": true,
+                    "includedPaths": [
+                      {
+                        "path": "/*"
+                      }
+                    ],
+                    "excludedPaths": [
+                      {
+                        "path": "/\"_etag\"/?"
+                      },
+                      {
+                        "path": "/contentVector/*"
+                      }
+                    ],
+                    "vectorIndexes": [
+                      {
+                        "path": "/contentVector",
+                        "type": "quantizedFlat"
+                      }
+                    ]
+                  },
+                  "vectorEmbeddingPolicy": {
+                    "vectorEmbeddings": [
+                      {
+                        "path": "/contentVector",
+                        "dataType": "Float32",
+                        "distanceFunction": "Cosine",
+                        "dimensions": 1536
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "cosmosDbAccount"
+      ]
+    },
     "containerAppsEnvironment": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
@@ -33031,7 +33148,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "1483235548806619955"
+              "templateHash": "7335106931593315881"
             }
           },
           "parameters": {
@@ -33045,7 +33162,7 @@
           "resources": [
             {
               "type": "Microsoft.App/managedEnvironments/dotNetComponents",
-              "apiVersion": "2024-10-02-preview",
+              "apiVersion": "2025-10-02-preview",
               "name": "[format('{0}/{1}', parameters('containerAppsEnvironmentName'), 'aspire-dashboard')]",
               "properties": {
                 "componentType": "AspireDashboard"

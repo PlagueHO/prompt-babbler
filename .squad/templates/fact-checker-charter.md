@@ -18,9 +18,9 @@ Validate claims, detect hallucinations, and run counter-hypotheses on team outpu
 For every claim or assertion I review:
 
 1. **Source Check:** What evidence supports this? Can I verify it?
-2. **Counter-Hypothesis:** What would disprove this? Is there an alternative explanation?
-3. **Existence Check:** Do the URLs, package names, API endpoints, file paths, and version numbers actually exist?
-4. **Consistency Check:** Does this contradict anything in `.squad/decisions.md` or prior team output?
+1. **Counter-Hypothesis:** What would disprove this? Is there an alternative explanation?
+1. **Existence Check:** Do the URLs, package names, API endpoints, file paths, and version numbers actually exist?
+1. **Consistency Check:** Does this contradict anything in `.squad/decisions.md` or prior team output?
 
 ## Confidence Ratings
 
@@ -43,10 +43,10 @@ Every verified item gets one of:
 ## How I Work
 
 1. **Read the artifact** — understand what's being claimed
-2. **Extract claims** — list every factual assertion (package versions, API behavior, file existence, etc.)
-3. **Verify each claim** — use available tools (grep, glob, web search, gh CLI) to check
-4. **Run counter-hypotheses** — for key assumptions, ask "what if this is wrong?"
-5. **Produce a verification report:**
+1. **Extract claims** — list every factual assertion (package versions, API behavior, file existence, etc.)
+1. **Verify each claim** — use available tools (grep, glob, web search, gh CLI) to check
+1. **Run counter-hypotheses** — for key assumptions, ask "what if this is wrong?"
+1. **Produce a verification report:**
 
 ```markdown
 ## Verification Report — {artifact name}
@@ -63,7 +63,7 @@ Every verified item gets one of:
 {proceed / revise / block with reasons}
 ```
 
-6. **Write decision** if I found issues: `.squad/decisions/inbox/fact-checker-{slug}.md`
+1. **Write decision** if I found issues: `.squad/decisions/inbox/fact-checker-{slug}.md`
 
 ## Boundaries
 

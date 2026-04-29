@@ -1,5 +1,6 @@
 import type {
   AccessControlStatus,
+  BabbleSearchResponse,
   Babble,
   GeneratedPrompt,
   PagedResponse,
@@ -347,4 +348,22 @@ export async function updateUserSettings(
     method: 'PUT',
     body: JSON.stringify(settings),
   }, accessToken);
+}
+
+// Semantic Search APIs
+
+export async function searchBabbles(
+  query: string,
+  topK: number = 10,
+  signal?: AbortSignal,
+  accessToken?: string,
+): Promise<BabbleSearchResponse> {
+  const params = new URLSearchParams();
+  params.set('query', query);
+  params.set('topK', String(topK));
+  return fetchJson<BabbleSearchResponse>(
+    `/api/babbles/search?${params.toString()}`,
+    { signal },
+    accessToken,
+  );
 }

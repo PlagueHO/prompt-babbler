@@ -45,7 +45,8 @@ squad watch --interval 5
 ```
 
 Ralph will log skipped issues:
-```
+
+```text
 ⏭️ Skipping #42 "Train ML model" — missing: gpu
 ✓ Triaged #43 "Fix CSS layout" → Picard (routing-rule)
 ```
@@ -53,9 +54,9 @@ Ralph will log skipped issues:
 ## How It Works
 
 1. Ralph loads `machine-capabilities.json` at startup
-2. For each open issue, Ralph extracts `needs:*` labels
-3. If any required capability is missing, the issue is skipped
-4. Issues without `needs:*` labels are always processed (opt-in system)
+1. For each open issue, Ralph extracts `needs:*` labels
+1. If any required capability is missing, the issue is skipped
+1. Issues without `needs:*` labels are always processed (opt-in system)
 
 ## Kubernetes Integration
 
