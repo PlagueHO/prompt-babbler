@@ -52,7 +52,7 @@ Each platform tracks issue lifecycle differently. Squad normalizes these into a 
 
 **Branch naming convention:**
 
-```
+```text
 squad/{issue-number}-{kebab-case-slug}
 ```
 
@@ -77,7 +77,7 @@ Example: `squad/42-fix-login-validation`
 
 **Branch naming convention:**
 
-```
+```text
 squad/{work-item-id}-{kebab-case-slug}
 ```
 
@@ -162,7 +162,7 @@ cd ../worktrees/{issue-number}
 
 **Commit message format:**
 
-```
+```text
 {type}({scope}): {description} (#{issue-number})
 
 {detailed explanation if needed}
@@ -348,7 +348,7 @@ When spawning an agent to work on an issue, include this context block:
 
    gh pr create --title "{title}" --body "Closes #{number}\n\n{description}" --head squad/{issue-number}-{slug} --base {base-branch}
 
-   ```
+   ```text
 4. Report PR URL to coordinator
 ```
 
@@ -364,7 +364,7 @@ Ralph (the work monitor) continuously checks issue and PR state:
 
 **Ralph's work-check cycle:**
 
-```
+```text
 Scan → Categorize → Dispatch → Watch → Report → Loop
 ```
 
@@ -403,14 +403,14 @@ If the issue was assigned to a squad member and they authored the PR:
 
 ### Pattern 1: Quick Fix (Single Agent, No Review)
 
-```
+```text
 Issue created → Assigned to agent → Branch created → Code fixed → 
 PR opened → CI passes → Auto-merged → Issue closed
 ```
 
 ### Pattern 2: Feature Development (Human Review)
 
-```
+```text
 Issue created → Assigned to agent → Branch created → Feature implemented → 
 PR opened → Human reviews → Changes requested → Agent fixes → 
 Re-reviewed → Approved → Merged → Issue closed
@@ -418,7 +418,7 @@ Re-reviewed → Approved → Merged → Issue closed
 
 ### Pattern 3: Research-Then-Implement
 
-```
+```text
 Issue created → Labeled `go:needs-research` → Research agent spawned → 
 Research documented → Research PR merged → Implementation issue created → 
 Implementation agent spawned → Feature built → PR merged
@@ -426,7 +426,7 @@ Implementation agent spawned → Feature built → PR merged
 
 ### Pattern 4: Parallel Multi-Agent (Future, #525)
 
-```
+```text
 Epic issue created → Decomposed into sub-issues → Each sub-issue assigned → 
 Multiple agents work in parallel worktrees → PRs opened concurrently → 
 All PRs reviewed → All PRs merged → Epic closed

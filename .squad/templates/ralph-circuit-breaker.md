@@ -21,7 +21,7 @@ Premium models burn quota fast:
 
 ## Circuit Breaker States
 
-```
+```text
 ┌─────────┐   rate limit error    ┌────────┐
 │ CLOSED  │ ───────────────────►  │  OPEN  │
 │ (normal)│                       │(fallback)│

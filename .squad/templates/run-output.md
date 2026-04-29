@@ -45,6 +45,4 @@
 
 {Paste agent's verbatim response here, unedited}
 
-### {Name} ({Role}) — Raw Output
-
-{Paste agent's verbatim response here, unedited}
+<!-- Add one "### {Name} ({Role}) — Raw Output" section per additional agent -->

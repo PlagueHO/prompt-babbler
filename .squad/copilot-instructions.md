@@ -18,7 +18,7 @@ Before starting work, check your capability profile in `.squad/team.md` under th
 - **🟡 Needs review** — proceed, but note in the PR description that a squad member should review.
 - **🔴 Not suitable** — do NOT start work. Instead, comment on the issue:
 
-  ```
+  ```text
   🤖 This issue doesn't match my capability profile (reason: {why}). Suggesting reassignment to a squad member.
   ```
 
@@ -26,7 +26,7 @@ Before starting work, check your capability profile in `.squad/team.md` under th
 
 Use the squad branch convention:
 
-```
+```text
 squad/{issue-number}-{kebab-case-slug}
 ```
 
@@ -45,7 +45,7 @@ When opening a PR:
 
 If you make a decision that affects other team members, write it to:
 
-```
+```text
 .squad/decisions/inbox/copilot-{brief-slug}.md
 ```
 

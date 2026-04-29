@@ -190,7 +190,7 @@ interface ResourceLease {
 
 Track downstream failures and apply backpressure:
 
-```
+```text
 Agent A (rate limited) → Agent B (waiting for A) → Agent C (waiting for B)
                          ↑ Backpressure signal: "don't start new work"
 ```

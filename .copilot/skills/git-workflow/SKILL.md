@@ -147,7 +147,7 @@ When work spans multiple repositories (e.g., squad-cli changes need squad-sdk ch
 
 Clone downstream repos as siblings to the main repo:
 
-```
+```text
 ~/work/
   squad-pr/          # main repo
   squad-sdk/         # downstream dependency
@@ -161,7 +161,7 @@ Each repo gets its own issue branch following its own naming convention. If the 
 - Create PRs in each repo independently
 - Link them in PR descriptions:
 
-  ```
+  ```text
   Closes #42
 
   **Depends on:** squad-sdk PR #17 (squad-sdk changes required for this feature)

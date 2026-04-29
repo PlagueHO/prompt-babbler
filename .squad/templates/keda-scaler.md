@@ -124,7 +124,7 @@ The scaler exposes rate limit metrics that feed into the cooperative rate limiti
 
 ## Architecture
 
-```
+```text
 GitHub API                    KEDA                    Kubernetes
 ┌──────────┐              ┌──────────┐           ┌──────────────┐
 │  Issues   │◄── poll ──►│  Scaler   │──metrics─►│ HPA / KEDA   │

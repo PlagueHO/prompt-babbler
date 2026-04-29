@@ -53,7 +53,7 @@ After every substantial work session:
 1. **Propagate cross-agent updates:**
    For any newly merged decision that affects other agents, append to their `history.md`:
 
-   ```
+   ```text
    📌 Team update ({timestamp}): {summary} — decided by {Name}
    ```
 
@@ -88,7 +88,7 @@ After every substantial work session:
      If exit code is 0, no changes — skip silently.
    - Write the commit message to a temp file, then commit with `-F`:
 
-     ```
+     ```powershell
      $msg = @"
      docs(ai-team): {brief summary}
 
@@ -114,7 +114,7 @@ After every substantial work session:
 
 ## The Memory Architecture
 
-```
+```text
 .squad/
 ├── decisions.md          # Shared brain — all agents read this (merged by Scribe)
 ├── decisions/

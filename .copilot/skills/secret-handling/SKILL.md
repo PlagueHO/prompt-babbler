@@ -42,6 +42,7 @@ Spawned agents have read access to the entire repository, including `.env` files
 
 **NEVER write these to `.squad/` files:**
 
+<!-- markdownlint-disable MD056 -->
 | Pattern Type | Examples | Regex Pattern (for scanning) |
 |--------------|----------|-------------------------------|
 | API Keys | `OPENAI_API_KEY=sk-proj-...`, `GITHUB_TOKEN=ghp_...` | `[A-Z_]+(?:KEY|TOKEN|SECRET)=[^\s]+` |
@@ -51,6 +52,7 @@ Spawned agents have read access to the entire repository, including `.env` files
 | Private Keys | `-----BEGIN PRIVATE KEY-----`, `-----BEGIN RSA PRIVATE KEY-----` | `-----BEGIN [A-Z ]+PRIVATE KEY-----` |
 | AWS Credentials | `AKIA...`, `aws_secret_access_key=...` | `AKIA[0-9A-Z]{16}|aws_secret_access_key=[^\s]+` |
 | Email Addresses | `user@example.com` (PII violation per team decision) | `[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}` |
+<!-- markdownlint-enable MD056 -->
 
 **What to write instead:**
 
@@ -70,7 +72,7 @@ Spawned agents have read access to the entire repository, including `.env` files
    - Remove the file from staging: `git reset HEAD <file>`
    - Report to user:
 
-     ```
+     ```text
      🚨 SECRET DETECTED — commit blocked
      
      File: .squad/decisions/inbox/river-db-config.md
@@ -98,7 +100,7 @@ Spawned agents have read access to the entire repository, including `.env` files
 1. **STOP immediately** — do not make more commits
 1. **Alert the user:**
 
-   ```
+   ```text
    🚨 CREDENTIAL LEAK DETECTED
    
    A secret was found in git history:
@@ -113,6 +115,7 @@ Spawned agents have read access to the entire repository, including `.env` files
    
    Do NOT proceed with new work until this is resolved.
    ```
+
 1. **Do NOT attempt to fix it yourself** — secret removal requires specialized tools
 1. **Wait for user confirmation** before resuming work
 
@@ -122,7 +125,7 @@ Spawned agents have read access to the entire repository, including `.env` files
 
 **Agent needs to know what environment variables are required:**
 
-```
+```text
 Agent: "What environment variables does this app need?"
 → Reads `.env.example`:
     OPENAI_API_KEY=sk-...
@@ -141,7 +144,7 @@ Agent: "What environment variables does this app need?"
 
 **Agent needs to know database schema:**
 
-```
+```text
 Agent: (reads .env)
     DATABASE_URL=postgres://admin:super_secret_pw@prod.example.com:5432/appdb
 
@@ -153,7 +156,7 @@ Agent: (reads .env)
 
 **Correct approach:**
 
-```
+```text
 Agent: (reads .env.example OR asks user)
 User: "It's a Postgres database, schema is in migrations/"
 

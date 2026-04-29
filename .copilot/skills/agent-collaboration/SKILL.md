@@ -25,7 +25,7 @@ After making a decision that affects other team members, write it to:
 
 Format:
 
-```
+```text
 ### {date}: {decision title}
 **By:** {Your Name}
 **What:** {the decision}
