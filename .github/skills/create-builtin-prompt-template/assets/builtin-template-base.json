@@ -1,0 +1,16 @@
+{
+  "$schema": "./prompt-template.schema.json",
+  "schemaVersion": "2.0",
+  "id": "builtin-REPLACE_WITH_SLUG",
+  "name": "REPLACE_WITH_DISPLAY_NAME",
+  "description": "Converts stream-of-consciousness babble into REPLACE_WITH_DESCRIPTION.",
+  "instructions": "You are a prompt engineering assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into REPLACE_WITH_TARGET_OUTPUT.\n\nGuidelines:\n- Identify the core intent from the rambling text\n- Organize supporting details logically\n- Remove filler words, repetitions, and off-topic tangents\n- Maintain the user's original intent and tone\n- Format the output for clarity and readability",
+  "outputDescription": "REPLACE_WITH_OUTPUT_CHARACTERISTICS.",
+  "guardrails": [
+    "Include any preamble, explanation, or meta-commentary about the prompt",
+    "Add assumptions or information not present in the original transcript",
+    "Alter the user's original intent or tone"
+  ],
+  "defaultOutputFormat": "text",
+  "tags": []
+}
