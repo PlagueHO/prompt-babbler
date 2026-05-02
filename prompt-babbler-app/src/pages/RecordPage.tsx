@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
 import { toast } from 'sonner';
 import { RecordButton } from '@/components/recording/RecordButton';
@@ -19,8 +19,9 @@ import { useBabbles } from '@/hooks/useBabbles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { getSpeechLanguage } from '@/services/local-storage';
 import { AuthGuard } from '@/components/layout/AuthGuard';
-import { Save, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
+import { Save, ChevronDown, Sparkles, Loader2, Upload } from 'lucide-react';
 import { ClearTranscriptDialog } from '@/components/recording/ClearTranscriptDialog';
+import { useFileUpload } from '@/hooks/useFileUpload';
 import type { Babble } from '@/types';
 
 export function RecordPage() {
@@ -28,6 +29,8 @@ export function RecordPage() {
   const navigate = useNavigate();
   const { createBabble, updateBabble, getBabble } = useBabbles();
   const { templates } = useTemplates();
+  const { upload, isUploading, error: uploadError } = useFileUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     transcribedText,
     partialText,
@@ -177,6 +180,26 @@ export function RecordPage() {
     }
   }, [reset, isAppendMode]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+    const uploadTitle = title.trim() || nameWithoutExt;
+    if (!title.trim()) {
+      setTitle(nameWithoutExt);
+    }
+
+    try {
+      const babble = await upload(file, uploadTitle);
+      toast.success('Audio uploaded and transcribed!');
+      void navigate(`/babble/${babble.id}`);
+    } catch {
+      toast.error('Failed to transcribe audio file.');
+    }
+  };
+
   if (babbleLoading) {
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
@@ -202,12 +225,12 @@ export function RecordPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
-          {isAppendMode ? 'Continue Babble' : 'Record a Babble'}
+          {isAppendMode ? 'Continue Babble' : 'Create a Babble'}
         </h1>
         <p className="text-sm text-muted-foreground">
           {isAppendMode
             ? 'Continue recording to add more to this babble.'
-            : 'Speak your thoughts freely. We\u0027ll transcribe them for you.'}
+            : 'Speak your thoughts freely, or upload an audio file — we\'ll transcribe it for you.'}
         </p>
       </div>
 
@@ -229,11 +252,36 @@ export function RecordPage() {
             duration={duration}
             hasTranscription={!!(transcribedText || existingBabble?.text)}
           />
+          {!isAppendMode && !isRecording && (
+            <>
+              <span className="text-xs text-muted-foreground">or</span>
+              <Button
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}
+                Upload audio file
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="audio/mpeg,audio/mp3,audio/wav,audio/webm,audio/ogg,audio/mp4,audio/x-m4a,.m4a"
+                className="hidden"
+                onChange={(e) => void handleFileSelect(e)}
+              />
+            </>
+          )}
           <WaveformVisualizer
             analyserRef={analyserRef}
             isRecording={isRecording}
           />
         </div>
+
+        {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
 
         <TranscriptPreview
           finalText={isAppendMode && existingBabble?.text

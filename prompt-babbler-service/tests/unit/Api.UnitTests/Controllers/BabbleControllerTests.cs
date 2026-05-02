@@ -23,13 +23,14 @@ public sealed class BabbleControllerTests
     private readonly IPromptGenerationService _promptGenerationService = Substitute.For<IPromptGenerationService>();
     private readonly IPromptTemplateService _templateService = Substitute.For<IPromptTemplateService>();
     private readonly IGeneratedPromptService _generatedPromptService = Substitute.For<IGeneratedPromptService>();
+    private readonly IFileTranscriptionService _fileTranscriptionService = Substitute.For<IFileTranscriptionService>();
     private readonly ILogger<BabbleController> _logger = Substitute.For<ILogger<BabbleController>>();
     private readonly BabbleController _controller;
 
     public BabbleControllerTests()
     {
         _controller = new BabbleController(
-            _babbleService, _promptGenerationService, _templateService, _generatedPromptService, _logger);
+            _babbleService, _promptGenerationService, _templateService, _generatedPromptService, _fileTranscriptionService, _logger);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Response.Body = new MemoryStream();

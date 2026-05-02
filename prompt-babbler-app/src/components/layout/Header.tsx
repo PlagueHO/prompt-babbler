@@ -5,7 +5,7 @@ import { UserMenu } from '@/components/layout/UserMenu';
 
 const navItems = [
   { to: '/', label: 'Home', icon: Home },
-  { to: '/record', label: 'Record', icon: Mic },
+  { to: '/record', label: 'New Babble', icon: Mic },
   { to: '/templates', label: 'Templates', icon: FileText },
 ] as const;
 

@@ -78,7 +78,7 @@ async function fetchJson<T>(
 }
 
 export async function getStatus(): Promise<StatusResponse> {
-  return fetchJson<StatusResponse>('/api/status');
+  return fetchJson<StatusResponse>('/health');
 }
 
 export async function getAccessStatus(): Promise<AccessControlStatus> {
@@ -366,4 +366,45 @@ export async function searchBabbles(
     { signal },
     accessToken,
   );
+}
+
+export async function uploadAudioFile(
+  file: File,
+  title?: string,
+  accessToken?: string,
+): Promise<Babble> {
+  const base = getApiBaseUrl();
+  const formData = new FormData();
+  formData.append('file', file);
+  if (title) {
+    formData.append('title', title);
+  }
+
+  const headers: Record<string, string> = {};
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  if (currentAccessCode) {
+    headers['X-Access-Code'] = currentAccessCode;
+  }
+  // Do NOT set Content-Type — browser auto-sets multipart boundary
+
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/babbles/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`Upload failed (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<Babble>;
 }

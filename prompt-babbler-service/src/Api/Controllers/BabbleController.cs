@@ -20,6 +20,7 @@ public sealed class BabbleController : ControllerBase
     private readonly IPromptGenerationService _promptGenerationService;
     private readonly IPromptTemplateService _templateService;
     private readonly IGeneratedPromptService _generatedPromptService;
+    private readonly IFileTranscriptionService _fileTranscriptionService;
     private readonly ILogger<BabbleController> _logger;
 
     public BabbleController(
@@ -27,12 +28,14 @@ public sealed class BabbleController : ControllerBase
         IPromptGenerationService promptGenerationService,
         IPromptTemplateService templateService,
         IGeneratedPromptService generatedPromptService,
+        IFileTranscriptionService fileTranscriptionService,
         ILogger<BabbleController> logger)
     {
         _babbleService = babbleService;
         _promptGenerationService = promptGenerationService;
         _templateService = templateService;
         _generatedPromptService = generatedPromptService;
+        _fileTranscriptionService = fileTranscriptionService;
         _logger = logger;
     }
 
@@ -327,6 +330,85 @@ public sealed class BabbleController : ControllerBase
         }
     }
 
+    [Consumes("multipart/form-data")]
+    [HttpPost("upload")]
+    [RequestSizeLimit(500 * 1024 * 1024)] // 500 MB
+    [RequestFormLimits(MultipartBodyLengthLimit = 500 * 1024 * 1024)] // 500 MB — overrides the 128 MB default
+    public async Task<IActionResult> UploadAudio(
+        IFormFile file,
+        [FromForm] string? title,
+        [FromForm] string? language,
+        CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return BadRequest("No audio file provided.");
+        }
+
+        string[] allowedTypes = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/webm", "audio/ogg", "audio/mp4", "audio/x-m4a"];
+        if (!allowedTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest("Unsupported audio format. Supported: MP3, WAV, WebM, OGG, M4A.");
+        }
+
+        string[] allowedExtensions = [".mp3", ".wav", ".webm", ".ogg", ".m4a"];
+        var extension = Path.GetExtension(file.FileName);
+        if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest("Unsupported file extension. Supported: .mp3, .wav, .webm, .ogg, .m4a.");
+        }
+
+        if (title is not null && (title.Trim().Length == 0 || title.Length > 200))
+        {
+            return BadRequest("Title must be between 1 and 200 characters.");
+        }
+
+        if (language is not null && (language.Length > 20 || !System.Text.RegularExpressions.Regex.IsMatch(language, @"^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{1,8})*$")))
+        {
+            return BadRequest("Invalid language code. Provide a valid BCP-47 language tag (e.g., 'en-US').");
+        }
+
+        var userId = User.GetUserIdOrAnonymous();
+        await using var stream = file.OpenReadStream();
+
+        string transcribedText;
+        try
+        {
+            transcribedText = await _fileTranscriptionService.TranscribeAsync(stream, language, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "File transcription failed for uploaded audio");
+            return StatusCode(502, new ProblemDetails
+            {
+                Title = "Transcription Service Error",
+                Status = 502,
+                Detail = "An error occurred during transcription. Please try again.",
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(transcribedText))
+        {
+            return BadRequest("Could not transcribe audio. The file may be empty or contain no speech.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var babble = new Babble
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserId = userId,
+            Title = string.IsNullOrWhiteSpace(title) ? GenerateTitleFromText(transcribedText) : title.Trim(),
+            Text = transcribedText,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+        var created = await _babbleService.CreateAsync(babble, cancellationToken);
+        _logger.LogInformation("Created babble {BabbleId} from uploaded audio for user {UserId}", created.Id, created.UserId);
+
+        return CreatedAtAction(nameof(GetBabble), new { id = created.Id }, ToResponse(created));
+    }
+
     private static bool ValidateCreateRequest(CreateBabbleRequest request, out string? error)
     {
         if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Length > 200)
@@ -407,4 +489,11 @@ public sealed class BabbleController : ControllerBase
         UpdatedAt = babble.UpdatedAt.ToString("o"),
         IsPinned = babble.IsPinned,
     };
+
+    private static string GenerateTitleFromText(string text)
+    {
+        const int maxLength = 50;
+        var title = text.Length <= maxLength ? text : text[..maxLength].TrimEnd() + "...";
+        return title.Replace('\n', ' ').Replace('\r', ' ');
+    }
 }

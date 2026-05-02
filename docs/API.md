@@ -232,6 +232,36 @@ Deletes a babble and all of its generated prompts (cascade delete).
 |---|---|
 | `404 Not Found` | Babble does not exist or does not belong to the current user. |
 
+#### `POST /api/babbles/upload`
+
+Uploads an audio file for batch transcription via Azure Fast Transcription API. Creates a babble from the transcribed text with an auto-generated title.
+
+**Content-Type**: `multipart/form-data`
+
+**Form Fields**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `file` | `file` | Yes | Audio file (`.mp3`, `.wav`, `.webm`, `.ogg`, `.m4a`). Max 500 MB. |
+| `language` | `string` | No | BCP-47 language code (e.g., `en-US`). Max 20 characters. |
+
+**Response** `201 Created` — the created babble object with a `Location` header.
+
+```json
+{
+  "id": "abc-123",
+  "title": "Transcribed text from the uploaded...",
+  "text": "Transcribed text from the uploaded audio file.",
+  "createdAt": "2025-01-15T10:30:00.0000000+00:00",
+  "updatedAt": "2025-01-15T10:30:00.0000000+00:00"
+}
+```
+
+| Status | Condition |
+|---|---|
+| `400 Bad Request` | No file provided, unsupported format, invalid extension, invalid language code, or empty transcription. |
+| `502 Bad Gateway` | Azure transcription service failure. |
+
 #### `POST /api/babbles/{id}/generate`
 
 Generates a prompt from a babble's text using Azure OpenAI. The response is streamed as **Server-Sent Events** (SSE) with incremental text chunks. The generated prompt is automatically persisted as a child resource of the babble.

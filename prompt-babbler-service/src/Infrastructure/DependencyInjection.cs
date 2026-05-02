@@ -1,3 +1,4 @@
+using Azure.AI.Speech.Transcription;
 using Azure.Core;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,17 @@ public static class DependencyInjection
             var logger = sp.GetRequiredService<ILogger<AzureSpeechTranscriptionService>>();
             return new AzureSpeechTranscriptionService(speechRegion, aiServicesEndpoint, credential, logger);
         });
+
+        // File transcription (Azure Fast Transcription API)
+        services.AddSingleton<ITranscriptionClientWrapper>(sp =>
+        {
+            var endpoint = new Uri(aiServicesEndpoint);
+            var credential = sp.GetRequiredService<TokenCredential>();
+            var client = new TranscriptionClient(endpoint, credential);
+            return new TranscriptionClientWrapper(client);
+        });
+
+        services.AddSingleton<IFileTranscriptionService, AzureFastTranscriptionService>();
 
         // Prompt template repository and service backed by Cosmos DB with in-memory caching.
         services.AddMemoryCache();

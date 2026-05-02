@@ -24,7 +24,7 @@ export function useSettings() {
     void fetchStatus();
   }, [fetchStatus]);
 
-  const isConnected = status?.status === 'ok';
+  const isConnected = status?.status === 'Healthy';
 
   return { status, isConnected, isLoading, error, refresh: fetchStatus };
 }
