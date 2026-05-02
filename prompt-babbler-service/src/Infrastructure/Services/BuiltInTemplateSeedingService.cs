@@ -1,5 +1,7 @@
+using System.Net;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PromptBabbler.Domain.Interfaces;
@@ -10,6 +12,10 @@ namespace PromptBabbler.Infrastructure.Services;
 public sealed class BuiltInTemplateSeedingService : IHostedService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    // Delays in seconds between successive retry attempts when Cosmos DB returns 503.
+    // Total back-off budget: 2 + 4 + 8 + 16 + 30 = 60 seconds.
+    private static readonly int[] RetryDelaySeconds = [2, 4, 8, 16, 30];
 
     private readonly IPromptTemplateRepository _repository;
     private readonly ILogger<BuiltInTemplateSeedingService> _logger;
@@ -28,7 +34,7 @@ public sealed class BuiltInTemplateSeedingService : IHostedService
 
         foreach (var template in GetBuiltInTemplates())
         {
-            await _repository.UpsertAsync(template, cancellationToken);
+            await UpsertWithRetryAsync(template, cancellationToken);
             _logger.LogInformation("Seeded built-in template: {TemplateName}", template.Name);
         }
 
@@ -37,7 +43,32 @@ public sealed class BuiltInTemplateSeedingService : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    internal static IReadOnlyList<PromptTemplate> GetBuiltInTemplates()
+    private async Task UpsertWithRetryAsync(PromptTemplate template, CancellationToken cancellationToken)
+    {
+        // The Cosmos DB emulator (pgcosmos) can return 503 while its internal
+        // extension is still initialising, even after Aspire reports the resource
+        // as healthy. We retry with exponential back-off so a slow emulator start
+        // does not crash the API at startup.
+        for (var attempt = 0; attempt <= RetryDelaySeconds.Length; attempt++)
+        {
+            try
+            {
+                await _repository.UpsertAsync(template, cancellationToken);
+                return;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.ServiceUnavailable && attempt < RetryDelaySeconds.Length)
+            {
+                var delaySeconds = RetryDelaySeconds[attempt];
+                _logger.LogWarning(
+                    ex,
+                    "Cosmos DB unavailable during template seeding (attempt {Attempt}/{MaxAttempts}). Retrying in {Delay}s.",
+                    attempt + 1, RetryDelaySeconds.Length + 1, delaySeconds);
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken);
+            }
+        }
+    }
+
+    public static IReadOnlyList<PromptTemplate> GetBuiltInTemplates()
     {
         var assembly = Assembly.GetExecutingAssembly();
         var prefix = typeof(BuiltInTemplateSeedingService).Namespace!.Replace(".Services", ".Templates.");

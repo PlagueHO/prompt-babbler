@@ -27,6 +27,9 @@ var cosmos = builder.AddAzureCosmosDB("cosmos")
     .RunAsPreviewEmulator(emulator =>
     {
         emulator.WithDataExplorer();
+        // Keep the emulator container alive between Aspire runs so the image is not
+        // re-pulled and the pgcosmos extension does not need to cold-start every time.
+        emulator.WithLifetime(ContainerLifetime.Persistent);
     });
 #pragma warning restore ASPIRECOSMOSDB001
 
