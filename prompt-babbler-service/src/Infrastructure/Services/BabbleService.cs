@@ -6,6 +6,20 @@ namespace PromptBabbler.Infrastructure.Services;
 
 public sealed class BabbleService : IBabbleService
 {
+    /// <summary>
+    /// Minimum word count in the search query before vector (semantic) search is used.
+    /// Queries below both thresholds use title-only text search, avoiding an embedding API call.
+    /// May be promoted to configuration if tuning is needed.
+    /// </summary>
+    private const int VectorSearchMinWords = 3;
+
+    /// <summary>
+    /// Minimum character length in the search query before vector (semantic) search is used.
+    /// Queries below both thresholds use title-only text search, avoiding an embedding API call.
+    /// May be promoted to configuration if tuning is needed.
+    /// </summary>
+    private const int VectorSearchMinLength = 15;
+
     private readonly IBabbleRepository _babbleRepository;
     private readonly IGeneratedPromptRepository _generatedPromptRepository;
     private readonly IEmbeddingService _embeddingService;
@@ -95,7 +109,32 @@ public sealed class BabbleService : IBabbleService
 
     public async Task<IReadOnlyList<BabbleSearchResult>> SearchAsync(string userId, string query, int topN, CancellationToken cancellationToken = default)
     {
+        var words = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var useVector = words.Length >= VectorSearchMinWords || query.Length >= VectorSearchMinLength;
+
+        if (!useVector)
+        {
+            return await _babbleRepository.SearchByTitleAsync(userId, query, topN, cancellationToken);
+        }
+
+        // Title search runs immediately in parallel with embedding generation.
+        var titleTask = _babbleRepository.SearchByTitleAsync(userId, query, topN, cancellationToken);
+
         var vector = await _embeddingService.GenerateEmbeddingAsync(query, cancellationToken);
-        return await _babbleRepository.SearchByVectorAsync(userId, vector, topN, cancellationToken);
+        var vectorTask = _babbleRepository.SearchByVectorAsync(userId, vector, topN, cancellationToken);
+
+        await Task.WhenAll(titleTask, vectorTask);
+
+        // Merge both result sets, deduplicating by babble ID and keeping the higher score.
+        var merged = new Dictionary<string, BabbleSearchResult>();
+        foreach (var result in titleTask.Result.Concat(vectorTask.Result))
+        {
+            if (!merged.TryGetValue(result.Babble.Id, out var existing) || result.SimilarityScore > existing.SimilarityScore)
+            {
+                merged[result.Babble.Id] = result;
+            }
+        }
+
+        return merged.Values.OrderByDescending(r => r.SimilarityScore).ToList().AsReadOnly();
     }
 }

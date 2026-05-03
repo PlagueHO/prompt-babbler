@@ -25,8 +25,13 @@ export function SearchCommand() {
         setOpen((prev) => !prev);
       }
     };
+    const openHandler = () => setOpen(true);
     document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    document.addEventListener('babble:open-search', openHandler);
+    return () => {
+      document.removeEventListener('keydown', down);
+      document.removeEventListener('babble:open-search', openHandler);
+    };
   }, []);
 
   const handleSelect = (babbleId: string) => {

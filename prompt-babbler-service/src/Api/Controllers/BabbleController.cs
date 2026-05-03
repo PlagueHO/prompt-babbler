@@ -118,7 +118,14 @@ public sealed class BabbleController : ControllerBase
 
             return Ok(response);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException)
+        {
+            // Client disconnected (e.g. AbortController fired a new debounced search).
+            // Not an error — log at debug and return 499 Client Closed Request.
+            _logger.LogDebug("Search request cancelled for user {UserId}", userId);
+            return StatusCode(499);
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Vector search failed for user {UserId}", userId);
             return StatusCode(502, new ProblemDetails

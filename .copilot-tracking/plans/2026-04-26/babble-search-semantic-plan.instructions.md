@@ -147,6 +147,7 @@ Add end-to-end semantic search: Azure OpenAI embeddings stored in Cosmos DB with
   - Details: .copilot-tracking/details/2026-04-26/babble-search-semantic-details.md (Lines 625-690)
 - [x] Step 5.6: Add search trigger button to `Header.tsx`
   - Details: .copilot-tracking/details/2026-04-26/babble-search-semantic-details.md (Lines 692-718)
+  - Note: Implemented 2026-05-03. Button dispatches `babble:open-search` custom event; `SearchCommand` listens for it alongside the existing Ctrl+K handler.
 - [x] Step 5.7: Validate frontend builds and lint
   - Run `pnpm lint` and `pnpm build` in prompt-babbler-app/
 

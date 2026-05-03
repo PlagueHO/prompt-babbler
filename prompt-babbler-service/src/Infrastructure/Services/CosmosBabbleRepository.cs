@@ -13,6 +13,13 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
     public const string DatabaseName = "prompt-babbler";
     public const string ContainerName = "babbles";
 
+    /// <summary>
+    /// Minimum cosine similarity score (VectorDistance) a result must meet to be included in
+    /// semantic search results. Range: 0.0 (no similarity) to 1.0 (identical).
+    /// Raise this value to tighten relevance; lower it to broaden results.
+    /// </summary>
+    public const double MinimumSimilarityScore = 0.75;
+
     private readonly Container _container;
     private readonly ILogger<CosmosBabbleRepository> _logger;
 
@@ -193,6 +200,13 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             var response = await iterator.ReadNextAsync(cancellationToken);
             foreach (var item in response)
             {
+                // VectorDistance returns cosine similarity (higher = more similar).
+                // Filtering post-query avoids Cosmos DB brute-force requirement for VectorDistance in WHERE.
+                if (item.SimilarityScore < MinimumSimilarityScore)
+                {
+                    continue;
+                }
+
                 results.Add(new BabbleSearchResult(
                     new Babble
                     {
@@ -206,6 +220,41 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
                         IsPinned = item.IsPinned,
                     },
                     item.SimilarityScore));
+            }
+        }
+
+        return results.AsReadOnly();
+    }
+
+    public async Task<IReadOnlyList<BabbleSearchResult>> SearchByTitleAsync(
+        string userId,
+        string query,
+        int topN,
+        CancellationToken cancellationToken = default)
+    {
+        const string queryText =
+            "SELECT TOP @topN * FROM c " +
+            "WHERE c.userId = @userId AND CONTAINS(LOWER(c.title), @search)";
+
+        var queryDefinition = new QueryDefinition(queryText)
+            .WithParameter("@topN", topN)
+            .WithParameter("@userId", userId)
+            .WithParameter("@search", query.ToLowerInvariant());
+
+        var options = new QueryRequestOptions
+        {
+            PartitionKey = new PartitionKey(userId),
+        };
+
+        var results = new List<BabbleSearchResult>();
+        using var iterator = _container.GetItemQueryIterator<Babble>(queryDefinition, null, options);
+
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync(cancellationToken);
+            foreach (var item in response)
+            {
+                results.Add(new BabbleSearchResult(item, SimilarityScore: 1.0));
             }
         }
 

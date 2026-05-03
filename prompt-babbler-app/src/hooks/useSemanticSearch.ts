@@ -27,6 +27,8 @@ export function useSemanticSearch(query: string, topK: number = 10) {
         setError(null);
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') return;
+        // 499 means the server detected our own cancellation — treat as silent abort.
+        if (err instanceof Error && err.message.startsWith('API error 499')) return;
         setError(err instanceof Error ? err.message : 'Search failed');
         setResults([]);
       } finally {
