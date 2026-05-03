@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using PromptBabbler.Domain.Interfaces;
@@ -160,5 +161,88 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             cancellationToken: cancellationToken);
 
         _logger.LogInformation("Deleted babble {BabbleId} for user {UserId}", babbleId, userId);
+    }
+
+    public async Task<IReadOnlyList<BabbleSearchResult>> SearchByVectorAsync(
+        string userId,
+        ReadOnlyMemory<float> vector,
+        int topN,
+        CancellationToken cancellationToken = default)
+    {
+        var queryText = @"
+            SELECT TOP @topN c.id, c.userId, c.title, c.text, c.createdAt, c.tags, c.updatedAt, c.isPinned,
+                VectorDistance(c.contentVector, @embedding) AS SimilarityScore
+            FROM c WHERE c.userId = @userId
+            ORDER BY VectorDistance(c.contentVector, @embedding)";
+
+        var queryDefinition = new QueryDefinition(queryText)
+            .WithParameter("@topN", topN)
+            .WithParameter("@userId", userId)
+            .WithParameter("@embedding", vector.ToArray());
+
+        var options = new QueryRequestOptions
+        {
+            PartitionKey = new PartitionKey(userId),
+        };
+
+        var results = new List<BabbleSearchResult>();
+        using var iterator = _container.GetItemQueryIterator<VectorSearchResultItem>(queryDefinition, null, options);
+
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync(cancellationToken);
+            foreach (var item in response)
+            {
+                results.Add(new BabbleSearchResult(
+                    new Babble
+                    {
+                        Id = item.Id,
+                        UserId = item.UserId,
+                        Title = item.Title,
+                        Text = item.Text,
+                        CreatedAt = item.CreatedAt,
+                        Tags = item.Tags,
+                        UpdatedAt = item.UpdatedAt,
+                        IsPinned = item.IsPinned,
+                    },
+                    item.SimilarityScore));
+            }
+        }
+
+        return results.AsReadOnly();
+    }
+
+    // NOTE: VectorSearchResultItem is a Cosmos DB projection DTO used to deserialize
+    // VectorDistance query results. Its properties mirror those of the Babble domain model
+    // (excluding ContentVector). If Babble gains or renames properties that are stored in
+    // Cosmos, this record must be updated to stay in sync.
+    private sealed record VectorSearchResultItem
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; init; } = "";
+
+        [JsonPropertyName("userId")]
+        public string UserId { get; init; } = "";
+
+        [JsonPropertyName("title")]
+        public string Title { get; init; } = "";
+
+        [JsonPropertyName("text")]
+        public string Text { get; init; } = "";
+
+        [JsonPropertyName("createdAt")]
+        public DateTimeOffset CreatedAt { get; init; }
+
+        [JsonPropertyName("tags")]
+        public IReadOnlyList<string>? Tags { get; init; }
+
+        [JsonPropertyName("updatedAt")]
+        public DateTimeOffset UpdatedAt { get; init; }
+
+        [JsonPropertyName("isPinned")]
+        public bool IsPinned { get; init; }
+
+        [JsonPropertyName("SimilarityScore")]
+        public double SimilarityScore { get; init; }
     }
 }

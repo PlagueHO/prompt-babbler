@@ -590,4 +590,75 @@ public sealed class BabbleControllerTests
         response.IsPinned.Should().BeFalse();
         await _babbleService.Received(1).SetPinAsync(TestUserId, "test-id", false, Arg.Any<CancellationToken>());
     }
+
+    // ---- GET /api/babbles/search ----
+
+    [TestMethod]
+    public async Task SearchBabbles_ValidQuery_ReturnsOkWithResults()
+    {
+        var searchResults = new List<BabbleSearchResult>
+        {
+            new(CreateBabble(id: "result-1"), 0.95),
+            new(CreateBabble(id: "result-2"), 0.80),
+        };
+        _babbleService.SearchAsync(TestUserId, "test query", 10, Arg.Any<CancellationToken>())
+            .Returns(searchResults.AsReadOnly());
+
+        var result = await _controller.SearchBabbles("test query", 10, CancellationToken.None);
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = ok.Value.Should().BeOfType<BabbleSearchResponse>().Subject;
+        response.Results.Should().HaveCount(2);
+        response.Results[0].Score.Should().Be(0.95);
+    }
+
+    [TestMethod]
+    public async Task SearchBabbles_EmptyQuery_ReturnsBadRequest()
+    {
+        var result = await _controller.SearchBabbles("", 10, CancellationToken.None);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [TestMethod]
+    public async Task SearchBabbles_QueryTooLong_ReturnsBadRequest()
+    {
+        var result = await _controller.SearchBabbles(new string('x', 201), 10, CancellationToken.None);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [TestMethod]
+    public async Task SearchBabbles_TopKClamped_ClampsToMax50()
+    {
+        _babbleService.SearchAsync(TestUserId, "query", 50, Arg.Any<CancellationToken>())
+            .Returns(new List<BabbleSearchResult>().AsReadOnly());
+
+        await _controller.SearchBabbles("query", 100, CancellationToken.None);
+
+        await _babbleService.Received(1).SearchAsync(TestUserId, "query", 50, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task SearchBabbles_TopKClamped_ClampsToMin1()
+    {
+        _babbleService.SearchAsync(TestUserId, "query", 1, Arg.Any<CancellationToken>())
+            .Returns(new List<BabbleSearchResult>().AsReadOnly());
+
+        await _controller.SearchBabbles("query", 0, CancellationToken.None);
+
+        await _babbleService.Received(1).SearchAsync(TestUserId, "query", 1, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task SearchBabbles_ServiceThrows_Returns502()
+    {
+        _babbleService.SearchAsync(TestUserId, "test query", 10, Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Embedding service unavailable"));
+
+        var result = await _controller.SearchBabbles("test query", 10, CancellationToken.None);
+
+        var statusResult = result.Should().BeOfType<ObjectResult>().Subject;
+        statusResult.StatusCode.Should().Be(502);
+    }
 }

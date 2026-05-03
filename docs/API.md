@@ -306,6 +306,44 @@ data: [DONE]
 | `404 Not Found` | Babble or template not found. |
 | `502 Bad Gateway` | Azure OpenAI communication failure. |
 
+#### `GET /api/babbles/search`
+
+Performs a vector (semantic) similarity search across the current user's babbles using Azure OpenAI embeddings.
+
+**Query Parameters**
+
+| Parameter | Type | Default | Constraints | Description |
+|---|---|---|---|---|
+| `query` | `string` | — | Required, 1–200 characters | Natural-language search query. |
+| `topK` | `integer` | `10` | Clamped to 1–50 | Maximum number of results to return. |
+
+**Response** `200 OK`
+
+```json
+{
+  "results": [
+    {
+      "id": "abc-123",
+      "title": "Sort function request",
+      "snippet": "I want a function that sorts a list of numbers...",
+      "tags": ["code", "python"],
+      "createdAt": "2025-01-15T10:30:00.0000000+00:00",
+      "isPinned": false,
+      "score": 0.95
+    }
+  ]
+}
+```
+
+Results are ordered by descending similarity `score` (0–1). The `snippet` field is truncated to 200 characters.
+
+**Error Responses**
+
+| Status | Condition |
+|---|---|
+| `400 Bad Request` | `query` is missing, empty, or exceeds 200 characters. |
+| `502 Bad Gateway` | Azure OpenAI embedding service failure. |
+
 #### `POST /api/babbles/{id}/generate-title`
 
 Generates a short descriptive title for a babble using Azure OpenAI and auto-saves it.

@@ -11,5 +11,18 @@
       "capacity": 50
     },
     "raiPolicyName": "PromptBabblerContentPolicy"
+  },
+  {
+    "model": {
+      "format": "OpenAI",
+      "name": "text-embedding-3-small",
+      "version": "1"
+    },
+    "name": "embedding",
+    "sku": {
+      "name": "GlobalStandard",
+      "capacity": 120
+    },
+    "raiPolicyName": "PromptBabblerContentPolicy"
   }
 ]

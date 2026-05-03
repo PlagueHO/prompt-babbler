@@ -106,6 +106,9 @@ if (isAiConfigured)
         var chatClient = openAiClient.GetChatClient("chat").AsIChatClient();
         builder.Services.AddSingleton<IChatClient>(chatClient);
         builder.Services.AddSingleton(openAiClient);
+
+        var embeddingClient = openAiClient.GetEmbeddingClient("embedding").AsIEmbeddingGenerator();
+        builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(embeddingClient);
     }
     else
     {

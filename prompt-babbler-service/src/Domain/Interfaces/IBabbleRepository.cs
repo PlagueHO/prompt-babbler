@@ -23,4 +23,6 @@ public interface IBabbleRepository
     Task DeleteAsync(string userId, string babbleId, CancellationToken cancellationToken = default);
 
     Task<Babble> SetPinAsync(string userId, string babbleId, bool isPinned, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<BabbleSearchResult>> SearchByVectorAsync(string userId, ReadOnlyMemory<float> vector, int topN, CancellationToken cancellationToken = default);
 }

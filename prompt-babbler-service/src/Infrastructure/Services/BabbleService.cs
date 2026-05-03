@@ -8,15 +8,18 @@ public sealed class BabbleService : IBabbleService
 {
     private readonly IBabbleRepository _babbleRepository;
     private readonly IGeneratedPromptRepository _generatedPromptRepository;
+    private readonly IEmbeddingService _embeddingService;
     private readonly ILogger<BabbleService> _logger;
 
     public BabbleService(
         IBabbleRepository babbleRepository,
         IGeneratedPromptRepository generatedPromptRepository,
+        IEmbeddingService embeddingService,
         ILogger<BabbleService> logger)
     {
         _babbleRepository = babbleRepository;
         _generatedPromptRepository = generatedPromptRepository;
+        _embeddingService = embeddingService;
         _logger = logger;
     }
 
@@ -40,7 +43,18 @@ public sealed class BabbleService : IBabbleService
 
     public async Task<Babble> CreateAsync(Babble babble, CancellationToken cancellationToken = default)
     {
-        return await _babbleRepository.CreateAsync(babble, cancellationToken);
+        var babbleToSave = babble;
+        try
+        {
+            var vector = await _embeddingService.GenerateEmbeddingAsync(babble.Text, cancellationToken);
+            babbleToSave = babble with { ContentVector = vector.ToArray() };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to generate embedding for babble {BabbleId}. Saving without vector.", babble.Id);
+        }
+
+        return await _babbleRepository.CreateAsync(babbleToSave, cancellationToken);
     }
 
     public async Task<Babble> UpdateAsync(string userId, Babble babble, CancellationToken cancellationToken = default)
@@ -51,7 +65,18 @@ public sealed class BabbleService : IBabbleService
             throw new InvalidOperationException($"Babble '{babble.Id}' not found for user '{userId}'.");
         }
 
-        return await _babbleRepository.UpdateAsync(babble, cancellationToken);
+        var babbleToSave = babble;
+        try
+        {
+            var vector = await _embeddingService.GenerateEmbeddingAsync(babble.Text, cancellationToken);
+            babbleToSave = babble with { ContentVector = vector.ToArray() };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to generate embedding for babble {BabbleId}. Saving without updated vector.", babble.Id);
+        }
+
+        return await _babbleRepository.UpdateAsync(babbleToSave, cancellationToken);
     }
 
     public async Task<Babble> SetPinAsync(string userId, string babbleId, bool isPinned, CancellationToken cancellationToken = default)
@@ -66,5 +91,11 @@ public sealed class BabbleService : IBabbleService
         _logger.LogInformation("Cascade deleted generated prompts for babble {BabbleId}", babbleId);
 
         await _babbleRepository.DeleteAsync(userId, babbleId, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<BabbleSearchResult>> SearchAsync(string userId, string query, int topN, CancellationToken cancellationToken = default)
+    {
+        var vector = await _embeddingService.GenerateEmbeddingAsync(query, cancellationToken);
+        return await _babbleRepository.SearchByVectorAsync(userId, vector, topN, cancellationToken);
     }
 }

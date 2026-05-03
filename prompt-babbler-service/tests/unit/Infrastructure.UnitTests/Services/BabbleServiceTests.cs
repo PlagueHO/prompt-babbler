@@ -14,12 +14,13 @@ public sealed class BabbleServiceTests
 {
     private readonly IBabbleRepository _babbleRepository = Substitute.For<IBabbleRepository>();
     private readonly IGeneratedPromptRepository _generatedPromptRepository = Substitute.For<IGeneratedPromptRepository>();
+    private readonly IEmbeddingService _embeddingService = Substitute.For<IEmbeddingService>();
     private readonly ILogger<BabbleService> _logger = Substitute.For<ILogger<BabbleService>>();
     private readonly BabbleService _service;
 
     public BabbleServiceTests()
     {
-        _service = new BabbleService(_babbleRepository, _generatedPromptRepository, _logger);
+        _service = new BabbleService(_babbleRepository, _generatedPromptRepository, _embeddingService, _logger);
     }
 
     private static Babble CreateBabble(
@@ -69,12 +70,14 @@ public sealed class BabbleServiceTests
     public async Task CreateAsync_DelegatesToRepository()
     {
         var babble = CreateBabble();
-        _babbleRepository.CreateAsync(babble, Arg.Any<CancellationToken>())
-            .Returns(babble);
+        _babbleRepository.CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
 
         var result = await _service.CreateAsync(babble);
 
-        result.Should().Be(babble);
+        result.Id.Should().Be(babble.Id);
+        result.Text.Should().Be(babble.Text);
+        await _babbleRepository.Received(1).CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
     }
 
     // ---- UpdateAsync ----
@@ -85,12 +88,14 @@ public sealed class BabbleServiceTests
         var babble = CreateBabble();
         _babbleRepository.GetByIdAsync("test-user-id", "test-babble-id", Arg.Any<CancellationToken>())
             .Returns(babble);
-        _babbleRepository.UpdateAsync(babble, Arg.Any<CancellationToken>())
-            .Returns(babble);
+        _babbleRepository.UpdateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
 
         var result = await _service.UpdateAsync("test-user-id", babble);
 
-        result.Should().Be(babble);
+        result.Id.Should().Be(babble.Id);
+        result.Text.Should().Be(babble.Text);
+        await _babbleRepository.Received(1).UpdateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -169,5 +174,98 @@ public sealed class BabbleServiceTests
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*not found*");
+    }
+
+    // ---- CreateAsync with embedding ----
+
+    [TestMethod]
+    public async Task CreateAsync_WithText_GeneratesEmbeddingAndStoresVector()
+    {
+        var babble = CreateBabble();
+        var expectedVector = new ReadOnlyMemory<float>(new float[] { 0.1f, 0.2f, 0.3f });
+        _embeddingService.GenerateEmbeddingAsync(babble.Text, Arg.Any<CancellationToken>())
+            .Returns(expectedVector);
+        _babbleRepository.CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var result = await _service.CreateAsync(babble);
+
+        result.ContentVector.Should().NotBeNull();
+        result.ContentVector.Should().BeEquivalentTo(new float[] { 0.1f, 0.2f, 0.3f });
+        await _embeddingService.Received(1).GenerateEmbeddingAsync(babble.Text, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task CreateAsync_EmbeddingServiceFails_SavesBabbleWithoutVector()
+    {
+        var babble = CreateBabble();
+        _embeddingService.GenerateEmbeddingAsync(babble.Text, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("Embedding service unavailable"));
+        _babbleRepository.CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var result = await _service.CreateAsync(babble);
+
+        result.ContentVector.Should().BeNull();
+        await _babbleRepository.Received(1).CreateAsync(Arg.Is<Babble>(b => b.ContentVector == null), Arg.Any<CancellationToken>());
+    }
+
+    // ---- UpdateAsync with embedding ----
+
+    [TestMethod]
+    public async Task UpdateAsync_WithTextChange_RegeneratesEmbedding()
+    {
+        var babble = CreateBabble();
+        var expectedVector = new ReadOnlyMemory<float>(new float[] { 0.4f, 0.5f, 0.6f });
+        _babbleRepository.GetByIdAsync("test-user-id", "test-babble-id", Arg.Any<CancellationToken>())
+            .Returns(babble);
+        _embeddingService.GenerateEmbeddingAsync(babble.Text, Arg.Any<CancellationToken>())
+            .Returns(expectedVector);
+        _babbleRepository.UpdateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var result = await _service.UpdateAsync("test-user-id", babble);
+
+        result.ContentVector.Should().NotBeNull();
+        result.ContentVector.Should().BeEquivalentTo(new float[] { 0.4f, 0.5f, 0.6f });
+        await _embeddingService.Received(1).GenerateEmbeddingAsync(babble.Text, Arg.Any<CancellationToken>());
+    }
+
+    // ---- SearchAsync ----
+
+    [TestMethod]
+    public async Task SearchAsync_WithQuery_ReturnsRankedResults()
+    {
+        var query = "test query";
+        var vector = new ReadOnlyMemory<float>(new float[] { 0.1f, 0.2f, 0.3f });
+        var searchResults = new List<BabbleSearchResult>
+        {
+            new(CreateBabble(id: "result-1"), 0.95),
+            new(CreateBabble(id: "result-2"), 0.80),
+        };
+
+        _embeddingService.GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>())
+            .Returns(vector);
+        _babbleRepository.SearchByVectorAsync("test-user-id", vector, 10, Arg.Any<CancellationToken>())
+            .Returns(searchResults.AsReadOnly());
+
+        var results = await _service.SearchAsync("test-user-id", query, 10);
+
+        results.Should().HaveCount(2);
+        results[0].SimilarityScore.Should().Be(0.95);
+        results[1].SimilarityScore.Should().Be(0.80);
+        await _embeddingService.Received(1).GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>());
+        await _babbleRepository.Received(1).SearchByVectorAsync("test-user-id", vector, 10, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task SearchAsync_EmbeddingServiceFails_PropagatesException()
+    {
+        var query = "test query";
+        _embeddingService.GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("Embedding service unavailable"));
+
+        await _service.Invoking(s => s.SearchAsync("test-user-id", query, 10))
+            .Should().ThrowAsync<InvalidOperationException>();
     }
 }

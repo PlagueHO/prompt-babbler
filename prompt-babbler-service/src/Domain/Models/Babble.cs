@@ -27,4 +27,8 @@ public sealed record Babble
 
     [JsonPropertyName("isPinned")]
     public bool IsPinned { get; init; }
+
+    [JsonPropertyName("contentVector")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public float[]? ContentVector { get; init; }
 }

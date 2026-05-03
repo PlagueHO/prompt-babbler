@@ -23,4 +23,6 @@ public interface IBabbleService
     Task DeleteAsync(string userId, string babbleId, CancellationToken cancellationToken = default);
 
     Task<Babble> SetPinAsync(string userId, string babbleId, bool isPinned, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<BabbleSearchResult>> SearchAsync(string userId, string query, int topN, CancellationToken cancellationToken = default);
 }

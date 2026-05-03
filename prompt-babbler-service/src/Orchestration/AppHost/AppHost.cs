@@ -20,6 +20,17 @@ var chatDeployment = foundryProject.AddModelDeployment(
         deployment.SkuCapacity = 50;
     });
 
+var embeddingDeployment = foundryProject.AddModelDeployment(
+    "embedding",
+    builder.Configuration["MicrosoftFoundry:embeddingModelName"] ?? "text-embedding-3-small",
+    builder.Configuration["MicrosoftFoundry:embeddingModelVersion"] ?? "1",
+    "OpenAI")
+    .WithProperties(deployment =>
+    {
+        deployment.SkuName = "GlobalStandard";
+        deployment.SkuCapacity = 120;
+    });
+
 // Azure Cosmos DB — uses the emulator for local development.
 // See: https://aspire.dev/integrations/cloud/azure/azure-cosmos-db/azure-cosmos-db-host/
 #pragma warning disable ASPIRECOSMOSDB001
@@ -50,12 +61,14 @@ var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithReference(foundry)
     .WithReference(foundryProject)
     .WithReference(chatDeployment)
+    .WithReference(embeddingDeployment)
     .WithReference(cosmos)
     .WithReference(promptTemplatesContainer)
     .WithReference(babblesContainer)
     .WithReference(generatedPromptsContainer)
     .WithReference(usersContainer)
     .WaitFor(chatDeployment)
+    .WaitFor(embeddingDeployment)
     .WaitFor(cosmos)
     .WithEnvironment("Azure__TenantId", tenantId)
     .WithEnvironment("AZURE_TENANT_ID", tenantId)

@@ -17,7 +17,9 @@
         "Azure__CredentialSource": "AzureCli",
         "Azure__AllowResourceGroupCreation": "true",
         "MicrosoftFoundry__chatModelName": "gpt-5.3-chat",
-        "MicrosoftFoundry__chatModelVersion": "2026-03-03"
+        "MicrosoftFoundry__chatModelVersion": "2026-03-03",
+        "MicrosoftFoundry__embeddingModelName": "text-embedding-3-small",
+        "MicrosoftFoundry__embeddingModelVersion": "1"
       }
     },
     "http": {
@@ -36,7 +38,9 @@
         "Azure__CredentialSource": "AzureCli",
         "Azure__AllowResourceGroupCreation": "true",
         "MicrosoftFoundry__chatModelName": "gpt-5.3-chat",
-        "MicrosoftFoundry__chatModelVersion": "2026-03-03"
+        "MicrosoftFoundry__chatModelVersion": "2026-03-03",
+        "MicrosoftFoundry__embeddingModelName": "text-embedding-3-small",
+        "MicrosoftFoundry__embeddingModelVersion": "1"
       }
     }
   }

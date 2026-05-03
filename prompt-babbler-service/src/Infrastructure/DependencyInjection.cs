@@ -58,6 +58,7 @@ public static class DependencyInjection
             return new CosmosBabbleRepository(cosmosClient, logger);
         });
         services.AddSingleton<IBabbleService, BabbleService>();
+        services.AddSingleton<IEmbeddingService, EmbeddingService>();
 
         // Generated prompt repository and service backed by Cosmos DB.
         services.AddSingleton<IGeneratedPromptRepository>(sp =>

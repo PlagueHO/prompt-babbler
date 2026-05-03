@@ -78,6 +78,58 @@ public sealed class BabbleController : ControllerBase
         });
     }
 
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchBabbles(
+        [FromQuery] string query,
+        [FromQuery] int topK = 10,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(query))
+        {
+            return BadRequest("query is required.");
+        }
+
+        if (query.Length > 200)
+        {
+            return BadRequest("query must be at most 200 characters.");
+        }
+
+        topK = Math.Clamp(topK, 1, 50);
+
+        var userId = User.GetUserIdOrAnonymous();
+
+        try
+        {
+            var results = await _babbleService.SearchAsync(userId, query, topK, cancellationToken);
+
+            var response = new BabbleSearchResponse
+            {
+                Results = results.Select(r => new BabbleSearchResultItem
+                {
+                    Id = r.Babble.Id,
+                    Title = r.Babble.Title,
+                    Snippet = r.Babble.Text.Length > 200 ? r.Babble.Text[..200] + "..." : r.Babble.Text,
+                    Tags = r.Babble.Tags,
+                    CreatedAt = r.Babble.CreatedAt,
+                    IsPinned = r.Babble.IsPinned,
+                    Score = r.SimilarityScore,
+                }).ToList(),
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Vector search failed for user {UserId}", userId);
+            return StatusCode(502, new ProblemDetails
+            {
+                Title = "Azure OpenAI Error",
+                Status = 502,
+                Detail = "An error occurred while processing the search query. Please try again.",
+            });
+        }
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBabble(string id, CancellationToken cancellationToken = default)
     {
