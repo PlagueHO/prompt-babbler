@@ -46,6 +46,12 @@ var cosmos = builder.AddAzureCosmosDB("cosmos")
 
 var cosmosDb = cosmos.AddCosmosDatabase("prompt-babbler");
 var promptTemplatesContainer = cosmosDb.AddContainer("prompt-templates", "/userId");
+// Note: AddContainer() does not support vector embedding policies or vector indexes.
+// The 'babbles' container requires a quantizedFlat vector index on /contentVector for
+// VectorDistance() queries. CosmosVectorContainerInitializationService recreates the
+// container with the correct configuration at startup in Development.
+// Upstream Aspire issue: https://github.com/microsoft/aspire/issues/14384
+// Tracking issue:        https://github.com/PlagueHO/prompt-babbler/issues/122
 var babblesContainer = cosmosDb.AddContainer("babbles", "/userId");
 var generatedPromptsContainer = cosmosDb.AddContainer("generated-prompts", "/babbleId");
 var usersContainer = cosmosDb.AddContainer("users", "/userId");

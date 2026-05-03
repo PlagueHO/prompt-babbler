@@ -60,6 +60,14 @@ public static class DependencyInjection
         services.AddSingleton<IBabbleService, BabbleService>();
         services.AddSingleton<IEmbeddingService, EmbeddingService>();
 
+        // Workaround: Aspire's AddContainer() does not support vector index policies, so the
+        // local emulator creates 'babbles' without the quantizedFlat vector index required for
+        // VectorDistance() queries. This service runs only in Development and recreates the
+        // container with the correct vector configuration.
+        // See: https://github.com/microsoft/aspire/issues/14384
+        // See: https://github.com/PlagueHO/prompt-babbler/issues/122
+        services.AddHostedService<CosmosVectorContainerInitializationService>();
+
         // Generated prompt repository and service backed by Cosmos DB.
         services.AddSingleton<IGeneratedPromptRepository>(sp =>
         {
