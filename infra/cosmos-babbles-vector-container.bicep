@@ -60,8 +60,8 @@ resource babblesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
         vectorEmbeddings: [
           {
             path: '/contentVector'
-            dataType: 'Float32'
-            distanceFunction: 'Cosine'
+            dataType: 'float32'
+            distanceFunction: 'cosine'
             dimensions: 1536
           }
         ]
