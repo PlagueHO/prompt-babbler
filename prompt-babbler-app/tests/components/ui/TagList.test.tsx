@@ -24,4 +24,21 @@ describe('TagList', () => {
     const { container } = render(<TagList tags={['tag1']} className="mt-4" />);
     expect(container.firstChild).toHaveClass('mt-4');
   });
+
+  it('renders tags with deterministic color classes', () => {
+    render(<TagList tags={['bug', 'feature']} />);
+    const badges = screen.getAllByText(/bug|feature/);
+    badges.forEach((badge) => {
+      expect(badge.className).toMatch(/bg-\w+-\d+/);
+      expect(badge.className).toMatch(/text-\w+-\d+/);
+    });
+  });
+
+  it('renders the same tag with the same color class', () => {
+    const { rerender } = render(<TagList tags={['bug']} />);
+    const firstColor = screen.getByText('bug').className;
+    rerender(<TagList tags={['other', 'bug']} />);
+    const secondColor = screen.getByText('bug').className;
+    expect(firstColor).toBe(secondColor);
+  });
 });

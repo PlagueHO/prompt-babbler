@@ -129,6 +129,14 @@ describe('TagInput', () => {
     expect(screen.queryByPlaceholderText('Add tags here')).not.toBeInTheDocument();
   });
 
+  it('renders tag badges with color classes', () => {
+    render(<TagInput value={['bug', 'feature']} onChange={() => {}} />);
+    const badges = screen.getAllByText(/bug|feature/);
+    badges.forEach((badge) => {
+      expect(badge.closest('[class]')?.className).toMatch(/bg-\w+-\d+/);
+    });
+  });
+
   it('passes accessibility checks', async () => {
     const { container } = render(
       <TagInput value={['react', 'vue']} onChange={vi.fn()} />,

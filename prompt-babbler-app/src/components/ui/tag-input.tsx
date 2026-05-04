@@ -2,6 +2,7 @@ import * as React from "react"
 import { X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { getTagColor } from "@/lib/tag-colors"
 
 interface TagInputProps {
   value: string[]
@@ -88,7 +89,7 @@ function TagInput({
       onClick={() => !disabled && inputRef.current?.focus()}
     >
       {value.map((tag, index) => (
-        <Badge key={`${tag}-${index}`} variant="secondary" className="gap-1 pr-1">
+        <Badge key={`${tag}-${index}`} variant="secondary" className={`gap-1 pr-1 border-transparent ${getTagColor(tag)}`}>
           {tag}
           {!disabled && (
             <button

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { TagInput } from '@/components/ui/tag-input';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { useTranscription } from '@/hooks/useTranscription';
 import { useBabbles } from '@/hooks/useBabbles';
@@ -42,6 +43,7 @@ export function RecordPage() {
     reset,
   } = useTranscription();
   const [title, setTitle] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   // Append mode: load existing babble when babbleId is provided
@@ -133,9 +135,10 @@ export function RecordPage() {
     const babble = await createBabble({
       title: title.trim() || `Babble ${new Date().toLocaleDateString()}`,
       text: transcribedText,
+      tags,
     });
     return babble;
-  }, [title, transcribedText, createBabble, updateBabble, isAppendMode, existingBabble, babbleId]);
+  }, [title, tags, transcribedText, createBabble, updateBabble, isAppendMode, existingBabble, babbleId]);
 
   const handleSave = async () => {
     if (!transcribedText.trim()) {
@@ -177,6 +180,7 @@ export function RecordPage() {
     reset();
     if (!isAppendMode) {
       setTitle('');
+      setTags([]);
     }
   }, [reset, isAppendMode]);
 
@@ -240,6 +244,14 @@ export function RecordPage() {
           onChange={(e) => setTitle(e.target.value)}
           placeholder={isAppendMode ? 'Babble title' : 'Give your babble a title (optional)'}
         />
+
+        {!isAppendMode && (
+          <TagInput
+            value={tags}
+            onChange={setTags}
+            placeholder="Add tags (optional)"
+          />
+        )}
 
         <div className="flex items-center gap-4 rounded-lg border px-4 py-3">
           <RecordButton

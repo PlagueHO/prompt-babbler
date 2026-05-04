@@ -271,9 +271,12 @@ export function BabblePage() {
               </>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">
-            {new Date(babble.updatedAt).toLocaleString()}
-          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <TagList tags={babble.tags} className="flex-1" />
+            <p className="shrink-0 text-sm text-muted-foreground">
+              {new Date(babble.updatedAt).toLocaleString()}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button asChild size="sm">
@@ -288,7 +291,7 @@ export function BabblePage() {
             onClick={() => setIsEditing(true)}
           >
             <Pencil className="size-4" />
-            Edit Text
+            Edit
           </Button>
           <Button
             size="sm"
@@ -300,10 +303,6 @@ export function BabblePage() {
           </Button>
         </div>
       </div>
-
-      {(babble.tags?.length ?? 0) > 0 && !isEditing && (
-        <TagList tags={babble.tags} />
-      )}
 
       {isEditing ? (
         <BabbleEditor

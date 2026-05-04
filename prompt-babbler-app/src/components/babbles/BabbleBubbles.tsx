@@ -53,13 +53,15 @@ function BabbleBubbleCard({ babble, onTogglePin }: BabbleBubbleCardProps) {
         >
           <CardHeader className="pr-10">
             <CardTitle className="text-base">{babble.title}</CardTitle>
-            <CardDescription>{dateStr}</CardDescription>
+            <div className="flex items-center gap-2 mt-1">
+              <TagList tags={babble.tags} className="flex-1" />
+              <CardDescription className="shrink-0">{dateStr}</CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
             <p className="line-clamp-3 text-sm text-muted-foreground">
               {truncated || 'No content yet.'}
             </p>
-            <TagList tags={babble.tags} className="mt-2" />
           </CardContent>
         </Card>
       </Link>

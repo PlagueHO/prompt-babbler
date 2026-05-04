@@ -30,13 +30,13 @@ export function BabbleCard({ babble }: BabbleCardProps) {
       <Card className="transition-colors hover:bg-accent/50">
         <CardHeader>
           <CardTitle className="text-base">{babble.title}</CardTitle>
+          <TagList tags={babble.tags} className="mt-1" />
           <CardDescription>{dateStr}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="line-clamp-3 text-sm text-muted-foreground">
             {truncated || 'No content yet.'}
           </p>
-          <TagList tags={babble.tags} className="mt-2" />
         </CardContent>
       </Card>
     </Link>

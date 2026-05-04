@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { getTagColor } from '@/lib/tag-colors';
 
 interface TagListProps {
   tags: string[] | undefined;
@@ -11,7 +12,7 @@ export function TagList({ tags, className }: TagListProps) {
   return (
     <div className={`flex flex-wrap gap-1 ${className ?? ''}`}>
       {tags.map((tag) => (
-        <Badge key={tag} variant="outline" className="text-xs">
+        <Badge key={tag} variant="outline" className={`text-xs border-transparent ${getTagColor(tag)}`}>
           {tag}
         </Badge>
       ))}

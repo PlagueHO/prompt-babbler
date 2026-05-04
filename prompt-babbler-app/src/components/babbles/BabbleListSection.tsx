@@ -152,11 +152,13 @@ export function BabbleListSection({
           <p className="text-sm text-muted-foreground">No babbles found.</p>
         </div>
       ) : (
-        <div className="space-y-1.5">
-          {babbles.map((babble) => (
-            <BabbleListItem key={babble.id} babble={babble} onTogglePin={onTogglePin} />
-          ))}
-        </div>
+        <table className="w-full">
+          <tbody>
+            {babbles.map((babble) => (
+              <BabbleListItem key={babble.id} babble={babble} onTogglePin={onTogglePin} />
+            ))}
+          </tbody>
+        </table>
       )}
 
       {/* Infinite scroll sentinel */}
