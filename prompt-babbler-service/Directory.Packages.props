@@ -23,19 +23,21 @@
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.59.0" />
     <PackageVersion Include="Microsoft.CognitiveServices.Speech" Version="1.49.1" />
-    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.1" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.8.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
+    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- Testing -->
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.4" />
     <PackageVersion Include="FluentAssertions" Version="8.9.0" />
     <PackageVersion Include="JsonSchema.Net" Version="9.2.0" />
-    <PackageVersion Include="MSTest.TestFramework" Version="4.2.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.2.2" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />
     <!-- Transitive pin: patch CVE-2026-33116 / GHSA-37gx-xxp4-5rgx (pulled in by Microsoft.AspNetCore.Mvc.Testing). -->

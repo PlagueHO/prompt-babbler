@@ -83,6 +83,17 @@ var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithEnvironment("AzureAd__TenantId", tenantId)
     .WithEnvironment("AzureAd__Instance", "https://login.microsoftonline.com/");
 
+var mcpClientId = builder.Configuration["EntraAuth:McpClientId"] ?? string.Empty;
+
+var mcpServer = builder.AddProject<Projects.PromptBabbler_McpServer>("mcp-server")
+    .WithExternalHttpEndpoints()
+    .WithReference(apiService)
+    .WaitFor(apiService)
+    .WithEnvironment("AzureAd__ClientId", mcpClientId)
+    .WithEnvironment("AzureAd__TenantId", tenantId)
+    .WithEnvironment("AzureAd__Instance", "https://login.microsoftonline.com/")
+    .WithEnvironment("AccessControl__AccessCode", builder.Configuration["AccessControl:AccessCode"] ?? string.Empty);
+
 builder.AddViteApp("frontend", "../../../../prompt-babbler-app", "dev")
     .WithPnpm()
     .WithExternalHttpEndpoints()

@@ -53,7 +53,13 @@ param spaClientId string = ''
 param staticWebAppLocation string = ''
 
 @sys.description('Container image to deploy for the backend API Container App.')
-param containerImage string = 'ghcr.io/plagueho/prompt-babbler-api:latest'
+param containerImageApi string = 'ghcr.io/plagueho/prompt-babbler-api:latest'
+
+@sys.description('Container image to deploy for the MCP Server Container App.')
+param containerImageMcpServer string = 'ghcr.io/plagueho/prompt-babbler-mcp-server:latest'
+
+@sys.description('Entra ID MCP server app registration client ID. Leave empty to disable authentication (single-user anonymous mode).')
+param mcpClientId string = ''
 
 @sys.description('Optional access code for single-user mode protection. Leave empty to disable.')
 @secure()
@@ -81,6 +87,7 @@ var foundryCustomSubDomainName = toLower(replace(environmentName, '-', ''))
 var defaultProjectName = 'promptbabbler'
 var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environmentName}'
 var containerAppName = '${abbrs.appContainerApps}${environmentName}-api'
+var mcpServerContainerAppName = '${abbrs.appContainerApps}${environmentName}-mcp-server'
 var staticWebAppName = '${abbrs.webStaticSites}${environmentName}'
 var effectiveStaticWebAppLocation = !empty(staticWebAppLocation) ? staticWebAppLocation : location
 var cosmosDbAccountName = '${abbrs.cosmosDBAccounts}${resourceToken}'
@@ -524,7 +531,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
     containers: [
       {
         name: 'api'
-        image: containerImage
+        image: containerImageApi
         resources: {
           cpu: json('0.5')
           memory: '1Gi'
@@ -631,6 +638,70 @@ module containerAppCosmosDbRoles './core/security/role_cosmosdb.bicep' = {
   }
 }
 
+// --------- CONTAINER APP (MCP SERVER) ---------
+module mcpServerContainerApp 'br/public:avm/res/app/container-app:0.22.1' = {
+  name: 'container-app-mcp-server-deployment-${resourceToken}'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: mcpServerContainerAppName
+    environmentResourceId: containerAppsEnvironment.outputs.resourceId
+    location: location
+    tags: union(tags, {
+      'azd-service-name': 'mcp-server'
+    })
+    managedIdentities: {
+      systemAssigned: true
+    }
+    containers: [
+      {
+        name: 'mcp-server'
+        image: containerImageMcpServer
+        resources: {
+          cpu: json('0.5')
+          memory: '1Gi'
+        }
+        env: [
+          {
+            name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+            value: applicationInsights.outputs.connectionString
+          }
+          {
+            name: 'services__api__https__0'
+            value: 'https://${containerApp.outputs.fqdn}'
+          }
+          ...(!empty(mcpClientId) ? [
+            {
+              name: 'AzureAd__ClientId'
+              value: mcpClientId
+            }
+            {
+              name: 'AzureAd__TenantId'
+              value: tenant().tenantId
+            }
+            {
+              name: 'AzureAd__Instance'
+              value: environment().authentication.loginEndpoint
+            }
+          ] : [])
+          ...(!empty(accessCode) ? [
+            {
+              name: 'AccessControl__AccessCode'
+              value: accessCode
+            }
+          ] : [])
+        ]
+      }
+    ]
+    ingressExternal: true
+    ingressTargetPort: 8080
+    ingressTransport: 'auto'
+    scaleSettings: {
+      minReplicas: 0
+      maxReplicas: 3
+    }
+  }
+}
+
 // Assign Cosmos DB Built-in Data Contributor to the deploying principal for local dev
 module principalCosmosDbRoles './core/security/role_cosmosdb.bicep' = if (!empty(principalId)) {
   name: 'principal-cosmos-roles-${resourceToken}'
@@ -690,6 +761,10 @@ output AZURE_AI_FOUNDRY_PROJECT_ENDPOINT string = foundryProjectEndpoint
 output AZURE_CONTAINER_APP_NAME string = containerApp.outputs.name
 output AZURE_CONTAINER_APP_FQDN string = containerApp.outputs.fqdn
 
+// Container App (MCP Server)
+output AZURE_MCP_SERVER_CONTAINER_APP_NAME string = mcpServerContainerApp.outputs.name
+output AZURE_MCP_SERVER_CONTAINER_APP_FQDN string = mcpServerContainerApp.outputs.fqdn
+
 // Static Web App (Frontend)
 output AZURE_STATIC_WEB_APP_NAME string = staticWebApp.outputs.name
 output AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME string = staticWebApp.outputs.defaultHostname
@@ -701,6 +776,7 @@ output COSMOS_DB_ENDPOINT string = cosmosDbAccount.outputs.endpoint
 // Entra ID (set via preprovision hook when ENABLE_ENTRA_AUTH=true)
 output AZURE_AD_API_CLIENT_ID string = apiClientId
 output AZURE_AD_SPA_CLIENT_ID string = spaClientId
+output AZURE_AD_MCP_CLIENT_ID string = mcpClientId
 output AZURE_AD_TENANT_ID string = tenant().tenantId
 
 // Networking

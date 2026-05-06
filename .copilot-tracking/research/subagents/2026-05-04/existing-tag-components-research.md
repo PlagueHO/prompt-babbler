@@ -3,11 +3,11 @@
 ## Research Topics
 
 1. How are tags currently rendered in the UI (display component)?
-2. How are tags currently edited (input component)?
-3. How do tags appear in BabbleCard, BabbleEditor, BabbleListItem, and BabbleBubbles?
-4. What badge/styling primitives are used?
-5. How do babble CRUD operations handle tags via the API?
-6. Is there any color mapping or tag-specific styling logic?
+1. How are tags currently edited (input component)?
+1. How do tags appear in BabbleCard, BabbleEditor, BabbleListItem, and BabbleBubbles?
+1. What badge/styling primitives are used?
+1. How do babble CRUD operations handle tags via the API?
+1. Is there any color mapping or tag-specific styling logic?
 
 ---
 
@@ -39,6 +39,7 @@
 ```
 
 **Key observations:**
+
 - Uses `Badge` with `variant="outline"` for display
 - No color mapping — all tags get the same outline style
 - Accepts `tags: string[] | undefined` and `className`
@@ -191,6 +192,7 @@
 ```
 
 **Key observations:**
+
 - Uses `Badge` with `variant="secondary"` for editable tags (different from display!)
 - Tags support comma-separated paste input
 - Case-insensitive duplicate detection
@@ -251,6 +253,7 @@
 ```
 
 **Key observations:**
+
 - Uses `<TagList>` with `className="mt-2"` in the CardContent
 - Tags shown below the truncated text
 
@@ -322,6 +325,7 @@
 ```
 
 **Key observations:**
+
 - Uses `<TagInput>` for editing tags
 - Initializes from `babble.tags ?? []`
 - On save, spreads existing babble with new `text`, `tags`, and `updatedAt`
@@ -394,6 +398,7 @@
 ```
 
 **Key observations:**
+
 - Uses `<TagList>` with `className="mt-1"` below the title/date row
 - Conditionally renders only if `babble.tags && babble.tags.length > 0`
 
@@ -492,6 +497,7 @@
 ```
 
 **Key observations:**
+
 - Uses `<TagList>` with `className="mt-2"` in CardContent
 - Same pattern as BabbleCard
 
@@ -551,6 +557,7 @@
 ```
 
 **Key observations:**
+
 - Standard shadcn/ui badge with CVA
 - 6 variants: `default`, `secondary`, `destructive`, `outline`, `ghost`, `link`
 - `rounded-full` (pill shape)
@@ -837,6 +844,7 @@
 ```
 
 **Key observations:**
+
 - `createBabble` accepts `{ title: string; text: string; tags?: string[] }`
 - `updateBabble` accepts `{ title: string; text: string; tags?: string[] }`
 - Both call `api.createBabble` / `api.updateBabble` from `@/services/api-client`
@@ -849,11 +857,13 @@
 **Result: NO color mapping or tag-specific styling exists in the codebase.**
 
 Searches performed:
+
 - `tag.*color|color.*tag|tagColor|tag-color` — no source matches (only dist build artifacts)
 - `getTagColor|tagColors|TAG_COLOR` — no matches
 - `tag.*class|tag.*style|tag.*variant|colorMap|colorFor` — only found the standard badge variant usage
 
 **Current tag rendering uses:**
+
 - **Display context** (`TagList`): `Badge variant="outline"` — renders with `border-border text-foreground`
 - **Edit context** (`TagInput`): `Badge variant="secondary"` — renders with `bg-secondary text-secondary-foreground`
 - **Search results** (`SearchCommand`): `Badge variant="secondary"` with `className="text-xs"`
@@ -877,9 +887,9 @@ All tags are rendered with identical styling regardless of their content. There 
 Tags flow through the system as `string[]`:
 
 1. **Create**: `api.createBabble({ title, text, tags? })` → POST `/api/babbles`
-2. **Update**: `api.updateBabble(id, { title, text, tags? })` → PUT `/api/babbles/:id`
-3. **Read**: Tags come back on the `Babble` type from GET responses
-4. **No separate tag endpoints** — tags are always part of the babble payload
+1. **Update**: `api.updateBabble(id, { title, text, tags? })` → PUT `/api/babbles/:id`
+1. **Read**: Tags come back on the `Babble` type from GET responses
+1. **No separate tag endpoints** — tags are always part of the babble payload
 
 ---
 
@@ -889,12 +899,12 @@ Tags flow through the system as `string[]`:
    - `outline` for read-only display (TagList)
    - `secondary` for editable display (TagInput, SearchCommand)
 
-2. **No color differentiation** — all tags look identical regardless of content
+1. **No color differentiation** — all tags look identical regardless of content
 
-3. **Tag constraints** are enforced client-side: max 20 tags, max 50 chars, case-insensitive dedup
+1. **Tag constraints** are enforced client-side: max 20 tags, max 50 chars, case-insensitive dedup
 
-4. **TagList renders nothing** when tags is undefined or empty (null return)
+1. **TagList renders nothing** when tags is undefined or empty (null return)
 
-5. **BabbleEditor passes tags as optional** in the save payload — the `updatedAt` is set client-side
+1. **BabbleEditor passes tags as optional** in the save payload — the `updatedAt` is set client-side
 
-6. **The Badge component** uses CVA with `rounded-full` (pill shape) and supports 6 variants
+1. **The Badge component** uses CVA with `rounded-full` (pill shape) and supports 6 variants

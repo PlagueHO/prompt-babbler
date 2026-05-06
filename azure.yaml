@@ -17,6 +17,13 @@ services:
     docker:
       path: ./Dockerfile
       context: ../../
+  mcp-server:
+    host: containerapp
+    language: dotnet
+    project: ./prompt-babbler-service/src/McpServer
+    docker:
+      path: ./Dockerfile
+      context: ../../
   frontend:
     project: ./prompt-babbler-app
     language: js

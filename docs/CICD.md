@@ -40,11 +40,12 @@ Runs on pushes to `main` when `infra/`, `prompt-babbler-service/`, or
 | **Build and Test Backend** | Release build + unit tests |
 | **Build and Publish Frontend** | Build + test + publish frontend artifact |
 | **Build and Push API Container** | Docker build + push to GHCR (tag pushes only) |
+| **Build and Push MCP Server Container** | Docker build + push to GHCR (tag pushes only) |
 | **Validate Infrastructure** | Bicep what-if against Azure |
 | **E2E Test** | Provisions ephemeral infrastructure, runs tests, tears down |
 
-Container images are pushed to `ghcr.io/plagueho/prompt-babbler-api` on
-version tags (`v*`).
+Container images are pushed to `ghcr.io/plagueho/prompt-babbler-api` and
+`ghcr.io/plagueho/prompt-babbler-mcp-server` on version tags (`v*`).
 
 ## 1. Create the managed identity
 

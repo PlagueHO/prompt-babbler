@@ -19,8 +19,13 @@ on:
         description: "The name of the Azure environment"
         required: true
         type: string
-      CONTAINER_IMAGE:
-        description: "Container image to deploy (e.g., ghcr.io/owner/prompt-babbler-api:v1.0.0). Defaults to :latest."
+      CONTAINER_IMAGE_API:
+        description: "API container image to deploy (e.g., ghcr.io/owner/prompt-babbler-api:v1.0.0). Defaults to :latest."
+        required: false
+        type: string
+        default: ''
+      CONTAINER_IMAGE_MCP_SERVER:
+        description: "MCP server container image to deploy (e.g., ghcr.io/owner/prompt-babbler-mcp-server:v1.0.0). Defaults to :latest."
         required: false
         type: string
         default: ''
@@ -69,11 +74,17 @@ on:
         description: "The Microsoft Foundry project endpoint"
         value: ${{ jobs.provision-infrastructure.outputs.AZURE_AI_FOUNDRY_PROJECT_ENDPOINT }}
       AZURE_CONTAINER_APP_NAME:
-        description: "The Azure Container App name"
+        description: "The Azure Container App (API) name"
         value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_NAME }}
       AZURE_CONTAINER_APP_FQDN:
-        description: "The Azure Container App FQDN"
+        description: "The Azure Container App (API) FQDN"
         value: ${{ jobs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_FQDN }}
+      AZURE_MCP_SERVER_CONTAINER_APP_NAME:
+        description: "The Azure Container App (MCP Server) name"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_MCP_SERVER_CONTAINER_APP_NAME }}
+      AZURE_MCP_SERVER_CONTAINER_APP_FQDN:
+        description: "The Azure Container App (MCP Server) FQDN"
+        value: ${{ jobs.provision-infrastructure.outputs.AZURE_MCP_SERVER_CONTAINER_APP_FQDN }}
       AZURE_STATIC_WEB_APP_NAME:
         description: "The Azure Static Web App name"
         value: ${{ jobs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_NAME }}
@@ -128,6 +139,8 @@ jobs:
       AZURE_AI_FOUNDRY_PROJECT_ENDPOINT: ${{ steps.get_infrastructure_outputs.outputs.AZURE_AI_FOUNDRY_PROJECT_ENDPOINT }}
       AZURE_CONTAINER_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_APP_NAME }}
       AZURE_CONTAINER_APP_FQDN: ${{ steps.get_infrastructure_outputs.outputs.AZURE_CONTAINER_APP_FQDN }}
+      AZURE_MCP_SERVER_CONTAINER_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_MCP_SERVER_CONTAINER_APP_NAME }}
+      AZURE_MCP_SERVER_CONTAINER_APP_FQDN: ${{ steps.get_infrastructure_outputs.outputs.AZURE_MCP_SERVER_CONTAINER_APP_FQDN }}
       AZURE_STATIC_WEB_APP_NAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_STATIC_WEB_APP_NAME }}
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ steps.get_infrastructure_outputs.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
 
@@ -170,9 +183,13 @@ jobs:
         run: |
           azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
           azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
-          CONTAINER_IMAGE="${{ inputs.CONTAINER_IMAGE }}"
-          if [ -n "$CONTAINER_IMAGE" ]; then
-            azd env set AZURE_CONTAINER_APP_IMAGE "$CONTAINER_IMAGE"
+          CONTAINER_IMAGE_API="${{ inputs.CONTAINER_IMAGE_API }}"
+          if [ -n "$CONTAINER_IMAGE_API" ]; then
+            azd env set AZURE_CONTAINER_APP_API_IMAGE "$CONTAINER_IMAGE_API"
+          fi
+          CONTAINER_IMAGE_MCP="${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}"
+          if [ -n "$CONTAINER_IMAGE_MCP" ]; then
+            azd env set AZURE_CONTAINER_APP_MCP_SERVER_IMAGE "$CONTAINER_IMAGE_MCP"
           fi
           # Override Static Web App location when configured.
           # Must be one of: centralus, eastasia, eastus2, westeurope, westus2.
@@ -231,6 +248,8 @@ jobs:
             "AZURE_AI_FOUNDRY_PROJECT_ENDPOINT"
             "AZURE_CONTAINER_APP_NAME"
             "AZURE_CONTAINER_APP_FQDN"
+            "AZURE_MCP_SERVER_CONTAINER_APP_NAME"
+            "AZURE_MCP_SERVER_CONTAINER_APP_FQDN"
             "AZURE_STATIC_WEB_APP_NAME"
             "AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME"
           )

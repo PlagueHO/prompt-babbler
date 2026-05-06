@@ -1,0 +1,7 @@
+[mcps.servers]
+github-agentic-workflows = { args = ["aw", "mcp-server"], command = "gh", tools = ["*"], type = "stdio" }
+aspire = { args = ["agent", "mcp"], command = "aspire", tools = ["*"], type = "stdio" }
+playwright = { args = ["playwright", "run-test-mcp-server"], command = "npx", tools = ["*"], type = "stdio" }
+microsoft-learn = { tools = ["*"], type = "http", url = "https://learn.microsoft.com/api/mcp" }
+microsoft-foundry = { tools = ["*"], type = "http", url = "https://mcp.ai.azure.com" }
+context7 = { args = ["-y", "@upstash/context7-mcp@latest"], command = "npx", tools = ["*"], type = "stdio" }
