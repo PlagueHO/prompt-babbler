@@ -24,7 +24,7 @@
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.59.0" />
     <PackageVersion Include="Microsoft.CognitiveServices.Speech" Version="1.49.1" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.1" />
-    <PackageVersion Include="Microsoft.Identity.Web" Version="4.8.0" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.9.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
