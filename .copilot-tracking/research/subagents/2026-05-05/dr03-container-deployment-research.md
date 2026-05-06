@@ -83,7 +83,7 @@ ENTRYPOINT ["dotnet", "PromptBabbler.Api.dll"]                   # line 31
 
 **File:** `prompt-babbler-service/.dockerignore`
 
-```text
+```gitignore
 **/bin/
 **/obj/
 **/TestResults/
