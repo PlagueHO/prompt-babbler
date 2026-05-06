@@ -9,11 +9,11 @@
 ## Research Topics
 
 1. Dockerfile(s) in the repository
-2. Azure Container Apps Bicep configuration in `infra/`
-3. `azure.yaml` — how `azd` maps services to Container Apps
-4. `AppHost.cs` — Aspire local orchestration and container references
-5. `.dockerignore` files
-6. Container Apps environment configuration: scale rules, CPU/memory, ingress, env vars
+1. Azure Container Apps Bicep configuration in `infra/`
+1. `azure.yaml` — how `azd` maps services to Container Apps
+1. `AppHost.cs` — Aspire local orchestration and container references
+1. `.dockerignore` files
+1. Container Apps environment configuration: scale rules, CPU/memory, ingress, env vars
 
 ---
 
@@ -72,6 +72,7 @@ ENTRYPOINT ["dotnet", "PromptBabbler.Api.dll"]                   # line 31
 - Entrypoint: `dotnet PromptBabbler.Api.dll`
 
 **Docker build context (from CI workflow):**
+
 - Context: `./prompt-babbler-service` (the service folder)
 - Dockerfile: `./prompt-babbler-service/src/Api/Dockerfile`
 - The Dockerfile uses paths relative to the context root (`prompt-babbler-service/`)
@@ -82,7 +83,7 @@ ENTRYPOINT ["dotnet", "PromptBabbler.Api.dll"]                   # line 31
 
 **File:** `prompt-babbler-service/.dockerignore`
 
-```
+```text
 **/bin/
 **/obj/
 **/TestResults/
@@ -141,6 +142,7 @@ var containerAppsEnvironmentName = '${abbrs.appManagedEnvironments}${environment
 ```
 
 **For a new MCP server Container App, the pattern would be:**
+
 ```bicep
 var mcpServerContainerAppName = '${abbrs.appContainerApps}${environmentName}-mcp-server'
 // Result: 'ca-{environmentName}-mcp-server'
@@ -377,7 +379,7 @@ services:
 
 ### GHCR image name
 
-```
+```text
 ghcr.io/plagueho/prompt-babbler-mcp-server
 ```
 
@@ -387,15 +389,15 @@ ghcr.io/plagueho/prompt-babbler-mcp-server
 
 1. **Does the MCP server need Speech SDK native dependencies?** The API installs `libasound2t64` and `libssl3t64` for the Speech SDK. If the MCP server does not use Speech, these can be omitted (simpler base stage).
 
-2. **What environment variables will the MCP server need?** The API injects Foundry, Cosmos, Entra ID, CORS, and access code vars. The MCP server's variable set depends on what services it calls.
+1. **What environment variables will the MCP server need?** The API injects Foundry, Cosmos, Entra ID, CORS, and access code vars. The MCP server's variable set depends on what services it calls.
 
-3. **Does the MCP server need external ingress or internal-only?** The API is `ingressExternal: true`. If the MCP server is consumed only by the API (internal), `ingressExternal: false` with `ingressTargetPort: 8080` would be more secure.
+1. **Does the MCP server need external ingress or internal-only?** The API is `ingressExternal: true`. If the MCP server is consumed only by the API (internal), `ingressExternal: false` with `ingressTargetPort: 8080` would be more secure.
 
-4. **Will the MCP server image be published to GHCR as `prompt-babbler-mcp-server`?** The CI workflow will need a new job mirroring `build-and-push-api-container`.
+1. **Will the MCP server image be published to GHCR as `prompt-babbler-mcp-server`?** The CI workflow will need a new job mirroring `build-and-push-api-container`.
 
-5. **What RBAC roles does the MCP server managed identity need?** Depends on which Azure resources it accesses (Foundry, Cosmos, etc.).
+1. **What RBAC roles does the MCP server managed identity need?** Depends on which Azure resources it accesses (Foundry, Cosmos, etc.).
 
-6. **Does the MCP server run in the same Container Apps Environment?** Based on patterns it should share `containerAppsEnvironmentName`, same as the API.
+1. **Does the MCP server run in the same Container Apps Environment?** Based on patterns it should share `containerAppsEnvironmentName`, same as the API.
 
 ---
 
