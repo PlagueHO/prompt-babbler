@@ -3,11 +3,11 @@
 ## Research Questions
 
 1. Can tags be set/edited directly within BabbleCard, BabbleListItem, or BabbleBubbles components?
-2. Is tag editing ONLY available in the BabbleEditor?
-3. Where does `TagInput` appear (every location where tags are editable)?
-4. What is the babble detail page editing flow?
-5. Is there a babble creation form that includes tag input?
-6. What is the full user journey for setting tags on a babble?
+1. Is tag editing ONLY available in the BabbleEditor?
+1. Where does `TagInput` appear (every location where tags are editable)?
+1. What is the babble detail page editing flow?
+1. Is there a babble creation form that includes tag input?
+1. What is the full user journey for setting tags on a babble?
 
 ---
 
@@ -80,12 +80,13 @@ The babble detail page controls the editing flow:
 - **Save handler:** Calls `updateBabble(updated.id, { title: updated.title, text: updated.text, tags: updated.tags })`
 
 The flow is:
+
 1. User views babble detail page → tags shown via `TagList` (read-only badges)
-2. User clicks "Edit Text" button → `isEditing = true`
-3. `BabbleEditor` renders with both text area AND `TagInput`
-4. User can add/remove tags in the `TagInput`
-5. User clicks "Save" → `handleSave` updates babble including tags via API
-6. `isEditing = false` → back to read-only view with updated tags
+1. User clicks "Edit Text" button → `isEditing = true`
+1. `BabbleEditor` renders with both text area AND `TagInput`
+1. User can add/remove tags in the `TagInput`
+1. User clicks "Save" → `handleSave` updates babble including tags via API
+1. `isEditing = false` → back to read-only view with updated tags
 
 ### 7. Babble Creation Flow (`prompt-babbler-app/src/pages/RecordPage.tsx`)
 
@@ -100,10 +101,12 @@ The flow is:
 ### 8. API Contract
 
 From `api-client.ts`:
+
 - `createBabble(request: { title: string; text: string; tags?: string[] })` — tags optional at creation
 - `updateBabble(id, request: { title: string; text: string; tags?: string[] })` — tags optional at update
 
 From `useBabbles.ts`:
+
 - Both `createBabble` and `updateBabble` pass through `tags` when provided
 
 ---
@@ -112,18 +115,18 @@ From `useBabbles.ts`:
 
 1. **Tag editing for babbles is ONLY available in the `BabbleEditor` component**, which appears exclusively on the `BabblePage` (babble detail view) when `isEditing` is true.
 
-2. **BabbleCard, BabbleListItem, and BabbleBubbles are strictly display-only** — they use `TagList` (renders read-only `Badge` elements) and have no edit capabilities for tags.
+1. **BabbleCard, BabbleListItem, and BabbleBubbles are strictly display-only** — they use `TagList` (renders read-only `Badge` elements) and have no edit capabilities for tags.
 
-3. **Tags cannot be set during babble creation** — the RecordPage does not include a `TagInput` and does not pass tags when calling `createBabble`.
+1. **Tags cannot be set during babble creation** — the RecordPage does not include a `TagInput` and does not pass tags when calling `createBabble`.
 
-4. **The only user journey to set tags on a babble is:**
+1. **The only user journey to set tags on a babble is:**
    - Create babble (via RecordPage or file upload) → no tags
    - Navigate to babble detail page (`/babble/:id`)
    - Click "Edit Text" button
    - Add tags via `TagInput` in `BabbleEditor`
    - Click "Save"
 
-5. **The `TemplateEditor` also uses `TagInput`** but for template tags, not babble tags — this is a separate domain.
+1. **The `TemplateEditor` also uses `TagInput`** but for template tags, not babble tags — this is a separate domain.
 
 ---
 

@@ -9,11 +9,11 @@
 ## Questions Under Investigation
 
 1. How exactly does `AppHost.cs` pass the access code to the API service?
-2. How does `Program.cs` read and map the `ACCESS_CODE` env var?
-3. Does `AccessCodeMiddleware` read from config or env var directly?
-4. How does ASP.NET Core's double-underscore convention work?
-5. Is `AddEnvironmentVariables()` active in the existing API?
-6. Which env var key name should the MCP server use, and why?
+1. How does `Program.cs` read and map the `ACCESS_CODE` env var?
+1. Does `AccessCodeMiddleware` read from config or env var directly?
+1. How does ASP.NET Core's double-underscore convention work?
+1. Is `AddEnvironmentVariables()` active in the existing API?
+1. Which env var key name should the MCP server use, and why?
 
 ---
 
@@ -132,13 +132,13 @@ The plan (mcp-server-log.md DD-05) confirms the MCP server's `Program.cs` does n
 
 1. **No mapping code required.** The double-underscore convention is handled by ASP.NET Core's built-in `AddEnvironmentVariables()` provider, which is always active. This eliminates a bespoke workaround.
 
-2. **Consistent with all other env vars in AppHost.cs.** Every other hierarchical config value passed via Aspire uses the double-underscore convention (`Azure__TenantId`, `AzureAd__ClientId`, etc.). `ACCESS_CODE` in the API is the odd one out.
+1. **Consistent with all other env vars in AppHost.cs.** Every other hierarchical config value passed via Aspire uses the double-underscore convention (`Azure__TenantId`, `AzureAd__ClientId`, etc.). `ACCESS_CODE` in the API is the odd one out.
 
-3. **The API's `ACCESS_CODE` pattern is a workaround, not a template.** The API has the explicit bridging code because `ACCESS_CODE` is an unconventional flat name (possibly chosen for Docker/ACA compatibility or historical reasons). The MCP server should not replicate this workaround.
+1. **The API's `ACCESS_CODE` pattern is a workaround, not a template.** The API has the explicit bridging code because `ACCESS_CODE` is an unconventional flat name (possibly chosen for Docker/ACA compatibility or historical reasons). The MCP server should not replicate this workaround.
 
-4. **Both work if mapping code is present, but Option A silently fails without it.** If a future developer edits the MCP server's `Program.cs` without knowing about the `ACCESS_CODE` convention, the access code feature will silently not activate (options will bind with null). Option B cannot silently fail in this way.
+1. **Both work if mapping code is present, but Option A silently fails without it.** If a future developer edits the MCP server's `Program.cs` without knowing about the `ACCESS_CODE` convention, the access code feature will silently not activate (options will bind with null). Option B cannot silently fail in this way.
 
-5. **Minor inconsistency with the API's external env var name.** Operators who set `ACCESS_CODE` as a bare OS env var for the API cannot reuse that exact var name for the MCP server. They must use `AccessControl__AccessCode` instead. This is a **documentation concern only** — it is not a failure mode, and it should be noted in the MCP server's README or configuration guide.
+1. **Minor inconsistency with the API's external env var name.** Operators who set `ACCESS_CODE` as a bare OS env var for the API cannot reuse that exact var name for the MCP server. They must use `AccessControl__AccessCode` instead. This is a **documentation concern only** — it is not a failure mode, and it should be noted in the MCP server's README or configuration guide.
 
 ---
 
