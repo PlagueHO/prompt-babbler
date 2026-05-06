@@ -19,6 +19,16 @@ on:
         description: "The name of the Azure environment"
         required: true
         type: string
+      CONTAINER_IMAGE_API:
+        description: "API container image to deploy (e.g., ghcr.io/owner/prompt-babbler-api:sha-abc123). Defaults to :latest."
+        required: false
+        type: string
+        default: ''
+      CONTAINER_IMAGE_MCP_SERVER:
+        description: "MCP server container image to deploy (e.g., ghcr.io/owner/prompt-babbler-mcp-server:sha-abc123). Defaults to :latest."
+        required: false
+        type: string
+        default: ''
 
     secrets:
       AZURE_TENANT_ID:
@@ -40,6 +50,8 @@ jobs:
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
+      CONTAINER_IMAGE_API: ${{ inputs.CONTAINER_IMAGE_API }}
+      CONTAINER_IMAGE_MCP_SERVER: ${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -58,6 +70,8 @@ jobs:
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ inputs.AZURE_ENV_NAME }}
+      CONTAINER_IMAGE_API: ${{ inputs.CONTAINER_IMAGE_API }}
+      CONTAINER_IMAGE_MCP_SERVER: ${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -90,6 +104,8 @@ jobs:
       AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME: ${{ needs.provision-infrastructure.outputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}
       AZURE_RESOURCE_GROUP: ${{ needs.provision-infrastructure.outputs.AZURE_RESOURCE_GROUP }}
       AZURE_CONTAINER_APP_NAME: ${{ needs.provision-infrastructure.outputs.AZURE_CONTAINER_APP_NAME }}
+      AZURE_MCP_SERVER_CONTAINER_APP_NAME: ${{ needs.provision-infrastructure.outputs.AZURE_MCP_SERVER_CONTAINER_APP_NAME }}
+      AZURE_MCP_SERVER_CONTAINER_APP_FQDN: ${{ needs.provision-infrastructure.outputs.AZURE_MCP_SERVER_CONTAINER_APP_FQDN }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

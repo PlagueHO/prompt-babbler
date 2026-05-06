@@ -40,6 +40,10 @@
         "playwright",
         "run-test-mcp-server"
       ]
+    },
+    "prompt-babbler": {
+      "type": "http",
+      "url": "http://localhost:5242"
     }
   }
 }

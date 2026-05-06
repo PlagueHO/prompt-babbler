@@ -25,6 +25,7 @@ Prompt Babbler turns rough speech into polished, structured prompts ready to use
 - **Multi-target support** — Included built-in templates for GitHub Copilot, general AI assistants, and image generators.
 - **Single-user and multi-user modes** — Run privately without authentication, or enable Microsoft Entra ID for multi-user access.
 - **Fully cloud-native** — Deploys to Azure Static Web Apps + Azure Container Apps with Cosmos DB and Azure AI Foundry, all provisioned via Bicep.
+- **MCP server** — Exposes babbles, templates, and prompt generation to GitHub Copilot, Claude, and any MCP-compatible AI client via the Model Context Protocol.
 
 ## Quick Start
 
@@ -52,6 +53,45 @@ aspire run
 
 Aspire handles all dependency installation, builds, and orchestration automatically. On first run it provisions Azure AI Foundry resources and starts a Cosmos DB emulator in Docker — this takes several minutes. Subsequent runs start quickly.
 
+---
+
+## MCP Server
+
+Prompt Babbler includes an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that exposes your babbles, prompt templates, and prompt generation to any MCP-compatible AI client. Connect GitHub Copilot, Claude, or another agent and let it search your voice notes or generate prompts on your behalf — without leaving the chat interface.
+
+The MCP endpoint when running locally is `http://localhost:5242`. See [docs/MCP-SERVER.md](docs/MCP-SERVER.md) for the full tool reference, resource catalog, and authentication options.
+
+### VS Code (GitHub Copilot Agent Mode)
+
+Create `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "servers": {
+    "prompt-babbler": {
+      "type": "http",
+      "url": "http://localhost:5242"
+    }
+  }
+}
+```
+
+Open **GitHub Copilot Chat**, switch to **Agent Mode**, and `prompt-babbler` appears in the tools list.
+
+### Claude Code
+
+```bash
+claude mcp add --transport http prompt-babbler http://localhost:5242
+```
+
+### GitHub Copilot CLI
+
+```bash
+gh copilot mcp add prompt-babbler --transport http http://localhost:5242
+```
+
+---
+
 ## Documentation
 
 | Document | Description |
@@ -60,6 +100,7 @@ Aspire handles all dependency installation, builds, and orchestration automatica
 | [Local Development](docs/QUICKSTART-LOCAL.md) | Run locally with .NET Aspire |
 | [Deploy to Azure](docs/QUICKSTART-AZURE.md) | Deploy to Azure with Azure Developer CLI |
 | [API Reference](docs/API.md) | Full API reference with request/response schemas |
+| [MCP Server](docs/MCP-SERVER.md) | MCP tools, resources, prompts, and client configuration |
 | [CI/CD Setup](docs/CICD.md) | GitHub Actions pipeline configuration |
 | [Infrastructure](infra/README.md) | Azure Bicep infrastructure details |
 

@@ -3,6 +3,9 @@ param(
     [string]$ApiBaseUrl,
 
     [Parameter(Mandatory)]
+    [string]$McpServerBaseUrl,
+
+    [Parameter(Mandatory)]
     [string]$FrontendBaseUrl,
 
     [Parameter()]
@@ -159,5 +162,75 @@ Describe 'Frontend SPA' {
         $assetUrl = "$FrontendBaseUrl$($assetMatch.Groups[1].Value)"
         $response = Invoke-WebRequest -Uri $assetUrl -UseBasicParsing -TimeoutSec 10
         $response.StatusCode | Should -Be 200
+    }
+}
+
+Describe 'MCP Server' {
+    BeforeAll {
+        # Wait for /health endpoint — same cold-start considerations as the API.
+        $healthRetries = 15
+        $retryDelay = 10
+        $healthy = $false
+
+        for ($i = 1; $i -le $healthRetries; $i++) {
+            $timestamp = Get-Date -Format 'HH:mm:ss'
+            try {
+                $response = Invoke-WebRequest -Uri "$McpServerBaseUrl/health" -UseBasicParsing -TimeoutSec 10
+                if ($response.StatusCode -eq 200) {
+                    $healthy = $true
+                    Write-Host "[$timestamp] MCP Server /health is ready (attempt $i/$healthRetries)"
+                    break
+                }
+                else {
+                    Write-Host "[$timestamp] MCP Server Phase 1 attempt $i/${healthRetries}: /health returned status $($response.StatusCode), retrying in ${retryDelay}s..."
+                    Start-Sleep -Seconds $retryDelay
+                }
+            }
+            catch {
+                $errorDetail = $_.Exception.Message
+                if ($_.Exception.Response) {
+                    $errorDetail = "HTTP $([int]$_.Exception.Response.StatusCode) - $($_.Exception.Message)"
+                }
+                Write-Host "[$timestamp] MCP Server Phase 1 attempt $i/${healthRetries}: /health not ready ($errorDetail), retrying in ${retryDelay}s..."
+                Start-Sleep -Seconds $retryDelay
+            }
+        }
+
+        if (-not $healthy) {
+            $finalError = "Unknown"
+            try {
+                $response = Invoke-WebRequest -Uri "$McpServerBaseUrl/health" -UseBasicParsing -TimeoutSec 10
+                $finalError = "Status $($response.StatusCode): $($response.Content)"
+            }
+            catch {
+                $finalError = $_.Exception.Message
+                if ($_.Exception.Response) {
+                    $finalError = "HTTP $([int]$_.Exception.Response.StatusCode): $($_.Exception.Message)"
+                }
+            }
+            throw "MCP Server /health did not become healthy after $healthRetries attempts. Last error: $finalError"
+        }
+    }
+
+    It 'Health endpoint returns Healthy' {
+        $response = Invoke-WebRequest -Uri "$McpServerBaseUrl/health" -UseBasicParsing -TimeoutSec 10
+        $response.StatusCode | Should -Be 200
+
+        $status = $response.Content | ConvertFrom-Json
+        $status.status | Should -Be 'Healthy'
+    }
+
+    It 'Liveness endpoint returns 200' {
+        $response = Invoke-WebRequest -Uri "$McpServerBaseUrl/alive" -UseBasicParsing -TimeoutSec 10
+        $response.StatusCode | Should -Be 200
+    }
+
+    It 'Health endpoint reports prompt-babbler-api dependency as Healthy' {
+        $response = Invoke-WebRequest -Uri "$McpServerBaseUrl/health" -UseBasicParsing -TimeoutSec 30
+        $response.StatusCode | Should -Be 200
+
+        $status = $response.Content | ConvertFrom-Json
+        $status.status | Should -Be 'Healthy'
+        $status.entries.'prompt-babbler-api'.status | Should -Be 'Healthy'
     }
 }
