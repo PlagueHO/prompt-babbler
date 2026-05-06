@@ -3,11 +3,11 @@
 ## Research Questions
 
 1. How does the MCP C# SDK handle authentication? (`ModelContextProtocol.AspNetCore`)
-2. What is the MCP specification's authentication model?
-3. How do MCP clients pass credentials to remote MCP servers?
-4. Should the MCP server forward user tokens to the API or authenticate as a service principal?
-5. How to integrate the MCP server into the existing Aspire AppHost?
-6. What references does the MCP server need in Aspire?
+1. What is the MCP specification's authentication model?
+1. How do MCP clients pass credentials to remote MCP servers?
+1. Should the MCP server forward user tokens to the API or authenticate as a service principal?
+1. How to integrate the MCP server into the existing Aspire AppHost?
+1. What references does the MCP server need in Aspire?
 
 ---
 
@@ -15,7 +15,7 @@
 
 ### MCP Specification Authentication Model (2025-06-18)
 
-Source: https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization
+Source: <https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization>
 
 Key points:
 
@@ -30,14 +30,14 @@ Key points:
 
 ### Token Passthrough is Explicitly Forbidden
 
-Source: https://modelcontextprotocol.io/specification/2025-06-18/basic/security_best_practices#token-passthrough
+Source: <https://modelcontextprotocol.io/specification/2025-06-18/basic/security_best_practices#token-passthrough>
 
 **Critical finding:**
 
 > "Token passthrough is an anti-pattern where an MCP server accepts tokens from an MCP client without validating that the tokens were properly issued to the MCP server and passes them through to the downstream API."
-
+>
 > "MCP servers MUST NOT accept any tokens that were not explicitly issued for the MCP server."
-
+>
 > "If the MCP server makes requests to upstream APIs, it may act as an OAuth client to them. The access token used at the upstream API is a separate token, issued by the upstream authorization server. The MCP server MUST NOT pass through the token it received from the MCP client."
 
 **Implications for Prompt Babbler:**
@@ -48,7 +48,7 @@ Source: https://modelcontextprotocol.io/specification/2025-06-18/basic/security_
 
 ### MCP C# SDK Authentication Support (`ModelContextProtocol.AspNetCore`)
 
-Source: `samples/ProtectedMcpServer/Program.cs` in https://github.com/modelcontextprotocol/csharp-sdk
+Source: `samples/ProtectedMcpServer/Program.cs` in <https://github.com/modelcontextprotocol/csharp-sdk>
 
 The C# SDK provides:
 
@@ -57,7 +57,7 @@ The C# SDK provides:
    - `.AddMcp(options => ...)` extension on `AuthenticationBuilder` — configures Protected Resource Metadata
    - `options.ResourceMetadata` — exposes `/.well-known/oauth-protected-resource`
 
-2. **Pattern from ProtectedMcpServer sample:**
+1. **Pattern from ProtectedMcpServer sample:**
 
 ```csharp
 builder.Services.AddAuthentication(options =>
@@ -88,7 +88,7 @@ builder.Services.AddAuthentication(options =>
 app.MapMcp().RequireAuthorization();
 ```
 
-3. **Stateless mode** is recommended for servers that don't need server-to-client requests:
+1. **Stateless mode** is recommended for servers that don't need server-to-client requests:
 
 ```csharp
 builder.Services.AddMcpServer()
@@ -100,7 +100,7 @@ builder.Services.AddMcpServer()
 
 #### VS Code Copilot (Agent Mode)
 
-Source: https://code.visualstudio.com/docs/copilot/reference/mcp-configuration
+Source: <https://code.visualstudio.com/docs/copilot/reference/mcp-configuration>
 
 VS Code supports remote HTTP MCP servers with static headers:
 
@@ -126,9 +126,9 @@ VS Code supports remote HTTP MCP servers with static headers:
 
 - Claude Desktop supports the full MCP OAuth 2.1 flow for remote servers:
   1. Client discovers `/.well-known/oauth-protected-resource`
-  2. Client gets authorization server metadata
-  3. Client performs PKCE OAuth flow via browser popup
-  4. Client stores token and includes in all requests
+  1. Client gets authorization server metadata
+  1. Client performs PKCE OAuth flow via browser popup
+  1. Client stores token and includes in all requests
 - Other clients may support static bearer token headers only
 
 ### Authentication Pattern Recommendation for Prompt Babbler MCP Server
@@ -144,15 +144,16 @@ Given the three auth modes of the API:
 **Recommended approach: Hybrid based on mode**
 
 1. **Anonymous mode**: MCP server runs without auth, calls API without auth. Simplest.
-2. **Access Code mode**: MCP server accepts access code (via `Authorization: Bearer <code>` or custom header), validates it, then passes it to the API as `X-Access-Code`. This is NOT token passthrough in the MCP spec sense because:
+1. **Access Code mode**: MCP server accepts access code (via `Authorization: Bearer <code>` or custom header), validates it, then passes it to the API as `X-Access-Code`. This is NOT token passthrough in the MCP spec sense because:
    - The access code is not an OAuth token
    - It's a simple shared secret validated at both layers
    - The MCP spec forbids passing *OAuth tokens* through; access codes are a different mechanism
-3. **Entra ID mode**: Two sub-options:
+1. **Entra ID mode**: Two sub-options:
    - **Option A (Recommended): On-Behalf-Of (OBO) flow** — MCP server receives user's token (audience=MCP server), then uses OBO to get a new token for the API (audience=API). This preserves user identity AND complies with the MCP spec (separate tokens for each service).
    - **Option B: Service principal** — MCP server authenticates to API using its own managed identity. Simpler but loses user identity context for per-user data isolation.
 
 **Final recommendation: Option A (OBO) for Entra ID mode** because:
+
 - The API uses `User.GetObjectId()` for per-user data isolation
 - User identity MUST flow to the API for correct data scoping
 - OBO is the standard Microsoft pattern for this exact scenario
@@ -167,6 +168,7 @@ Given the three auth modes of the API:
 File: `prompt-babbler-service/src/Orchestration/AppHost/AppHost.cs`
 
 Current resources:
+
 - `foundry` / `foundryProject` — Azure AI Foundry
 - `chatDeployment`, `embeddingDeployment` — AI model deployments
 - `cosmos` — Azure Cosmos DB with containers
@@ -242,24 +244,24 @@ Need to add a project reference:
 ## Key Discoveries Summary
 
 1. **MCP spec explicitly forbids token passthrough** — the MCP server must use separate tokens for downstream API calls
-2. **On-Behalf-Of (OBO) flow** is the correct pattern for Entra ID mode to preserve user identity
-3. **Access code mode** works by accepting the code and forwarding it as `X-Access-Code` (not an OAuth token, so not subject to the passthrough prohibition)
-4. **C# SDK provides** `ModelContextProtocol.AspNetCore.Authentication` with `.AddMcp()` for Protected Resource Metadata and `McpAuthenticationDefaults`
-5. **VS Code MCP clients** use static `headers` in `mcp.json` config (e.g., `"Authorization": "Bearer ${input:token}"`)
-6. **Claude Desktop** supports full OAuth 2.1 flow via browser popup
-7. **Aspire wiring** follows the frontend pattern: `.WithReference(apiService)` + service discovery resolves URLs automatically
-8. **Stateless mode** recommended for the MCP server (no server-to-client requests needed)
+1. **On-Behalf-Of (OBO) flow** is the correct pattern for Entra ID mode to preserve user identity
+1. **Access code mode** works by accepting the code and forwarding it as `X-Access-Code` (not an OAuth token, so not subject to the passthrough prohibition)
+1. **C# SDK provides** `ModelContextProtocol.AspNetCore.Authentication` with `.AddMcp()` for Protected Resource Metadata and `McpAuthenticationDefaults`
+1. **VS Code MCP clients** use static `headers` in `mcp.json` config (e.g., `"Authorization": "Bearer ${input:token}"`)
+1. **Claude Desktop** supports full OAuth 2.1 flow via browser popup
+1. **Aspire wiring** follows the frontend pattern: `.WithReference(apiService)` + service discovery resolves URLs automatically
+1. **Stateless mode** recommended for the MCP server (no server-to-client requests needed)
 
 ---
 
 ## References
 
-- MCP Authorization Specification: https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization
-- MCP Security Best Practices: https://modelcontextprotocol.io/specification/2025-06-18/basic/security_best_practices
-- MCP C# SDK: https://github.com/modelcontextprotocol/csharp-sdk
-- ProtectedMcpServer sample: https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMcpServer
-- C# SDK Getting Started: https://csharp.sdk.modelcontextprotocol.io/concepts/getting-started.html
-- VS Code MCP Configuration: https://code.visualstudio.com/docs/copilot/reference/mcp-configuration
+- MCP Authorization Specification: <https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization>
+- MCP Security Best Practices: <https://modelcontextprotocol.io/specification/2025-06-18/basic/security_best_practices>
+- MCP C# SDK: <https://github.com/modelcontextprotocol/csharp-sdk>
+- ProtectedMcpServer sample: <https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/ProtectedMcpServer>
+- C# SDK Getting Started: <https://csharp.sdk.modelcontextprotocol.io/concepts/getting-started.html>
+- VS Code MCP Configuration: <https://code.visualstudio.com/docs/copilot/reference/mcp-configuration>
 - Existing API auth: `prompt-babbler-service/src/Api/Program.cs` (lines 170-210)
 - Existing AccessCode middleware: `prompt-babbler-service/src/Api/Middleware/AccessCodeMiddleware.cs`
 - Existing AppHost: `prompt-babbler-service/src/Orchestration/AppHost/AppHost.cs`
@@ -270,5 +272,5 @@ Need to add a project reference:
 ## Clarifying Questions
 
 1. **MCP server app registration**: For Entra ID mode with OBO, the MCP server needs its own Entra ID app registration (separate from the API's). Should this be created now, or deferred to when Entra ID mode is implemented?
-2. **Access code forwarding**: The API currently checks `X-Access-Code` header. Should the MCP server support both the access code header and `Authorization: Bearer <code>` (i.e., accept the access code as a bearer token from MCP clients that can only set Authorization headers)?
-3. **External exposure**: Will the MCP server be exposed publicly (for Claude Desktop OAuth flow) or only locally/within the Aspire orchestration?
+1. **Access code forwarding**: The API currently checks `X-Access-Code` header. Should the MCP server support both the access code header and `Authorization: Bearer <code>` (i.e., accept the access code as a bearer token from MCP clients that can only set Authorization headers)?
+1. **External exposure**: Will the MCP server be exposed publicly (for Claude Desktop OAuth flow) or only locally/within the Aspire orchestration?

@@ -3,11 +3,11 @@
 ## Research Topics
 
 1. MCP C# SDK setup and project structure
-2. Streamable HTTP transport configuration for ASP.NET Core
-3. MCP capabilities/primitives (Tools, Resources, Prompts)
-4. Authentication patterns for remote MCP servers
-5. Required NuGet packages
-6. Example code for defining tools, resources, and prompts
+1. Streamable HTTP transport configuration for ASP.NET Core
+1. MCP capabilities/primitives (Tools, Resources, Prompts)
+1. Authentication patterns for remote MCP servers
+1. Required NuGet packages
+1. Example code for defining tools, resources, and prompts
 
 ## Status: Complete
 
@@ -69,6 +69,7 @@ app.Run();
 | Custom path | `app.MapMcp("/custom-path")` |
 
 **Protocol details:**
+
 - Client sends JSON-RPC messages as HTTP POST to the MCP endpoint
 - Client includes `Accept: application/json, text/event-stream`
 - Server responds with either `application/json` (single response) or `text/event-stream` (SSE stream for multiple messages)
@@ -76,6 +77,7 @@ app.Run();
 - Supports resumability via SSE event IDs and `Last-Event-ID` header
 
 **Security requirements (from spec):**
+
 - Servers MUST validate the `Origin` header on incoming connections to prevent DNS rebinding attacks
 - When running locally, bind only to localhost (127.0.0.1)
 - Implement proper authentication for all connections
@@ -89,6 +91,7 @@ app.Run();
 The MCP protocol defines three core primitives:
 
 #### Tools
+
 Functions the LLM can invoke. Primary mechanism for exposing server functionality.
 
 - Decorated with `[McpServerToolType]` (class) and `[McpServerTool]` (method)
@@ -98,6 +101,7 @@ Functions the LLM can invoke. Primary mechanism for exposing server functionalit
 - DI-injected parameters (don't appear in schema): `CancellationToken`, `IMcpServer`, `IProgress<ProgressNotificationValue>`, any registered service
 
 #### Prompts
+
 Reusable LLM interaction templates for common patterns.
 
 - Decorated with `[McpServerPromptType]` (class) and `[McpServerPrompt]` (method)
@@ -105,13 +109,15 @@ Reusable LLM interaction templates for common patterns.
 - Parameters exposed as prompt arguments
 
 #### Resources
+
 Data the LLM can read (configuration, files, state).
 
 - Decorated with `[McpServerResourceType]` (class) and `[McpServerResource]` (method)
 - Attribute properties: `UriTemplate`, `Name`, `Title`, `MimeType`, `IconSource`
 - Support subscribe/list-changed notifications
 
-#### Additional capabilities:
+#### Additional capabilities
+
 - **ServerInstructions** — text injected to help the LLM understand the server's purpose
 - **Progress reporting** — via `IProgress<ProgressNotificationValue>`
 - **Notifications** — tools can notify clients of list changes
@@ -124,6 +130,7 @@ Data the LLM can read (configuration, files, state).
 #### 4a. MCP Spec's Approach to Authorization
 
 The MCP specification defines authorization at the transport level (OPTIONAL):
+
 - Based on OAuth 2.1 (draft-ietf-oauth-v2-1-13)
 - Uses RFC 9728 (OAuth 2.0 Protected Resource Metadata) for discovery
 - MCP server acts as an OAuth 2.1 Resource Server
@@ -131,19 +138,21 @@ The MCP specification defines authorization at the transport level (OPTIONAL):
 - Tokens are Bearer tokens in the `Authorization` header on every HTTP request
 
 **Discovery flow:**
+
 1. Client makes unauthenticated MCP request
-2. Server returns HTTP 401 with `WWW-Authenticate: Bearer resource_metadata="..."` header
-3. Client fetches Protected Resource Metadata (`.well-known/oauth-protected-resource`)
-4. Metadata includes `authorization_servers` array pointing to the OAuth/OIDC authorization server
-5. Client discovers AS metadata (RFC 8414 or OIDC Discovery)
-6. Standard OAuth 2.1 authorization code flow with PKCE
-7. Client includes access token in subsequent MCP requests
+1. Server returns HTTP 401 with `WWW-Authenticate: Bearer resource_metadata="..."` header
+1. Client fetches Protected Resource Metadata (`.well-known/oauth-protected-resource`)
+1. Metadata includes `authorization_servers` array pointing to the OAuth/OIDC authorization server
+1. Client discovers AS metadata (RFC 8414 or OIDC Discovery)
+1. Standard OAuth 2.1 authorization code flow with PKCE
+1. Client includes access token in subsequent MCP requests
 
 **Client registration approaches (priority order):**
+
 1. Pre-registered client credentials
-2. Client ID Metadata Documents (HTTPS URL as client_id — RFC draft)
-3. Dynamic Client Registration (RFC 7591)
-4. User-entered client information
+1. Client ID Metadata Documents (HTTPS URL as client_id — RFC draft)
+1. Dynamic Client Registration (RFC 7591)
+1. User-entered client information
 
 #### 4b. Anonymous/No Auth
 
@@ -200,6 +209,7 @@ public class AuthAwareTools(IHttpContextAccessor httpContextAccessor)
 The C# SDK includes MCP-specific authentication support in the `ModelContextProtocol.AspNetCore.Authentication` namespace:
 
 **Key classes:**
+
 - `McpAuthenticationDefaults` — default scheme names
 - `McpAuthenticationHandler` — adds resource metadata to challenge responses
 - `McpAuthenticationOptions` — configuration for resource metadata
@@ -246,11 +256,13 @@ app.MapMcp().RequireAuthorization();
 ```
 
 The `.AddMcp()` extension on the authentication builder:
+
 - Serves Protected Resource Metadata at `.well-known/oauth-protected-resource`
 - Adds `resource_metadata` URL to `WWW-Authenticate` headers on 401 responses
 - Enables MCP clients to discover the authorization server per RFC 9728
 
 **For Entra ID multi-tenant:**
+
 - Set `Authority` to `https://login.microsoftonline.com/common/v2.0` or `organizations/v2.0`
 - Validate issuer against allowed tenants dynamically
 - Set `ValidAudience` to the app registration's Application ID URI or client ID
@@ -351,21 +363,21 @@ public static class BabbleResources
 
 ## References
 
-- GitHub repo: https://github.com/modelcontextprotocol/csharp-sdk (v1.2.0, latest release March 28, 2025)
-- API docs: https://csharp.sdk.modelcontextprotocol.io/api/ModelContextProtocol.html
-- Getting started: https://csharp.sdk.modelcontextprotocol.io/concepts/getting-started.html
-- MCP Transports spec (2025-03-26): https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http
-- MCP Authorization spec (2025-11-25): https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization
-- Protected MCP Server sample: https://github.com/modelcontextprotocol/csharp-sdk/blob/main/samples/ProtectedMcpServer/Program.cs
-- Microsoft quickstart: https://learn.microsoft.com/dotnet/ai/quickstarts/build-mcp-server
+- GitHub repo: <https://github.com/modelcontextprotocol/csharp-sdk> (v1.2.0, latest release March 28, 2025)
+- API docs: <https://csharp.sdk.modelcontextprotocol.io/api/ModelContextProtocol.html>
+- Getting started: <https://csharp.sdk.modelcontextprotocol.io/concepts/getting-started.html>
+- MCP Transports spec (2025-03-26): <https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http>
+- MCP Authorization spec (2025-11-25): <https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization>
+- Protected MCP Server sample: <https://github.com/modelcontextprotocol/csharp-sdk/blob/main/samples/ProtectedMcpServer/Program.cs>
+- Microsoft quickstart: <https://learn.microsoft.com/dotnet/ai/quickstarts/build-mcp-server>
 - Local skill reference: `mcp-csharp-create` skill (transport-config.md, api-patterns.md)
 
 ## Follow-on Questions
 
 1. **Session migration** — The SDK has `ISessionMigrationHandler` for persisting/restoring session initialization across server instances. Relevant for non-stateless deployments behind a load balancer.
-2. **CORS configuration** — Latest SDK docs emphasize AllowedHosts validation and restrictive CORS policies. The ProtectedMcpServer sample includes full CORS setup for browser clients.
-3. **Aspire integration** — How would the MCP server project integrate into the existing Aspire AppHost orchestration?
-4. **Multi-tenant Entra ID token validation** — Need to confirm the exact `ValidateIssuer` delegate pattern for multi-tenant scenarios where tenant ID isn't known ahead of time.
+1. **CORS configuration** — Latest SDK docs emphasize AllowedHosts validation and restrictive CORS policies. The ProtectedMcpServer sample includes full CORS setup for browser clients.
+1. **Aspire integration** — How would the MCP server project integrate into the existing Aspire AppHost orchestration?
+1. **Multi-tenant Entra ID token validation** — Need to confirm the exact `ValidateIssuer` delegate pattern for multi-tenant scenarios where tenant ID isn't known ahead of time.
 
 ## Clarifying Questions
 

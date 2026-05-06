@@ -3,12 +3,12 @@
 ## Research Topics
 
 1. Backend Babble domain model — all properties, types, JSON serialization attributes
-2. Frontend Babble TypeScript interface
-3. Babble API controller endpoints
-4. Babble service interface and implementation
-5. Babble repository interface and implementation
-6. Frontend BabbleCard component and related UI components
-7. Cosmos DB container configuration for babbles
+1. Frontend Babble TypeScript interface
+1. Babble API controller endpoints
+1. Babble service interface and implementation
+1. Babble repository interface and implementation
+1. Frontend BabbleCard component and related UI components
+1. Cosmos DB container configuration for babbles
 
 ---
 
@@ -386,11 +386,11 @@ resource babblesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
 ## Key Discoveries
 
 1. **Babble model is an immutable sealed record** with 9 properties. The `ContentVector` is a 1536-dim float array (Azure OpenAI text-embedding-ada-002 or equivalent) stored directly in Cosmos DB and excluded from regular indexing.
-2. **The API never exposes `userId` or `contentVector`** to clients — the response DTO (`BabbleResponse`) strips these fields.
-3. **Search is hybrid**: short queries (< 3 words or < 15 chars) use title-only text matching; longer queries run both title search and vector search in parallel, then merge results by highest similarity score.
-4. **Cascade delete**: Deleting a babble cascades to all associated `GeneratedPrompt` records.
-5. **Frontend has 7 babble components**: BabbleCard, BabbleBubbles, BabbleListItem, BabbleList, BabbleListSection, BabbleEditor, DeleteBabbleDialog.
-6. **Cosmos DB uses quantizedFlat vector index** — suitable for moderate-scale datasets; cosine distance function.
+1. **The API never exposes `userId` or `contentVector`** to clients — the response DTO (`BabbleResponse`) strips these fields.
+1. **Search is hybrid**: short queries (< 3 words or < 15 chars) use title-only text matching; longer queries run both title search and vector search in parallel, then merge results by highest similarity score.
+1. **Cascade delete**: Deleting a babble cascades to all associated `GeneratedPrompt` records.
+1. **Frontend has 7 babble components**: BabbleCard, BabbleBubbles, BabbleListItem, BabbleList, BabbleListSection, BabbleEditor, DeleteBabbleDialog.
+1. **Cosmos DB uses quantizedFlat vector index** — suitable for moderate-scale datasets; cosine distance function.
 
 ## Clarifying Questions
 

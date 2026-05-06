@@ -5,11 +5,11 @@
 ## Research Questions
 
 1. What API controllers exist and what endpoints do they expose?
-2. What are the domain models and their structure?
-3. What are the service interfaces/contracts?
-4. How does authentication work (anonymous, access code, Entra ID)?
-5. What API configuration exists?
-6. Is there an existing shared HTTP client library?
+1. What are the domain models and their structure?
+1. What are the service interfaces/contracts?
+1. How does authentication work (anonymous, access code, Entra ID)?
+1. What API configuration exists?
+1. Is there an existing shared HTTP client library?
 
 ---
 
@@ -48,7 +48,7 @@ All controllers are under `prompt-babbler-service/src/Api/Controllers/`. All con
 
 **POST `/api/babbles/{id}/generate` SSE Response Format:**
 
-```
+```text
 data: {"text": "chunk of generated text"}
 data: {"text": "more text..."}
 data: {"promptId": "uuid-of-saved-prompt"}
@@ -354,8 +354,8 @@ The API supports **three modes** configured via `Program.cs`:
 ### Authentication Priority Order
 
 1. Access Code middleware (if configured) — blocks non-allowlisted paths without valid code
-2. Authentication middleware (Entra ID JWT or synthetic anonymous)
-3. Authorization (`[Authorize]` + `[RequiredScope]`)
+1. Authentication middleware (Entra ID JWT or synthetic anonymous)
+1. Authorization (`[Authorize]` + `[RequiredScope]`)
 
 ### ClaimsPrincipalExtensions
 
@@ -617,15 +617,15 @@ Same fields as `CreatePromptTemplateRequest`.
    - Use anonymous mode (single-user, `userId = "_anonymous"`)
    - Provide an access code via `X-Access-Code` header
 
-2. **Streaming:** The `/api/babbles/{id}/generate` endpoint uses SSE (Server-Sent Events), not a standard JSON response. The MCP server will need to handle SSE parsing.
+1. **Streaming:** The `/api/babbles/{id}/generate` endpoint uses SSE (Server-Sent Events), not a standard JSON response. The MCP server will need to handle SSE parsing.
 
-3. **Pagination:** List endpoints use Cosmos DB continuation tokens, not offset-based pagination.
+1. **Pagination:** List endpoints use Cosmos DB continuation tokens, not offset-based pagination.
 
-4. **No existing .NET HTTP client:** There is no shared typed HTTP client for the API. An MCP server would need to create its own client or call the domain services directly (if in-process).
+1. **No existing .NET HTTP client:** There is no shared typed HTTP client for the API. An MCP server would need to create its own client or call the domain services directly (if in-process).
 
-5. **JSON naming:** All API responses use `camelCase` (configured via `JsonNamingPolicy.CamelCase`).
+1. **JSON naming:** All API responses use `camelCase` (configured via `JsonNamingPolicy.CamelCase`).
 
-6. **Health endpoints:** `/health` and `/alive` are mapped via Aspire service defaults (`MapDefaultEndpoints()`).
+1. **Health endpoints:** `/health` and `/alive` are mapped via Aspire service defaults (`MapDefaultEndpoints()`).
 
 ---
 

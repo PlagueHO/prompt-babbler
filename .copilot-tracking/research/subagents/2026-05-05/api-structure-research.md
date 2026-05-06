@@ -3,10 +3,10 @@
 ## Research Topics
 
 1. API project structure and startup/DI configuration
-2. Domain model definitions
-3. Controller endpoint signatures with request/response types
-4. Project structure patterns (solution, packages, references)
-5. Orchestration project patterns
+1. Domain model definitions
+1. Controller endpoint signatures with request/response types
+1. Project structure patterns (solution, packages, references)
+1. Orchestration project patterns
 
 ---
 
