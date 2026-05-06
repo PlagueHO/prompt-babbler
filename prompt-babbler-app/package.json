@@ -24,7 +24,7 @@
     "@opentelemetry/instrumentation-document-load": "^0.58.0",
     "@opentelemetry/instrumentation-fetch": "^0.214.0",
     "@opentelemetry/instrumentation-user-interaction": "^0.57.0",
-    "@opentelemetry/resources": "^2.6.0",
+    "@opentelemetry/resources": "^2.7.1",
     "@opentelemetry/sdk-metrics": "^2.6.0",
     "@opentelemetry/sdk-trace-base": "^2.7.0",
     "@opentelemetry/sdk-trace-web": "^2.7.0",
