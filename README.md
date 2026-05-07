@@ -2,9 +2,16 @@
 
 [![CI][ci-shield]][ci-url]
 [![CD][cd-shield]][cd-url]
-[![License][license-shield]][license-url]
+[![License: MIT][license-shield]][license-url]
+[![.NET 10][dotnet-shield]][dotnet-url]
+[![Node.js 22+][node-shield]][node-url]
+[![TypeScript][ts-shield]][ts-url]
+[![React 19][react-shield]][react-url]
 [![Azure][azure-shield]][azure-url]
-[![IaC][iac-shield]][iac-url]
+[![GitHub Issues][issues-shield]][issues-url]
+[![PRs Welcome][prs-shield]][prs-url]
+[![GitHub Stars][stars-shield]][stars-url]
+[![Docs][docs-shield]][docs-url]
 
 💬 Prompt Babbler is a speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Azure AI Foundry, and generates structured prompts for target systems like GitHub Copilot. It can run locally with a Cosmos DB emulator or be deployed to Azure with a fully managed Cosmos DB instance and Azure AI Foundry resources. The app is built with a React frontend and a .NET backend, orchestrated by .NET Aspire for seamless local and cloud development.
 
@@ -113,9 +120,23 @@ MIT
 [ci-url]: https://github.com/PlagueHO/prompt-babbler/actions/workflows/continuous-integration.yml
 [cd-shield]: https://img.shields.io/github/actions/workflow/status/PlagueHO/prompt-babbler/continuous-delivery.yml?branch=main&label=CD
 [cd-url]: https://github.com/PlagueHO/prompt-babbler/actions/workflows/continuous-delivery.yml
-[license-shield]: https://img.shields.io/github/license/PlagueHO/prompt-babbler
+[license-shield]: https://img.shields.io/badge/license-MIT-blue.svg
 [license-url]: https://github.com/PlagueHO/prompt-babbler/blob/main/LICENSE
-[azure-shield]: https://img.shields.io/badge/Azure-Solution%20Accelerator-0078D4?logo=microsoftazure&logoColor=white
+[dotnet-shield]: https://img.shields.io/badge/.NET-10-512bd4?logo=dotnet
+[dotnet-url]: https://dotnet.microsoft.com/download/dotnet/10.0
+[node-shield]: https://img.shields.io/badge/Node.js-22%2B-5fa04e?logo=nodedotjs
+[node-url]: https://nodejs.org/
+[ts-shield]: https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white
+[ts-url]: https://www.typescriptlang.org/
+[react-shield]: https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white
+[react-url]: https://react.dev/
+[azure-shield]: https://img.shields.io/badge/Azure-Deployed-0078d4?logo=microsoftazure&logoColor=white
 [azure-url]: https://azure.microsoft.com/
-[iac-shield]: https://img.shields.io/badge/Infrastructure%20as%20Code-Bicep-5C2D91?logo=azurepipelines&logoColor=white
-[iac-url]: https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview
+[issues-shield]: https://img.shields.io/github/issues/PlagueHO/prompt-babbler
+[issues-url]: https://github.com/PlagueHO/prompt-babbler/issues
+[prs-shield]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg
+[prs-url]: https://github.com/PlagueHO/prompt-babbler/pulls
+[stars-shield]: https://img.shields.io/github/stars/PlagueHO/prompt-babbler?style=flat
+[stars-url]: https://github.com/PlagueHO/prompt-babbler/stargazers
+[docs-shield]: https://img.shields.io/badge/docs-online-purple?logo=readthedocs&logoColor=white
+[docs-url]: https://plagueho.github.io/prompt-babbler/
