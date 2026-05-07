@@ -7,7 +7,7 @@ See [AGENTS.md](../AGENTS.md) for directory layout, commands, and CI pipeline.
 
 ## Purpose
 
-Prompt Babbler is a React 19 + Vite (TypeScript) SPA paired with a .NET 10 ASP.NET Core backend orchestrated by .NET Aspire. Users record voice input that is transcribed and stored as "babbles"; Azure OpenAI generates prompts from those babbles using configurable templates. Data is persisted in Cosmos DB; Microsoft Entra ID handles authentication with an optional access-code bypass.
+Prompt Babbler is a React 19 + Vite (TypeScript) SPA paired with a .NET 10 ASP.NET Core backend orchestrated by .NET Aspire. Users record voice input that is transcribed and stored as "babbles"; Foundry Models generate prompts from those babbles using configurable templates. Data is persisted in Cosmos DB; Microsoft Entra ID handles authentication with an optional access-code bypass.
 
 ## Security
 

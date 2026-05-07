@@ -157,7 +157,7 @@ Retrieves a single babble by its unique ID. Returns `null` if not found.
 
 #### `generate_prompt`
 
-Generates a structured AI prompt from a babble's transcription text using the specified template. Streams the response from the Azure OpenAI model and returns the complete text.
+Generates a structured AI prompt from a babble's transcription text using the specified template. Streams the response from the Foundry Models model and returns the complete text.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

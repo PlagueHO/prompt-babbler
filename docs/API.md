@@ -308,7 +308,7 @@ data: [DONE]
 
 #### `GET /api/babbles/search`
 
-Performs a vector (semantic) similarity search across the current user's babbles using Azure OpenAI embeddings.
+Performs a vector (semantic) similarity search across the current user's babbles using Foundry Models embeddings.
 
 **Query Parameters**
 

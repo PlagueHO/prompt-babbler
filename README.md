@@ -13,7 +13,7 @@
 [![GitHub Stars][stars-shield]][stars-url]
 [![Docs][docs-shield]][docs-url]
 
-💬 Prompt Babbler is a speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Azure AI Foundry, and generates structured prompts for target systems like GitHub Copilot. It can run locally with a Cosmos DB emulator or be deployed to Azure with a fully managed Cosmos DB instance and Azure AI Foundry resources. The app is built with a React frontend and a .NET backend, orchestrated by .NET Aspire for seamless local and cloud development.
+💬 Prompt Babbler is a speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Microsoft Foundry, and generates structured prompts for target systems like GitHub Copilot. It can run locally with a Cosmos DB emulator or be deployed to Azure with a fully managed Cosmos DB instance and Microsoft Foundry resources. The app is built with a React frontend and a .NET backend, orchestrated by .NET Aspire for seamless local and cloud development.
 
 ## What It Does
 
@@ -21,7 +21,7 @@ Prompt Babbler turns rough speech into polished, structured prompts ready to use
 
 1. **Record** — Click record and speak your thoughts out loud, stream-of-consciousness style.
 1. **Transcribe** — Azure AI Speech Service converts your audio to text in real time.
-1. **Generate** — The app sends your transcription through a configurable prompt template and calls an Azure OpenAI model to produce a structured, ready-to-use prompt.
+1. **Generate** — The app sends your transcription through a configurable prompt template and calls a Foundry Models model to produce a structured, ready-to-use prompt.
 1. **Use** — Copy the generated prompt into GitHub Copilot, an AI assistant, an image generator, or any other AI tool.
 
 ### Key Features
@@ -31,7 +31,7 @@ Prompt Babbler turns rough speech into polished, structured prompts ready to use
 - **Prompt history** — Every generated prompt is saved alongside its source transcription (called a *babble*) so you can review and reuse past outputs.
 - **Multi-target support** — Included built-in templates for GitHub Copilot, general AI assistants, and image generators.
 - **Single-user and multi-user modes** — Run privately without authentication, or enable Microsoft Entra ID for multi-user access.
-- **Fully cloud-native** — Deploys to Azure Static Web Apps + Azure Container Apps with Cosmos DB and Azure AI Foundry, all provisioned via Bicep.
+- **Fully cloud-native** — Deploys to Azure Static Web Apps + Azure Container Apps with Cosmos DB and Microsoft Foundry, all provisioned via Bicep.
 - **MCP server** — Exposes babbles, templates, and prompt generation to GitHub Copilot, Claude, and any MCP-compatible AI client via the Model Context Protocol.
 
 ## Quick Start
@@ -40,9 +40,9 @@ For full setup instructions including prerequisite installation, see [docs/QUICK
 
 ### Prerequisites to run Locally
 
-- An [Azure Account](https://azure.microsoft.com/free/) with **Contributor** access to allow Aspire to provision Azure AI Foundry resources for the app
+- An [Azure Account](https://azure.microsoft.com/free/) with **Contributor** access to allow Aspire to provision Microsoft Foundry resources for the app
 - [Aspire CLI](https://aspire.dev/get-started/install-cli/) to orchestrate the components
-- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) to authenticate and allow Aspire to provision Azure AI Foundry resources in your subscription
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) to authenticate and allow Aspire to provision Microsoft Foundry resources in your subscription
 - Install [Docker Desktop](https://docs.docker.com/desktop/) to host Cosmos DB emulator (Windows/Linux/Mac)
 
 ### Run Locally
@@ -58,7 +58,7 @@ az login --tenant <your-tenant-id>
 aspire run
 ```
 
-Aspire handles all dependency installation, builds, and orchestration automatically. On first run it provisions Azure AI Foundry resources and starts a Cosmos DB emulator in Docker — this takes several minutes. Subsequent runs start quickly.
+Aspire handles all dependency installation, builds, and orchestration automatically. On first run it provisions Microsoft Foundry resources and starts a Cosmos DB emulator in Docker — this takes several minutes. Subsequent runs start quickly.
 
 ---
 

@@ -8,8 +8,8 @@ This document describes the architecture, tech stack, project structure, and API
 
 Prompt Babbler is a speech-to-prompt web application with two deployment modes:
 
-- **Local development** — .NET Aspire orchestrates all services (API, frontend, Cosmos DB emulator, Azure AI Foundry cloud resource).
-- **Azure deployment** — Azure Developer CLI (`azd`) provisions Container Apps, Static Web Apps, Cosmos DB, AI Foundry, and networking infrastructure via Bicep.
+- **Local development** — .NET Aspire orchestrates all services (API, frontend, Cosmos DB emulator, Microsoft Foundry Azure resource).
+- **Azure deployment** — Azure Developer CLI (`azd`) provisions Container Apps, Static Web Apps, Cosmos DB, Microsoft Foundry, and networking infrastructure via Bicep.
 
 ## Tech Stack
 
@@ -17,9 +17,9 @@ Prompt Babbler is a speech-to-prompt web application with two deployment modes:
 |-------|------------|
 | Frontend | React 19, TypeScript 5.9, Vite 8, Shadcn/UI, TailwindCSS v4, React Router 7 |
 | Backend | .NET 10, ASP.NET Core, Clean Architecture |
-| AI Services | Azure AI Foundry (LLM chat + Speech STT via Aspire integration) |
+| AI Services | Microsoft Foundry (LLM chat + Speech STT via Aspire integration) |
 | Data | Azure Cosmos DB (serverless, NoSQL) |
-| Orchestration | .NET Aspire (Azure AI Foundry + Cosmos DB provisioning) |
+| Orchestration | .NET Aspire (Microsoft Foundry + Cosmos DB provisioning) |
 | Networking | Azure VNET with private endpoints for Cosmos DB and AI Foundry |
 | Infrastructure | Azure Bicep with Azure Verified Modules (AVM) |
 | Auth | Microsoft Entra ID (MSAL + JWT), single-user anonymous mode |
@@ -33,7 +33,7 @@ prompt-babbler/
 ├── prompt-babbler-service/     # .NET backend (Clean Architecture)
 │   ├── src/Api/                # ASP.NET Core API controllers
 │   ├── src/Domain/             # Business models & interfaces
-│   ├── src/Infrastructure/     # Azure OpenAI SDK, Cosmos DB, Speech SDK
+│   ├── src/Infrastructure/     # Foundry SDK, Cosmos DB, Speech SDK
 │   ├── src/Orchestration/      # Aspire AppHost + ServiceDefaults
 │   └── tests/                  # Unit + integration tests
 ├── prompt-babbler-app/         # React frontend
@@ -63,7 +63,7 @@ prompt-babbler/
 The backend follows [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) with strict dependency direction:
 
 - **Domain** (`src/Domain/`) — Business models (C# records with `init` properties), repository and service interfaces. No external dependencies.
-- **Infrastructure** (`src/Infrastructure/`) — Azure service implementations: Cosmos DB repositories, Azure OpenAI prompt generation, Azure Speech SDK transcription. Depends on Domain.
+- **Infrastructure** (`src/Infrastructure/`) — Azure service implementations: Cosmos DB repositories, Foundry Models prompt generation, Azure Speech SDK transcription. Depends on Domain.
 - **Api** (`src/Api/`) — ASP.NET Core controllers, middleware, dependency injection registration. Depends on Domain and Infrastructure.
 - **Orchestration** (`src/Orchestration/`) — .NET Aspire AppHost and ServiceDefaults. Orchestrates all resources for local development.
 

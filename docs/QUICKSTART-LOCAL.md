@@ -1,6 +1,6 @@
 # Quickstart: Local Development with Aspire
 
-Get Prompt Babbler running locally in anonymous single-user mode using .NET Aspire. Aspire orchestrates all services (API, frontend, Cosmos DB emulator, Azure AI Foundry) with a single command — including dependency installation, builds, and service startup.
+Get Prompt Babbler running locally in anonymous single-user mode using .NET Aspire. Aspire orchestrates all services (API, frontend, Cosmos DB emulator, Microsoft Foundry) with a single command — including dependency installation, builds, and service startup.
 
 > **Looking to deploy to Azure?** See [Deploy to Azure with Azure Developer CLI](QUICKSTART-AZURE.md).
 
@@ -69,7 +69,7 @@ Install [Docker Desktop](https://www.docker.com/products/docker-desktop/). It mu
 
 ### Azure subscription
 
-You need an Azure subscription with **Contributor** access. Azure AI Foundry is a cloud resource even for local development — Aspire provisions it automatically on first run.
+You need an Azure subscription with **Contributor** access. Microsoft Foundry is a cloud resource even for local development — Aspire provisions it automatically on first run.
 
 ## 1. Clone the repository
 
@@ -80,7 +80,7 @@ cd prompt-babbler
 
 ## 2. Configure Azure credentials
 
-Aspire provisions an Azure AI Foundry resource automatically on first run. You need to authenticate and provide your subscription details via [dotnet user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) so they stay out of source control.
+Aspire provisions a Microsoft Foundry resource automatically on first run. You need to authenticate and provide your subscription details via [dotnet user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) so they stay out of source control.
 
 ```bash
 # Sign in to Azure CLI (use your tenant ID)
@@ -114,12 +114,12 @@ Aspire handles all dependency installation (NuGet restore, pnpm install), builds
 
 1. Restore .NET packages and build the backend
 1. Install frontend npm packages and start the Vite dev server
-1. Provision an Azure AI Foundry resource with a chat model deployment
+1. Provision a Microsoft Foundry resource with a chat model deployment
 1. Start the Cosmos DB preview emulator in Docker (with Data Explorer)
 1. Start the .NET backend API (with WebSocket support for real-time transcription)
 1. Launch the Aspire Dashboard (telemetry, logs, traces)
 
-> **First run takes several minutes** for Azure AI Foundry provisioning. Subsequent runs reuse existing resources and start quickly.
+> **First run takes several minutes** for Microsoft Foundry provisioning. Subsequent runs reuse existing resources and start quickly.
 
 The app runs in **anonymous single-user mode** — no sign-in is required. All API endpoints are accessible and data is stored under a synthetic `_anonymous` user identity.
 
