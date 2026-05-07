@@ -1,14 +1,43 @@
-# Quickstart: Deploy to Azure
+---
+title: "Quickstart: Deploy to Azure"
+description: Deploy Prompt Babbler to Azure using the Azure Developer CLI (azd) with infrastructure provisioned via Bicep.
+---
 
-Deploy Prompt Babbler to Azure using the [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/). By default the app deploys in **anonymous single-user mode**. An optional section covers enabling **Entra ID authentication** for multi-user support.
+Deploy Prompt Babbler to Azure using the Azure Developer CLI (`azd`). This provisions all required infrastructure and deploys the application with a single command.
 
-> **Looking for local development?** See [Local Development with Aspire](QUICKSTART-LOCAL.md).
+> [!NOTE]
+> Looking for local development? See [Local Development with Aspire](QUICKSTART-LOCAL.md).
 
 ## Prerequisites
 
-- [Azure CLI 2.x](https://learn.microsoft.com/cli/azure/install-azure-cli)
-- [Azure Developer CLI (`azd`)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
-- An Azure subscription with **Contributor** access
+### Azure Developer CLI
+
+Install the [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd):
+
+```bash
+# Windows (winget)
+winget install Microsoft.Azd
+
+# macOS (Homebrew)
+brew install azd
+
+# Linux (script)
+curl -fsSL https://aka.ms/install-azd.sh | bash
+```
+
+Verify the installation:
+
+```bash
+azd version
+```
+
+### Azure CLI
+
+Install the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli).
+
+### Azure subscription
+
+You need an active Azure subscription with quota for `gpt-5.3-chat` (GlobalStandard SKU) in the target region (default: **EastUS2**).
 
 ## 1. Clone the repository
 
@@ -19,73 +48,159 @@ cd prompt-babbler
 
 ## 2. Authenticate
 
-```bash
-# Sign in to Azure Developer CLI
-azd auth login
+Sign in to both the Azure CLI and Azure Developer CLI:
 
-# Sign in to Azure CLI (used by azd for Bicep deployments)
+```bash
 az login
+azd auth login
 ```
+
+The `azd auth login` command allows the Azure Developer CLI to provision resources in your subscription. The `az login` command is required for the pre-provision hook to create Entra ID app registrations if you enable Entra ID authentication.
 
 ## 3. Create an environment
 
-```bash
-azd env new <environment-name>
-```
-
-Set the Azure region. Ensure the region has available quota for the `gpt-5.3-chat` model with GlobalStandard SKU:
+Create a new `azd` environment. This stores your deployment configuration (subscription, region, resource group):
 
 ```bash
-azd env set AZURE_LOCATION <region>
+azd env new <env-name>
 ```
 
-> **Example regions:** `swedencentral`, `eastus2`, `westus3`. Check [Azure OpenAI model availability](https://learn.microsoft.com/azure/ai-services/openai/concepts/models) for supported regions.
+> [!NOTE]
+> The `<env-name>` is used as a prefix for all resource names. Use a short, lowercase name (e.g., `dev`, `test`, or `prod`). Use a name that will result in globally unique resource names.
+
+When prompted, select your Azure subscription and target region. The default region is **EastUS2**.
 
 ## 4. Deploy
 
+Provision infrastructure and deploy the application:
+
 ```bash
 azd up
 ```
 
-This single command provisions all Azure infrastructure and deploys both the API and frontend. On first run this takes several minutes.
+> [!IMPORTANT]
+> The region selected must have available quota for the `gpt-5.3-chat` model (GlobalStandard SKU). If you receive a quota error, try a different region (e.g., `swedencentral` or `eastus2`).
+
+This single command will:
+
+1. Provision all Azure resources via Bicep templates
+1. Build the .NET API, MCP server, and React frontend
+1. Deploy the API to Azure Container Apps
+1. Deploy the MCP server to Azure Container Apps
+1. Deploy the frontend to Azure Static Web Apps
+1. Configure service connections and environment variables
 
 ### What gets provisioned
 
-| Resource | Purpose |
-|----------|---------|
-| **Resource Group** | Container for all resources (`rg-<env-name>`) |
-| **Azure Container App** | .NET backend API (port 8080, system-assigned managed identity) |
-| **Azure Static Web App** | React frontend (free tier) |
-| **Azure Cosmos DB** | Serverless NoSQL — 4 containers: `babbles`, `generated-prompts`, `prompt-templates`, `users` |
-| **Azure AI Foundry (AIServices)** | LLM (`gpt-5.3-chat`) + Speech Service for real-time transcription |
-| **Container Apps Environment** | Managed environment with VNet integration |
-| **Virtual Network** | Private networking (10.0.0.0/16) with subnets for Container Apps and private endpoints |
-| **Private DNS Zones** | Private link DNS for Cosmos DB and Cognitive Services |
-| **Log Analytics Workspace** | Centralized logging and diagnostics |
-| **Application Insights** | Application performance monitoring and distributed tracing |
+| Resource | Name | Type | Purpose |
+| --- | --- | --- | --- |
+| Resource Group | `rg-<env-name>` | Resource Group | Contains all Prompt Babbler resources |
+| Virtual Network | `vnet-<env-name>` | Azure Virtual Network | Network isolation with dedicated ACA (`10.0.0.0/23`) and private endpoint (`10.0.2.0/24`) subnets |
+| Private DNS Zone (Cosmos DB) | `privatelink.documents.azure.com` | Azure Private DNS Zone | Resolves private Cosmos DB DNS names within the VNet |
+| Private DNS Zone (AI Foundry) | `privatelink.cognitiveservices.azure.com` | Azure Private DNS Zone | Resolves private AI Foundry DNS names within the VNet |
+| Private DNS Zone (OpenAI) | `privatelink.openai.azure.com` | Azure Private DNS Zone | Resolves private OpenAI endpoint DNS names within the VNet |
+| Log Analytics Workspace | `log-<env-name>` | Azure Monitor | Centralizes logs and metrics from all resources |
+| Application Insights | `appi-<env-name>` | Azure Application Insights | Application performance monitoring and distributed tracing |
+| AI Foundry (AIServices) | `aif-<env-name>` | Azure AI Services | LLM and embedding model deployments; Speech Service for real-time transcription |
+| Private Endpoint (AI Foundry) | `pe-<env-name>-foundry` | Azure Private Endpoint | Enables private network access to AI Foundry |
+| Cosmos DB Account | `cdb<env-name>` | Azure Cosmos DB (Serverless, NoSQL + Vector Search) | Persists babbles, generated prompts, prompt templates, and user data |
+| Private Endpoint (Cosmos DB) | `pe-<env-name>-cosmosdb` | Azure Private Endpoint | Enables private network access to Cosmos DB |
+| Container Apps Environment | `cae-<env-name>` | Azure Container Apps Environment | Shared managed environment with VNet integration and Log Analytics |
+| Aspire Dashboard | `aspire-dashboard` | Azure Container App | OpenTelemetry dashboard for local observability |
+| Container App (API) | `ca-<env-name>-api` | Azure Container App | Backend API (scale 0–3 replicas, external ingress on port 8080) |
+| Container App (MCP Server) | `ca-<env-name>-mcp-server` | Azure Container App | MCP server for AI agent integrations (scale 0–3 replicas, external ingress on port 8080) |
+| Static Web App | `stapp-<env-name>` | Azure Static Web App (Free) | React frontend |
 
-**RBAC roles** are automatically assigned to the Container App's managed identity: *Cognitive Services OpenAI User*, *Cognitive Services Speech User*, and *Cosmos DB Built-in Data Contributor*.
+RBAC roles are automatically assigned to each Container App's system-assigned managed identity: *Cognitive Services OpenAI User*, *Cognitive Services Speech User*, and *Cosmos DB Built-in Data Contributor*.
 
 ### Access the deployed app
 
-After `azd up` completes, the Static Web App URL is shown in the output. You can also retrieve it with:
+After `azd up` completes, the CLI displays the deployed URLs:
 
-```bash
-azd env get-values | grep FRONTEND
+```text
+Deploying services (azd deploy)
+
+  (✓) Done: Deploying service api
+  - Endpoint: https://ca-<env-name>-api.<region>.azurecontainerapps.io
+
+  (✓) Done: Deploying service mcp-server
+  - Endpoint: https://ca-<env-name>-mcp-server.<region>.azurecontainerapps.io
+
+  (✓) Done: Deploying service frontend
+  - Endpoint: https://<static-web-app-name>.azurestaticapps.net
 ```
 
-The app runs in **anonymous single-user mode** — no sign-in is required. All data is stored under a synthetic `_anonymous` user identity.
+Open the frontend endpoint in your browser to start using Prompt Babbler.
 
-## 5. Protect with an access code (optional)
+The app runs in **anonymous single-user mode** by default — no sign-in is required. All data is stored under a synthetic `_anonymous` user identity.
 
-In single-user mode the app is open by default. To restrict access, set an access code. When configured, the frontend shows a modal dialog requiring the code before any interaction, and the backend rejects API requests that don't provide it.
+## Model configuration
+
+The deployment provisions these AI model deployments by default:
+
+| Deployment | Model | Version | SKU | Capacity |
+| --- | --- | --- | --- | --- |
+| `chat` | `gpt-5.3-chat` | `2026-03-03` | GlobalStandard | 50 |
+| `embedding` | `text-embedding-3-small` | `1` | GlobalStandard | 120 |
+
+Speech-to-text uses **Azure AI Speech Service** (real-time streaming), which is included in the same AIServices resource — no separate model deployment is needed.
+
+To use a different model, edit [`infra/model-deployments.json`](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/model-deployments.json) before running `azd up`.
+
+## Environment configuration
+
+All infrastructure parameters are read from `azd` environment variables and passed to `infra/main.bicepparam` at provisioning time. Use `azd env set <KEY> <VALUE>` to configure any of these before running `azd up` or `azd provision`.
+
+### Required
+
+These values are set automatically by `azd` and do not need to be configured manually.
+
+| Variable | Description |
+| --- | --- |
+| `AZURE_ENV_NAME` | Environment name; used as a prefix for all resource names |
+| `AZURE_LOCATION` | Primary Azure region (default: `EastUS2`) |
+| `AZURE_PRINCIPAL_ID` | Object ID of the user or service principal running the deployment |
+| `AZURE_PRINCIPAL_ID_TYPE` | `User` or `ServicePrincipal` (default: `User`) |
+
+### Optional
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `AZURE_STATIC_WEB_APP_LOCATION` | *(same as primary)* | Override region for the Static Web App. Must be one of: `centralus`, `eastasia`, `eastus2`, `westeurope`, `westus2` |
+| `AZURE_CONTAINER_APP_API_IMAGE` | `ghcr.io/plagueho/prompt-babbler-api:latest` | Container image deployed to the API Container App |
+| `AZURE_CONTAINER_APP_MCP_SERVER_IMAGE` | `ghcr.io/plagueho/prompt-babbler-mcp-server:latest` | Container image deployed to the MCP Server Container App |
+| `ENABLE_PUBLIC_NETWORK_ACCESS` | `true` | Set to `false` to restrict all resources to private network access only |
+
+### Authentication
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `ACCESS_CODE` | *(empty)* | Optional access code for single-user deployments. Leave empty for anonymous mode |
+| `ENABLE_ENTRA_AUTH` | `false` | Set to `true` to enable Entra ID multi-user authentication |
+| `AZURE_AD_API_CLIENT_ID` | *(set by preprovision hook)* | API app registration client ID; written automatically when `ENABLE_ENTRA_AUTH=true` |
+| `AZURE_AD_SPA_CLIENT_ID` | *(set by preprovision hook)* | SPA app registration client ID; written automatically when `ENABLE_ENTRA_AUTH=true` |
+| `AZURE_AD_MCP_CLIENT_ID` | *(set by preprovision hook)* | MCP server app registration client ID; written automatically when `ENABLE_ENTRA_AUTH=true` |
+
+## Authentication
+
+Prompt Babbler supports three authentication modes for Azure deployments. Configure the appropriate variables before running `azd up`.
+
+### Anonymous mode (default)
+
+No additional configuration is needed. All requests are accepted without an access check and attributed to the `_anonymous` user:
 
 ```bash
-azd env set ACCESS_CODE "<your-access-code>"
 azd up
 ```
 
-For CI/CD deployments, store the access code as a GitHub Actions secret named `ACCESS_CODE`. The delivery pipeline passes it through to the infrastructure provisioning step automatically.
+### Access code mode
+
+Protect the deployment with a shared password. When configured, the frontend shows a modal requiring the code before any interaction, and the backend rejects API requests that omit it:
+
+```bash
+azd env set ACCESS_CODE "your-access-code"
+azd up
+```
 
 To remove access code protection, clear the value:
 
@@ -94,104 +209,91 @@ azd env set ACCESS_CODE ""
 azd up
 ```
 
-## 6. Enable Entra ID authentication (optional)
+For CI/CD deployments, store the access code as a GitHub Actions secret named `ACCESS_CODE`. The delivery pipeline passes it through to the infrastructure provisioning step automatically.
 
-To enable multi-user support with Microsoft Entra ID (Azure AD) authentication, configure the deployment to create app registrations.
+### Entra ID mode
 
-### Prerequisites for Entra ID
+Enable multi-user authentication backed by your Entra ID tenant. The pre-provision hook creates the required app registrations automatically:
 
-The deploying principal (your Azure account) requires **`Application.ReadWrite.All`** Microsoft Graph permission. This can be granted via Entra ID roles:
+```bash
+azd env set ENABLE_ENTRA_AUTH true
+azd up
+```
 
-- **Application Administrator**, **Cloud Application Administrator**, or **Application Developer**
+The [preprovision hook](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/hooks/preprovision.ps1) automatically:
 
-See the [CI/CD Setup Guide](CICD.md) for details on granting these permissions.
+* Creates an **API app registration** (`prompt-babbler-api`) with an `access_as_user` OAuth2 scope
+* Creates a **SPA app registration** (`prompt-babbler-spa`) with redirect URIs for `localhost:5173` and the production Static Web App hostname
+* Creates an **MCP server app registration** (`prompt-babbler-mcp-server`)
+* Stores the client IDs in the `azd` environment (`AZURE_AD_API_CLIENT_ID`, `AZURE_AD_SPA_CLIENT_ID`, `AZURE_AD_MCP_CLIENT_ID`)
 
-### Enable and deploy
+> [!NOTE]
+> This step is idempotent — re-running `azd up` reuses existing app registrations and does not create duplicates.
 
-1. **Set the Entra ID flag** in your `azd` environment:
+The deploying principal requires **`Application.ReadWrite.All`** Microsoft Graph permission. This can be granted via the **Application Administrator**, **Cloud Application Administrator**, or **Application Developer** Entra ID role. See the [CI/CD Setup Guide](CICD.md) for details.
 
-   ```bash
-   azd env set ENABLE_ENTRA_AUTH true
-   ```
+When Entra ID is enabled:
 
-1. **Run `azd up`** (or re-run if you already deployed in single-user mode):
-
-   ```bash
-   azd up
-   ```
-
-   The [preprovision hook](../infra/hooks/preprovision.ps1) automatically:
-
-   - Creates an **API app registration** (`prompt-babbler-api`) with an `access_as_user` OAuth2 scope
-   - Creates a **SPA app registration** (`prompt-babbler-spa`) with redirect URIs for `localhost:5173` and the production Static Web App hostname
-   - Creates service principals for both applications
-   - Stores the client IDs in the `azd` environment (`AZURE_AD_API_CLIENT_ID`, `AZURE_AD_SPA_CLIENT_ID`)
-
-   The main Bicep template reads these client IDs and injects the `AzureAd__ClientId`, `AzureAd__TenantId`, and `AzureAd__Instance` environment variables into the Container App. The frontend SPA receives `MSAL_CLIENT_ID` and `MSAL_TENANT_ID` at build time.
-
-   > This step is **idempotent** — re-running `azd up` reuses existing app registrations and does not create duplicates.
-
-1. **Verify** the client IDs were stored:
-
-   ```bash
-   azd env get-value AZURE_AD_API_CLIENT_ID
-   azd env get-value AZURE_AD_SPA_CLIENT_ID
-   ```
-
-### How authentication works
-
-When Entra ID client IDs are configured:
-
-- **Backend**: The API enables JWT Bearer token validation via `Microsoft.Identity.Web`. Requests must include a valid `access_as_user` scope token. The user's Entra ID object ID becomes the Cosmos DB partition key, isolating each user's data.
-- **Frontend**: The SPA wraps the app in an MSAL `<MsalProvider>` and acquires tokens silently before API calls. Users sign in via the standard Microsoft login flow.
-- **WebSocket**: The transcription WebSocket endpoint (`/api/transcribe/stream`) accepts tokens via the `?access_token=` query parameter.
-
-When client IDs are **not** configured (default), both the backend and frontend operate in anonymous single-user mode.
-
-## Model configuration
-
-The AI model deployment is defined in [`infra/model-deployments.json`](../infra/model-deployments.json):
-
-| Deployment | Model | Version | SKU | Capacity |
-|------------|-------|---------|-----|----------|
-| gpt-5.3-chat | gpt-5.3-chat | 2026-03-03 | GlobalStandard | 50 |
-
-Speech-to-text uses **Azure AI Speech Service** (real-time streaming), which is part of the same AIServices resource — no separate model deployment is needed.
-
-To use a different model, edit `model-deployments.json` before running `azd up`.
+* **Backend**: The API validates JWT Bearer tokens via `Microsoft.Identity.Web`. Requests must include a valid `access_as_user` scope token. The user's Entra ID object ID becomes the Cosmos DB partition key, isolating each user's data.
+* **Frontend**: The SPA wraps the app in an MSAL `<MsalProvider>` and acquires tokens silently before API calls. Users sign in via the standard Microsoft login flow.
+* **MCP server**: The MCP server validates tokens using its own app registration.
+* **WebSocket**: The transcription WebSocket endpoint (`/api/transcribe/stream`) accepts tokens via the `?access_token=` query parameter.
 
 ## Update and redeploy
 
-| Command | Use case |
-|---------|----------|
-| `azd deploy` | Code changes only (rebuilds and redeploys API container + frontend SPA) |
-| `azd provision` | Infrastructure changes only (updates Bicep resources) |
-| `azd up` | Both infrastructure and code changes |
+After making code changes, redeploy with:
+
+```bash
+azd deploy
+```
+
+To update infrastructure (Bicep template changes):
+
+```bash
+azd provision
+```
+
+To update everything (infrastructure + code):
+
+```bash
+azd up
+```
 
 ## Tear down
 
-To remove all provisioned Azure resources:
+Remove all Azure resources created by the deployment:
 
 ```bash
-azd down --purge
+azd down
 ```
 
-> The `--purge` flag permanently deletes soft-deleted resources like Cognitive Services accounts.
+> [!WARNING]
+> This permanently deletes all resources in the `rg-<env-name>` resource group, including any data stored in Cosmos DB.
+
+To force deletion without confirmation and purge soft-deleted resources (such as Cognitive Services accounts):
+
+```bash
+azd down --force --purge
+```
 
 ## Troubleshooting
 
 | Symptom | Fix |
-|---------|-----|
-| `InsufficientQuota` | No quota for the model/SKU in the target region. Check quota in Azure Portal or change `AZURE_LOCATION`. |
+| --- | --- |
+| `azd` command not found | Install Azure Developer CLI: `winget install Microsoft.Azd` (Windows) or see [install docs](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
+| Quota error during provisioning | Ensure your subscription has `gpt-5.3-chat` GlobalStandard quota in the target region. Try `swedencentral` or `eastus2`. |
+| `azd auth login` fails | Run `az login` first, then retry `azd auth login`. Ensure your account has Contributor access to the target subscription. |
 | `InvalidAuthenticationTokenTenant` | Wrong tenant. Run `az login --tenant <tenant-id>`. |
+| Deployment times out | AI Foundry model deployments can take several minutes. Re-run `azd up` — it resumes from where it left off. |
 | Deployment fails with Graph permission error | The deploying principal needs `Application.ReadWrite.All`. See [CI/CD Setup Guide](CICD.md). |
 | `ENABLE_ENTRA_AUTH` set but no app registrations created | Check that `AZURE_AD_API_CLIENT_ID` is not already set: `azd env get-value AZURE_AD_API_CLIENT_ID`. The hook skips if already provisioned. To force re-creation, clear it: `azd env set AZURE_AD_API_CLIENT_ID ""`. |
-| Static Web App returns 404 | Ensure `azd deploy` completed successfully for the `frontend` service. Check the SWA deployment logs. |
+| Frontend can't reach API | Check that the Container App is running in the Azure Portal. Verify environment variables are set correctly with `azd env get-values`. |
 | Container App not starting | Check Container Apps logs in the Azure Portal or via `az containerapp logs show`. Verify the managed identity has the required RBAC roles. |
+| Static Web App returns 404 | Ensure `azd deploy` completed successfully for the `frontend` service. Check the SWA deployment logs in the Azure Portal. |
 | API returns 401 Unauthorized | If Entra ID is enabled, ensure the frontend is acquiring tokens with the correct scope (`api://prompt-babbler-api/access_as_user`). |
 
 ## Next steps
 
-- [Local development with Aspire](QUICKSTART-LOCAL.md) for running locally
-- See the [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
-- See [infra/README.md](../infra/README.md) for detailed infrastructure documentation
+* [Local development with Aspire](QUICKSTART-LOCAL.md) for running locally
+* [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
+* [Infrastructure documentation](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for detailed resource and networking information

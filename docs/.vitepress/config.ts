@@ -1,0 +1,48 @@
+import { defineConfig } from 'vitepress'
+
+// https://vitepress.dev/reference/site-config
+export default defineConfig({
+  title: 'Prompt Babbler',
+  description: 'Record voice notes as babbles and generate AI prompts using Azure OpenAI and configurable templates.',
+  // Change to '/' if using a custom domain.
+  base: '/prompt-babbler/',
+  outDir: 'dist',
+  appearance: 'auto',
+  themeConfig: {
+    nav: [
+      { text: 'Quick Start', link: '/QUICKSTART-LOCAL' },
+      { text: 'User Guide', link: '/USER-GUIDE' },
+      { text: 'Architecture', link: '/ARCHITECTURE' },
+      { text: 'API', link: '/API' },
+    ],
+    sidebar: [
+      {
+        text: 'Getting Started',
+        items: [
+          { text: 'Quick Start (Local)', link: '/QUICKSTART-LOCAL' },
+          { text: 'Quick Start (Azure)', link: '/QUICKSTART-AZURE' },
+          { text: 'User Guide', link: '/USER-GUIDE' },
+        ],
+      },
+      {
+        text: 'Reference',
+        items: [
+          { text: 'Architecture', link: '/ARCHITECTURE' },
+          { text: 'API Reference', link: '/API' },
+          { text: 'Authentication', link: '/AUTHENTICATION' },
+          { text: 'CI/CD', link: '/CICD' },
+          { text: 'MCP Server', link: '/MCP-SERVER' },
+        ],
+      },
+      {
+        text: 'Research',
+        items: [
+          { text: 'Entra ID Auth Research', link: '/research/ENTRA-ID-AUTH-RESEARCH' },
+        ],
+      },
+    ],
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/PlagueHO/prompt-babbler' },
+    ],
+  },
+})

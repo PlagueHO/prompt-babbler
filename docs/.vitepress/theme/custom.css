@@ -1,0 +1,60 @@
+/* === Prompt Babbler — VitePress theme overrides ===
+ * Values extracted from:
+ *   prompt-babbler-app/src/index.css — :root (light), .dark, .gradient-brand
+ */
+
+:root {
+  /* Brand gradient colours (from .gradient-brand, light mode) */
+  --vp-c-brand-1: oklch(0.48 0.15 168);
+  --vp-c-brand-2: oklch(0.40 0.15 145);
+  --vp-c-brand-3: oklch(0.55 0.15 190);
+
+  /* Hero name gradient */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(
+    135deg,
+    oklch(0.40 0.15 145) 0%,
+    oklch(0.48 0.15 168) 50%,
+    oklch(0.55 0.15 190) 100%
+  );
+
+  /* Backgrounds (--background, --secondary, --muted) */
+  --vp-c-bg: oklch(0.990 0.008 140);
+  --vp-c-bg-soft: oklch(0.932 0.024 130);
+  --vp-c-bg-mute: oklch(0.932 0.014 135);
+
+  /* Borders (--border) */
+  --vp-c-divider: oklch(0.880 0.020 138);
+
+  /* Text (--foreground, --muted-foreground) */
+  --vp-c-text-1: oklch(0.145 0 0);
+  --vp-c-text-2: oklch(0.55 0.028 135);
+}
+
+.dark {
+  /* Brand gradient colours (from .gradient-brand, dark mode) */
+  --vp-c-brand-1: oklch(0.75 0.18 168);
+  --vp-c-brand-2: oklch(0.70 0.20 145);
+  --vp-c-brand-3: oklch(0.82 0.17 190);
+
+  /* Hero name gradient */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(
+    135deg,
+    oklch(0.70 0.20 145) 0%,
+    oklch(0.75 0.18 168) 50%,
+    oklch(0.82 0.17 190) 100%
+  );
+
+  /* Backgrounds (--background, --secondary, --muted) */
+  --vp-c-bg: oklch(0.132 0.022 148);
+  --vp-c-bg-soft: oklch(0.26 0.030 140);
+  --vp-c-bg-mute: oklch(0.248 0.022 142);
+
+  /* Borders (--border) */
+  --vp-c-divider: oklch(1 0 0 / 12%);
+
+  /* Text (--foreground, --muted-foreground) */
+  --vp-c-text-1: oklch(0.985 0 0);
+  --vp-c-text-2: oklch(0.63 0.045 138);
+}

@@ -41,3 +41,9 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
+
+  build-docs:
+    name: Build Docs
+    uses: ./.github/workflows/build-docs.yml
+    permissions:
+      contents: read

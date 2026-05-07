@@ -4,7 +4,7 @@ This document describes the architecture, tech stack, project structure, and API
 
 ## Overview
 
-![Architecture](images/architecture.svg)
+![Architecture](/images/architecture.svg)
 
 Prompt Babbler is a speech-to-prompt web application with two deployment modes:
 
@@ -121,7 +121,7 @@ See [API.md](API.md) for the full API reference with request/response schemas.
 
 ## Azure Infrastructure
 
-When deployed to Azure via `azd up`, the following resources are provisioned (see [infra/README.md](../infra/README.md) for details):
+When deployed to Azure via `azd up`, the following resources are provisioned (see [infra/README.md](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for details):
 
 | Resource | Purpose |
 |----------|---------|

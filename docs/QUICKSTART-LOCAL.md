@@ -222,5 +222,5 @@ Open `Ctrl+Shift+P` → **Tasks: Run Task** for common workflows:
 
 - [Deploy to Azure](QUICKSTART-AZURE.md) with the Azure Developer CLI
 - See the [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
-- Browse the [specs/](../specs/) folder for feature specifications and design documents
-- See [infra/README.md](../infra/README.md) for Azure deployment architecture
+- Browse the specs/ folder for feature specifications and design documents
+- See [infra/README.md](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for Azure deployment architecture
