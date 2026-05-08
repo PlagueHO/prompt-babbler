@@ -1,6 +1,13 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace PromptBabbler.McpServer.Client.Models;
+
+public sealed record PromptExampleDto
+{
+    [JsonPropertyName("input")] public required string Input { get; init; }
+    [JsonPropertyName("output")] public required string Output { get; init; }
+}
 
 public sealed record PromptTemplateDto
 {
@@ -13,9 +20,9 @@ public sealed record PromptTemplateDto
     [JsonPropertyName("defaultOutputFormat")] public string? DefaultOutputFormat { get; init; }
     [JsonPropertyName("defaultAllowEmojis")] public bool? DefaultAllowEmojis { get; init; }
     [JsonPropertyName("tags")] public IReadOnlyList<string>? Tags { get; init; }
-    [JsonPropertyName("examples")] public IReadOnlyList<string>? Examples { get; init; }
-    [JsonPropertyName("guardrails")] public string? Guardrails { get; init; }
-    [JsonPropertyName("additionalProperties")] public IReadOnlyDictionary<string, string>? AdditionalProperties { get; init; }
+    [JsonPropertyName("examples")] public IReadOnlyList<PromptExampleDto>? Examples { get; init; }
+    [JsonPropertyName("guardrails")] public IReadOnlyList<string>? Guardrails { get; init; }
+    [JsonPropertyName("additionalProperties")] public IReadOnlyDictionary<string, JsonElement>? AdditionalProperties { get; init; }
     [JsonPropertyName("isBuiltIn")] public bool IsBuiltIn { get; init; }
     [JsonPropertyName("createdAt")] public required string CreatedAt { get; init; }
     [JsonPropertyName("updatedAt")] public required string UpdatedAt { get; init; }

@@ -172,17 +172,17 @@ Generates a structured AI prompt from a babble's transcription text using the sp
 
 | Tool | Read-only | Destructive | Description |
 |------|-----------|-------------|-------------|
-| `list_templates` | Yes | No | List all templates (built-in and user-created) |
-| `get_template` | Yes | No | Retrieve a single template by ID |
-| `create_template` | No | No | Create a new user-defined template |
-| `update_template` | No | No | Update an existing user-defined template |
-| `delete_template` | No | Yes | Permanently delete a user-defined template |
+| `list_prompt_templates` | Yes | No | List all templates (built-in and user-created) |
+| `get_prompt_template` | Yes | No | Retrieve a single template by ID |
+| `create_prompt_template` | No | No | Create a new user-defined template |
+| `update_prompt_template` | No | No | Update an existing user-defined template |
+| `delete_prompt_template` | No | Yes | Permanently delete a user-defined template |
 
-#### `list_templates`
+#### `list_prompt_templates`
 
 Returns all available prompt templates, including built-in templates shipped with Prompt Babbler and any user-created templates. No parameters required.
 
-#### `get_template`
+#### `get_prompt_template`
 
 Retrieves a single template by its unique ID. Returns `null` if not found.
 
@@ -190,7 +190,7 @@ Retrieves a single template by its unique ID. Returns `null` if not found.
 |-----------|------|----------|-------------|
 | `id` | string | Yes | The template ID |
 
-#### `create_template`
+#### `create_prompt_template`
 
 Creates a new user-defined prompt template. Built-in templates cannot be modified.
 
@@ -204,11 +204,11 @@ Creates a new user-defined prompt template. Built-in templates cannot be modifie
 | `defaultAllowEmojis` | boolean | No | Default emoji setting |
 | `tags` | string[] | No | Tags for categorisation |
 
-#### `update_template`
+#### `update_prompt_template`
 
-Updates an existing user-defined template. Accepts the same parameters as `create_template` plus the required `id`. Built-in templates return an error if update is attempted.
+Updates an existing user-defined template. Accepts the same parameters as `create_prompt_template` plus the required `id`. Built-in templates return an error if update is attempted.
 
-#### `delete_template`
+#### `delete_prompt_template`
 
 > [!CAUTION]
 > This action is irreversible. Built-in templates cannot be deleted.

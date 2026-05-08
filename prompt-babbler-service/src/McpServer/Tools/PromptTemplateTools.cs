@@ -9,7 +9,7 @@ namespace PromptBabbler.McpServer.Tools;
 [McpServerToolType]
 public sealed class PromptTemplateTools(IPromptBabblerApiClient apiClient)
 {
-    [McpServerTool(Name = "list_templates", ReadOnly = true)]
+    [McpServerTool(Name = "list_prompt_templates", ReadOnly = true)]
     [Description("List all available prompt templates, including built-in and user-created templates.")]
     public async Task<string> ListTemplates(CancellationToken cancellationToken = default)
     {
@@ -17,7 +17,7 @@ public sealed class PromptTemplateTools(IPromptBabblerApiClient apiClient)
         return JsonSerializer.Serialize(templates);
     }
 
-    [McpServerTool(Name = "get_template", ReadOnly = true)]
+    [McpServerTool(Name = "get_prompt_template", ReadOnly = true)]
     [Description("Get a single prompt template by its ID. Returns null if not found.")]
     public async Task<string?> GetTemplate(
         [Description("The unique identifier of the template")] string id,
@@ -27,7 +27,7 @@ public sealed class PromptTemplateTools(IPromptBabblerApiClient apiClient)
         return template is null ? null : JsonSerializer.Serialize(template);
     }
 
-    [McpServerTool(Name = "create_template")]
+    [McpServerTool(Name = "create_prompt_template")]
     [Description("Create a new user-defined prompt template.")]
     public async Task<string> CreateTemplate(
         [Description("The display name of the template")] string name,
@@ -53,7 +53,7 @@ public sealed class PromptTemplateTools(IPromptBabblerApiClient apiClient)
         return JsonSerializer.Serialize(template);
     }
 
-    [McpServerTool(Name = "update_template")]
+    [McpServerTool(Name = "update_prompt_template")]
     [Description("Update an existing user-defined prompt template. Built-in templates cannot be updated.")]
     public async Task<string> UpdateTemplate(
         [Description("The unique identifier of the template to update")] string id,
@@ -80,7 +80,7 @@ public sealed class PromptTemplateTools(IPromptBabblerApiClient apiClient)
         return JsonSerializer.Serialize(template);
     }
 
-    [McpServerTool(Name = "delete_template", Destructive = true)]
+    [McpServerTool(Name = "delete_prompt_template", Destructive = true)]
     [Description("Delete a user-defined prompt template. Built-in templates cannot be deleted. This action is irreversible.")]
     public async Task DeleteTemplate(
         [Description("The unique identifier of the template to delete")] string id,
