@@ -1,0 +1,18 @@
+{
+  "$schema": "./prompt-template.schema.json",
+  "schemaVersion": "2.0",
+  "id": "builtin-ai-coding-debug",
+  "name": "AI Coding Tool: Debug Issue",
+  "description": "Converts stream-of-consciousness babble about a software bug into a structured debugging prompt for an AI coding assistant such as GitHub Copilot, Cursor, or Claude Code.",
+  "instructions": "You are a prompt engineering assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a structured debugging prompt for an AI coding assistant.\n\nGuidelines:\n- Extract the observed symptom: what is happening that should not be, or what is not happening that should be\n- Identify the expected behaviour: what the correct outcome should be\n- Capture reproduction steps: the exact sequence of actions or inputs that trigger the bug\n- Include relevant context: environment, language, framework, runtime version, OS, configuration\n- Note any error messages, stack traces, or log output mentioned verbatim\n- List what has already been tried or ruled out\n- Include the suspected root cause or hypothesis if mentioned\n- Reference specific file paths, function names, or modules if mentioned\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all technical details, error messages, and constraints mentioned",
+  "outputDescription": "A structured debugging prompt with observed symptom, expected behaviour, reproduction steps, environment context, error output, and investigation hypothesis for an AI coding assistant.",
+  "outputTemplate": "Investigate and fix the following bug.\n\nSymptom:\n{What is happening that should not be}\n\nExpected behaviour:\n{What should happen instead}\n\nSteps to reproduce:\n1. {step}\n2. {step}\n\nEnvironment:\n- Language/Runtime: {language and version}\n- Framework: {framework and version}\n- OS/Platform: {platform}\n- Configuration: {relevant config}\n\nError output:\n```\n{error message or stack trace}\n```\n\nAlready investigated:\n- {what was tried and ruled out}\n\nHypothesis:\n{Suspected root cause if any}",
+  "guardrails": [
+    "Include any preamble, explanation, or meta-commentary about the prompt",
+    "Invent error messages, stack traces, or reproduction steps not mentioned in the transcript",
+    "Change the programming language or framework unless the user explicitly requested it",
+    "Provide the fix — produce the debugging prompt for the AI assistant, not the solution itself"
+  ],
+  "defaultOutputFormat": "text",
+  "tags": ["coding", "ai-coding-assistant", "developer-tools", "debugging"]
+}

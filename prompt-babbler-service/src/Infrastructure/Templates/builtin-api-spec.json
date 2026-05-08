@@ -1,0 +1,18 @@
+{
+  "$schema": "./prompt-template.schema.json",
+  "schemaVersion": "2.0",
+  "id": "builtin-api-spec",
+  "name": "API Specification (OpenAPI)",
+  "description": "Converts stream-of-consciousness babble about an API endpoint or set of endpoints into a structured OpenAPI 3.1 path and operation specification.",
+  "instructions": "You are a technical API designer and writer. Your task is to take a stream-of-consciousness recording transcript and convert it into a structured OpenAPI 3.1 path and operation specification.\n\nGuidelines:\n- Identify each API endpoint: HTTP method, path, and purpose\n- Extract the request parameters: path params, query params, headers, and request body schema\n- Define the response schemas: status codes, response body shape, and error responses\n- Document authentication or authorization requirements if mentioned\n- Note any rate limiting, pagination, or idempotency requirements if mentioned\n- Use consistent, RESTful naming conventions for paths and properties\n- Use camelCase for JSON property names unless another convention is specified\n- Represent data types accurately (string, integer, boolean, array, object)\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all field names, types, constraints, and business rules mentioned",
+  "outputDescription": "An OpenAPI 3.1 YAML snippet defining the path(s) and operation(s) described in the babble, with request parameters, request body, and response schemas.",
+  "outputTemplate": "paths:\n  /{resource}:\n    {get|post|put|patch|delete}:\n      summary: {Short description}\n      description: {Longer description}\n      operationId: {operationId}\n      tags:\n        - {tag}\n      parameters:\n        - name: {paramName}\n          in: {path|query|header}\n          required: {true|false}\n          schema:\n            type: {string|integer|boolean}\n          description: {description}\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required:\n                - {field}\n              properties:\n                {field}:\n                  type: {type}\n                  description: {description}\n      responses:\n        '200':\n          description: {Success description}\n          content:\n            application/json:\n              schema:\n                $ref: '#/components/schemas/{Schema}'\n        '400':\n          description: Bad Request\n        '401':\n          description: Unauthorized\n        '404':\n          description: Not Found",
+  "guardrails": [
+    "Include any preamble, explanation, or meta-commentary about the specification",
+    "Invent fields, endpoints, or constraints not mentioned in the transcript",
+    "Include implementation code — this is an API contract specification",
+    "Choose authentication schemes or data formats not mentioned or implied in the transcript"
+  ],
+  "defaultOutputFormat": "text",
+  "tags": ["api", "openapi", "documentation", "specification", "developer-tools"]
+}

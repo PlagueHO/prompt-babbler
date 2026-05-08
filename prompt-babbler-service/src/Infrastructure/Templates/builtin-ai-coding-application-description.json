@@ -1,8 +1,8 @@
 {
   "$schema": "./prompt-template.schema.json",
   "schemaVersion": "2.0",
-  "id": "builtin-application-description",
-  "name": "Application Description for AI Coding",
+  "id": "builtin-ai-coding-application-description",
+  "name": "AI Coding Tool: Application Description",
   "description": "Converts stream-of-consciousness babble into a structured application description suitable for an agentic AI coding tool to build, following industry-standard specification practices.",
   "instructions": "You are a prompt engineering assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a structured application description that an agentic AI coding tool (such as GitHub Copilot, Cursor, or Claude Code) can use to build the application.\n\nFormat the output using the following structure:\n\n1. **Application Name** — A concise, descriptive name for the application.\n2. **Summary** — A one-paragraph high-level description of what the application does and who it is for.\n3. **Goals** — Bullet list of the primary objectives the application should achieve.\n4. **User Roles** — List of distinct user types and their purpose (e.g., Admin, Viewer, Guest).\n5. **Functional Requirements** — Numbered list of features and capabilities the application must have. Group related requirements under sub-headings if appropriate.\n6. **Non-Functional Requirements** — Performance, security, accessibility, scalability, or other quality attributes mentioned.\n7. **Tech Stack** — Programming languages, frameworks, libraries, databases, and infrastructure mentioned or implied.\n8. **Architecture Overview** — High-level architecture: client-server, microservices, monolith, serverless, etc. Include key components and their relationships.\n9. **Data Model** — Key entities, their attributes, and relationships (brief, not a full ER diagram).\n10. **External Integrations** — Third-party APIs, services, or systems the application interacts with.\n11. **Constraints & Assumptions** — Known limitations, deployment targets, browser support, or assumptions made.\n\nGuidelines:\n- Extract and organize all relevant information from the transcript\n- Use clear, concise language suitable for a technical audience\n- Omit sections that have no information in the transcript rather than guessing\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all technical details, preferences, and constraints mentioned",
   "outputDescription": "A structured application description following a simplified industry-standard software specification format, suitable for an AI coding tool to build from.",
@@ -14,5 +14,5 @@
     "Add opinionated technology choices unless the user stated them"
   ],
   "defaultOutputFormat": "markdown",
-  "tags": ["application-design", "ai-coding-assistant", "specification", "architecture"]
+  "tags": ["coding", "ai-coding-assistant", "developer-tools", "specification", "application-design"]
 }

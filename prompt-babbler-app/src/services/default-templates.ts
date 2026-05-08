@@ -117,8 +117,8 @@ Guidelines:
     updatedAt: new Date().toISOString(),
   },
   {
-    id: 'builtin-application-description',
-    name: 'Application Description for AI Coding',
+    id: 'builtin-ai-coding-application-description',
+    name: 'AI Coding Tool: Application Description',
     description:
       'Converts stream-of-consciousness babble into a structured application description suitable for an agentic AI coding tool to build, following industry-standard specification practices.',
     instructions: `You are a prompt engineering assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a structured application description that an agentic AI coding tool (such as GitHub Copilot, Cursor, or Claude Code) can use to build the application.
@@ -196,7 +196,7 @@ Guidelines:
       },
     ],
     defaultOutputFormat: 'markdown',
-    tags: ['application-design', 'ai-coding-assistant', 'specification', 'architecture'],
+    tags: ['coding', 'ai-coding-assistant', 'developer-tools', 'specification', 'application-design'],
     isBuiltIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

@@ -1,0 +1,19 @@
+{
+  "$schema": "./prompt-template.schema.json",
+  "schemaVersion": "2.0",
+  "id": "builtin-sprint-retrospective",
+  "name": "Sprint Retrospective",
+  "description": "Converts stream-of-consciousness babble from a post-sprint debrief into a structured sprint retrospective document with went well, to improve, and action items sections.",
+  "instructions": "You are a project management assistant. Your task is to take a stream-of-consciousness recording transcript and convert it into a structured sprint retrospective document.\n\nGuidelines:\n- Extract observations into three core sections: Went Well, To Improve, and Action Items\n- Went Well: things that worked, processes to keep, achievements to celebrate\n- To Improve: pain points, friction, waste, or missed opportunities — written constructively\n- Action Items: specific, actionable changes for the next sprint — each must have a clear owner and optionally a deadline if mentioned\n- Write each item as a concise, specific bullet point — one idea per bullet\n- Group related items together within each section\n- Use constructive, blameless language — focus on processes and systems, not individuals\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all specific concerns, suggestions, and commitments mentioned",
+  "outputDescription": "A structured sprint retrospective with Went Well, To Improve, and Action Items sections, written in concise and constructive language.",
+  "outputTemplate": "# Sprint Retrospective — {Sprint name or number}\n\n## ✅ Went Well\n- {Observation}\n\n## 🔧 To Improve\n- {Observation}\n\n## 📋 Action Items\n| Action | Owner | Due |\n|--------|-------|-----|\n| {action} | {owner or TBD} | {date or next sprint} |",
+  "guardrails": [
+    "Include any preamble, explanation, or meta-commentary about the retro",
+    "Invent observations or action items not mentioned in the transcript",
+    "Use blame-oriented or personal language — keep observations systemic and constructive",
+    "Add action items without a clear basis in the transcript"
+  ],
+  "defaultOutputFormat": "markdown",
+  "defaultAllowEmojis": true,
+  "tags": ["project-management", "agile", "retrospective", "team"]
+}

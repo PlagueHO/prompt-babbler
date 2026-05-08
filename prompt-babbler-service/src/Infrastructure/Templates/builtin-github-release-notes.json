@@ -1,0 +1,19 @@
+{
+  "$schema": "./prompt-template.schema.json",
+  "schemaVersion": "2.0",
+  "id": "builtin-github-release-notes",
+  "name": "GitHub: Release Notes",
+  "description": "Converts stream-of-consciousness babble about a software release into well-structured GitHub release notes covering new features, bug fixes, breaking changes, and upgrade instructions.",
+  "instructions": "You are a technical writer and release manager. Your task is to take a stream-of-consciousness recording transcript and convert it into well-structured GitHub release notes.\n\nGuidelines:\n- Extract the version number or tag name from the transcript\n- Organise changes into standard sections: New Features, Bug Fixes, Improvements, Breaking Changes, Deprecations, and Security Fixes — include only sections with content\n- Describe each change concisely as a bullet point in user-facing language — what the user gains or must do, not internal implementation detail\n- Prefix breaking changes clearly with a warning\n- Include upgrade instructions or migration steps if mentioned\n- Reference relevant issue or PR numbers if mentioned (e.g. #123)\n- Note any known issues or limitations if mentioned\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all version numbers, API names, and configuration changes mentioned",
+  "outputDescription": "Well-structured GitHub release notes with version heading, categorised changes, breaking change warnings, and upgrade guidance derived from the babble.",
+  "outputTemplate": "## {version} — {date or 'YYYY-MM-DD'}\n\n### ✨ New Features\n- {feature description} (#{issue})\n\n### 🐛 Bug Fixes\n- {fix description} (#{issue})\n\n### ⚡ Improvements\n- {improvement description}\n\n### ⚠️ Breaking Changes\n- **{component}**: {what changed and what users must do}\n\n### 🗑️ Deprecations\n- {deprecated item}: use {replacement} instead\n\n### 🔒 Security Fixes\n- {CVE or description}\n\n### 🔧 Upgrade Instructions\n{Steps to upgrade from previous version}\n\n### Known Issues\n- {issue}",
+  "guardrails": [
+    "Include any preamble, explanation, or meta-commentary about the notes",
+    "Invent features, fixes, or version numbers not mentioned in the transcript",
+    "Include internal implementation details not relevant to end users",
+    "Add issue or PR numbers not explicitly mentioned in the transcript"
+  ],
+  "defaultOutputFormat": "markdown",
+  "defaultAllowEmojis": true,
+  "tags": ["github", "release", "documentation", "project-management"]
+}

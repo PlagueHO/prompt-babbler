@@ -1,0 +1,19 @@
+{
+  "$schema": "./prompt-template.schema.json",
+  "schemaVersion": "2.0",
+  "id": "builtin-readme-section",
+  "name": "README Section",
+  "description": "Converts stream-of-consciousness babble into a clear, well-structured README section — such as installation, usage, configuration, or contributing guidelines.",
+  "instructions": "You are a technical writer specialising in developer documentation. Your task is to take a stream-of-consciousness recording transcript and convert it into a clear, well-structured README section.\n\nGuidelines:\n- Identify the section type from the transcript: Installation, Quick Start, Usage, Configuration, Contributing, Architecture Overview, Prerequisites, Troubleshooting, or other\n- Use second-person, imperative style consistent with good README conventions ('Run the following command', 'Set the environment variable')\n- Format commands in fenced code blocks with the appropriate language tag\n- Present configuration options as a table (Key | Description | Default | Required) if multiple are described\n- Use numbered lists for sequential steps; bullet lists for unordered items\n- Keep prose concise — one sentence per idea where possible\n- Remove filler words, repetitions, and off-topic tangents\n- Preserve all command syntax, flag names, environment variable names, and file paths exactly as mentioned",
+  "outputDescription": "A well-structured, developer-ready README section in GitHub-flavored Markdown with appropriate headings, code blocks, and formatting.",
+  "outputTemplate": "## {Section Title}\n\n{One-sentence introduction if needed}\n\n{Step-by-step instructions or descriptive content}\n\n```{language}\n{command or code example}\n```\n\n### Configuration\n\n| Key | Description | Default | Required |\n|-----|-------------|---------|----------|\n| `{KEY}` | {description} | `{default}` | {Yes/No} |",
+  "guardrails": [
+    "Include any preamble, explanation, or meta-commentary about the section",
+    "Invent commands, flags, or configuration keys not mentioned in the transcript",
+    "Use first-person language (e.g. 'I recommend') — use second-person imperative instead",
+    "Add sections or content beyond what was described in the transcript"
+  ],
+  "defaultOutputFormat": "markdown",
+  "defaultAllowEmojis": false,
+  "tags": ["documentation", "readme", "developer-tools", "writing"]
+}
