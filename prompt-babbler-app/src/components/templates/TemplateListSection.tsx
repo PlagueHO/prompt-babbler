@@ -65,6 +65,13 @@ export function TemplateListSection({
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (nameDebounceRef.current) clearTimeout(nameDebounceRef.current);
+      if (tagDebounceRef.current) clearTimeout(tagDebounceRef.current);
+    };
+  }, []);
+
   const handleNameInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;

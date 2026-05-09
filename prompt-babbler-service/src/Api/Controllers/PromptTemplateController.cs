@@ -16,6 +16,8 @@ namespace PromptBabbler.Api.Controllers;
 public sealed class PromptTemplateController : ControllerBase
 {
     private static readonly string[] AllowedOutputFormats = ["text", "markdown"];
+    private const int MaxTemplateSearchLength = 200;
+    private const int MaxTemplateTagLength = 50;
 
     private readonly IPromptTemplateService _templateService;
     private readonly ITemplateValidationService _validationService;
@@ -42,14 +44,14 @@ public sealed class PromptTemplateController : ControllerBase
         [FromQuery] bool forceRefresh = false,
         CancellationToken cancellationToken = default)
     {
-        if (search is not null && search.Length > 200)
+        if (search is not null && search.Length > MaxTemplateSearchLength)
         {
-            return BadRequest("search must be at most 200 characters.");
+            return BadRequest($"search must be at most {MaxTemplateSearchLength} characters.");
         }
 
-        if (tag is not null && (string.IsNullOrWhiteSpace(tag) || tag.Length > 50))
+        if (tag is not null && (string.IsNullOrWhiteSpace(tag) || tag.Length > MaxTemplateTagLength))
         {
-            return BadRequest("tag must be between 1 and 50 characters.");
+            return BadRequest($"tag must be between 1 and {MaxTemplateTagLength} characters.");
         }
 
         if (sortBy is not null && sortBy != "name" && sortBy != "updatedAt")

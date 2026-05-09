@@ -25,7 +25,7 @@ export function useTemplateList() {
 
   const fetchTemplates = useCallback(async (
     append = false,
-    token?: string | null,
+    continuationTokenValue?: string | null,
     forceRefresh = false,
   ) => {
     try {
@@ -48,7 +48,7 @@ export function useTemplateList() {
       const sortDirection = order === 'alphabetical' ? 'asc' : 'desc';
 
       const response = await api.listTemplates({
-        continuationToken: append ? token : null,
+        continuationToken: append ? continuationTokenValue : null,
         pageSize: PAGE_SIZE,
         search: nameFilter || undefined,
         tag: tagFilter || undefined,
