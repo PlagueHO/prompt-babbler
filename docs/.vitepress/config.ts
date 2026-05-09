@@ -8,6 +8,9 @@ export default defineConfig({
   base: '/prompt-babbler/',
   outDir: 'dist',
   appearance: 'auto',
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/prompt-babbler/favicon.svg' }],
+  ],
   themeConfig: {
     nav: [
       { text: 'User Guide', link: '/USER-GUIDE' },

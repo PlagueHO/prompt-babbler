@@ -4,13 +4,6 @@
             "text": "Line 1: ≤50-char summary prefixed with ALL CAPS Conventional Commits: `FEAT:`|`FIX:`|`DOCS:`|`CHORE:`|`TEST:`|`SECURITY:`|`BREAKING:`. Line 2: blank. Lines 3+: full summary, each item starting with `-`. Prefix security items with `SECURITY:`. Prefix breaking changes (feature/interface/dependency) with `BREAKING:`."
         }
     ],
-    "chat.promptFilesRecommendations": {
-        "speckit.constitution": true,
-        "speckit.specify": true,
-        "speckit.plan": true,
-        "speckit.tasks": true,
-        "speckit.implement": true
-    },
     "chat.tools.terminal.autoApprove": {
         ".specify/scripts/bash/": true,
         ".specify/scripts/powershell/": true

@@ -18,9 +18,12 @@
     <!-- Azure / AI -->
     <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.3.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.3.0" />
+    <PackageVersion Include="Azure.AI.Projects" Version="2.0.1" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Azure.AI.Speech.Transcription" Version="1.0.0-beta.2" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
+    <PackageVersion Include="Microsoft.Agents.AI" Version="1.5.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.Foundry" Version="1.5.0" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.59.0" />
     <PackageVersion Include="Microsoft.CognitiveServices.Speech" Version="1.49.1" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.1" />

@@ -3,7 +3,9 @@ using Microsoft.Identity.Web;
 using ModelContextProtocol.AspNetCore.Authentication;
 using ModelContextProtocol.Authentication;
 using PromptBabbler.McpServer;
+using PromptBabbler.McpServer.Agents;
 using PromptBabbler.McpServer.Client;
+using PromptBabbler.McpServer.Configuration;
 using PromptBabbler.McpServer.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,6 +68,10 @@ builder.Services.AddHttpClient<IPromptBabblerApiClient, PromptBabblerApiClient>(
 {
     client.BaseAddress = new Uri("https+http://api");
 }).AddHttpMessageHandler<ApiAuthDelegatingHandler>();
+
+builder.Services.AddSingleton<IAgenticFoundryClientFactory, AgenticFoundryClientFactory>();
+builder.Services.AddScoped<IPromptBabblerAgentRunner, PromptBabblerFoundryAgentRunner>();
+builder.Services.AddScoped<IPromptBabblerAgentOrchestrator, PromptBabblerAgentOrchestrator>();
 
 builder.Services.AddHttpClient<PromptBabblerApiHealthCheck>(client =>
 {

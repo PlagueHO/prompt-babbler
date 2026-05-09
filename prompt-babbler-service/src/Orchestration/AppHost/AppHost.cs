@@ -87,7 +87,9 @@ var mcpClientId = builder.Configuration["EntraAuth:McpClientId"] ?? string.Empty
 
 var mcpServer = builder.AddProject<Projects.PromptBabbler_McpServer>("mcp-server")
     .WithExternalHttpEndpoints()
+    .WithReference(foundryProject)
     .WithReference(apiService)
+    .WaitFor(foundryProject)
     .WaitFor(apiService)
     .WithEnvironment("AzureAd__ClientId", mcpClientId)
     .WithEnvironment("AzureAd__TenantId", tenantId)

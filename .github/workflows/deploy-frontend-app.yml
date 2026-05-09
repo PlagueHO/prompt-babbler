@@ -15,6 +15,10 @@ on:
         description: "The Azure Static Web App resource name"
         required: true
         type: string
+      AZURE_CONTAINER_APP_FQDN:
+        description: "The FQDN of the backend API Container App (e.g., ca-env-api.region.azurecontainerapps.io). Used to bake the API base URL into the frontend build."
+        required: true
+        type: string
 
     secrets:
       AZURE_TENANT_ID:
@@ -40,11 +44,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Download Frontend Build Artifact
-        uses: actions/download-artifact@v8
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
         with:
-          name: prompt-babbler-frontend
-          path: prompt-babbler-app/dist
+          version: 10
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: prompt-babbler-app/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: prompt-babbler-app
+        run: pnpm install
+
+      - name: Build frontend with production API URL
+        working-directory: prompt-babbler-app
+        env:
+          services__api__https__0: "https://${{ inputs.AZURE_CONTAINER_APP_FQDN }}"
+        run: pnpm run build
 
       - name: Authenticate Azure CLI (Federated Credentials)
         uses: azure/login@v3
