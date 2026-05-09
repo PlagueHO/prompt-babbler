@@ -7,6 +7,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Identity.Web;
 using PromptBabbler.Api.HealthChecks;
 using PromptBabbler.Api.Middleware;
+using PromptBabbler.Domain.Constants;
 using PromptBabbler.Domain.Configuration;
 using PromptBabbler.Infrastructure;
 
@@ -265,14 +266,14 @@ app.UseAuthentication();
 // In anonymous single-user mode, inject a synthetic ClaimsPrincipal so that
 // [Authorize], [RequiredScope("access_as_user")], and User.GetObjectId() all
 // work without a real JWT token. The identity contains the minimum claims
-// needed: an object ID ("_anonymous") and the expected scope.
+// needed: an object ID (anonymous user) and the expected scope.
 if (!isAuthEnabled)
 {
     app.Use(async (context, next) =>
     {
         var claims = new[]
         {
-            new System.Security.Claims.Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", "_anonymous"),
+            new System.Security.Claims.Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", UserIds.Anonymous),
             new System.Security.Claims.Claim("scp", "access_as_user"),
         };
         var identity = new System.Security.Claims.ClaimsIdentity(claims, "Anonymous");

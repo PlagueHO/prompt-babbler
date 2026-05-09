@@ -5,12 +5,26 @@ import { TemplateEditor } from '@/components/templates/TemplateEditor';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { useTemplates } from '@/hooks/useTemplates';
+import { useTemplateList } from '@/hooks/useTemplateList';
 import type { PromptTemplate } from '@/types';
 import type { TemplateRequest } from '@/services/api-client';
 
 export function TemplatesPage() {
-  const { templates, loading, error, refresh, createTemplate, updateTemplate, deleteTemplate } =
-    useTemplates();
+  const { createTemplate, updateTemplate, deleteTemplate } = useTemplates({ lazy: true });
+  const {
+    templates,
+    loading,
+    loadingMore,
+    error,
+    refresh,
+    loadMore,
+    nameFilter,
+    setNameFilter,
+    tagFilter,
+    setTagFilter,
+    order,
+    setOrder,
+  } = useTemplateList();
   const [selected, setSelected] = useState<PromptTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -32,19 +46,21 @@ export function TemplatesPage() {
         });
         toast.success('Template updated');
       }
+      await refresh();
       setSelected(null);
       setIsCreating(false);
     },
-    [isCreating, selected, createTemplate, updateTemplate]
+    [isCreating, selected, createTemplate, updateTemplate, refresh]
   );
 
   const handleDelete = useCallback(async () => {
     if (selected && !selected.isBuiltIn) {
       await deleteTemplate(selected.id);
       toast.success('Template deleted');
+      await refresh();
       setSelected(null);
     }
-  }, [selected, deleteTemplate]);
+  }, [selected, deleteTemplate, refresh]);
 
   const handleCancel = useCallback(() => {
     setSelected(null);
@@ -92,6 +108,15 @@ export function TemplatesPage() {
           templates={templates}
           onSelect={setSelected}
           onCreate={handleCreate}
+          nameFilter={nameFilter}
+          onNameFilterChange={setNameFilter}
+          tagFilter={tagFilter}
+          onTagFilterChange={setTagFilter}
+          order={order}
+          onOrderChange={setOrder}
+          loadMore={loadMore}
+          loadingMore={loadingMore}
+          loading={loading}
         />
       )}
     </div>

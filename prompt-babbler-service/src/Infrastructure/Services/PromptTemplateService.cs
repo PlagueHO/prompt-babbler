@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PromptBabbler.Domain.Constants;
 using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Domain.Models;
 
@@ -9,7 +10,6 @@ namespace PromptBabbler.Infrastructure.Services;
 public sealed class PromptTemplateService : IPromptTemplateService
 {
     private const double DefaultCacheDurationMinutes = 5;
-    private const string AnonymousUserId = "_anonymous";
 
     private readonly IPromptTemplateRepository _repository;
     private readonly IMemoryCache _cache;
@@ -36,7 +36,7 @@ public sealed class PromptTemplateService : IPromptTemplateService
         bool forceRefresh = false,
         CancellationToken cancellationToken = default)
     {
-        var effectiveUserId = userId ?? AnonymousUserId;
+        var effectiveUserId = userId ?? UserIds.Anonymous;
         var cacheKey = GetCacheKey(effectiveUserId);
 
         if (forceRefresh)
@@ -52,7 +52,7 @@ public sealed class PromptTemplateService : IPromptTemplateService
         }
 
         var builtIn = await _repository.GetBuiltInTemplatesAsync(cancellationToken);
-        var userTemplates = effectiveUserId != AnonymousUserId
+        var userTemplates = effectiveUserId != UserIds.Anonymous
             ? await _repository.GetUserTemplatesAsync(effectiveUserId, cancellationToken)
             : [];
 
@@ -68,15 +68,37 @@ public sealed class PromptTemplateService : IPromptTemplateService
         return merged;
     }
 
+    public async Task<(IReadOnlyList<PromptTemplate> Items, string? ContinuationToken)> ListTemplatesAsync(
+        string? userId,
+        string? continuationToken = null,
+        int pageSize = 20,
+        string? search = null,
+        string? tag = null,
+        string? sortBy = null,
+        string? sortDirection = null,
+        CancellationToken cancellationToken = default)
+    {
+        var effectiveUserId = userId ?? UserIds.Anonymous;
+        return await _repository.ListTemplatesAsync(
+            effectiveUserId,
+            continuationToken,
+            pageSize,
+            search,
+            tag,
+            sortBy,
+            sortDirection,
+            cancellationToken);
+    }
+
     public async Task<PromptTemplate?> GetByIdAsync(
         string? userId,
         string templateId,
         CancellationToken cancellationToken = default)
     {
-        var effectiveUserId = userId ?? AnonymousUserId;
+        var effectiveUserId = userId ?? UserIds.Anonymous;
 
         // Try user partition first (if not anonymous)
-        if (effectiveUserId != AnonymousUserId)
+        if (effectiveUserId != UserIds.Anonymous)
         {
             var userTemplate = await _repository.GetByIdAsync(effectiveUserId, templateId, cancellationToken);
             if (userTemplate is not null)

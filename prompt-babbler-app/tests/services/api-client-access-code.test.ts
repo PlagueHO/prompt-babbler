@@ -34,7 +34,7 @@ describe('api-client access code', () => {
 
   it('includes X-Access-Code header when code is set', async () => {
     setAccessCode('secret123');
-    mockFetch.mockResolvedValue(mockJsonResponse([]));
+    mockFetch.mockResolvedValue(mockJsonResponse({ items: [], continuationToken: null }));
 
     await getTemplates();
 
@@ -45,7 +45,7 @@ describe('api-client access code', () => {
 
   it('omits X-Access-Code header when code is null', async () => {
     setAccessCode(null);
-    mockFetch.mockResolvedValue(mockJsonResponse([]));
+    mockFetch.mockResolvedValue(mockJsonResponse({ items: [], continuationToken: null }));
 
     await getTemplates();
 
@@ -56,7 +56,7 @@ describe('api-client access code', () => {
 
   it('includes X-Access-Code on authenticated requests', async () => {
     setAccessCode('secret123');
-    mockFetch.mockResolvedValue(mockJsonResponse([]));
+    mockFetch.mockResolvedValue(mockJsonResponse({ items: [], continuationToken: null }));
 
     await getTemplates(false, 'bearer-token');
 

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.Identity.Web;
+using PromptBabbler.Domain.Constants;
 
 namespace PromptBabbler.Api.Extensions;
 
@@ -9,14 +10,12 @@ namespace PromptBabbler.Api.Extensions;
 /// </summary>
 internal static class ClaimsPrincipalExtensions
 {
-    private const string AnonymousUserId = "_anonymous";
-
     /// <summary>
     /// Returns the Entra ID object ID from the authenticated user's claims,
     /// or <c>"_anonymous"</c> when authentication is disabled (single-user mode).
     /// </summary>
     public static string GetUserIdOrAnonymous(this ClaimsPrincipal user)
     {
-        return user.GetObjectId() ?? AnonymousUserId;
+        return user.GetObjectId() ?? UserIds.Anonymous;
     }
 }

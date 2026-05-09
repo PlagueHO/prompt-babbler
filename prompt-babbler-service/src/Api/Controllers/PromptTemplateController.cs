@@ -16,6 +16,8 @@ namespace PromptBabbler.Api.Controllers;
 public sealed class PromptTemplateController : ControllerBase
 {
     private static readonly string[] AllowedOutputFormats = ["text", "markdown"];
+    private const int MaxTemplateSearchLength = 200;
+    private const int MaxTemplateTagLength = 50;
 
     private readonly IPromptTemplateService _templateService;
     private readonly ITemplateValidationService _validationService;
@@ -33,12 +35,56 @@ public sealed class PromptTemplateController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetTemplates(
+        [FromQuery] string? continuationToken = null,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] string? tag = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortDirection = null,
         [FromQuery] bool forceRefresh = false,
         CancellationToken cancellationToken = default)
     {
+        if (search is not null && search.Length > MaxTemplateSearchLength)
+        {
+            return BadRequest($"search must be at most {MaxTemplateSearchLength} characters.");
+        }
+
+        if (tag is not null && (string.IsNullOrWhiteSpace(tag) || tag.Length > MaxTemplateTagLength))
+        {
+            return BadRequest($"tag must be between 1 and {MaxTemplateTagLength} characters.");
+        }
+
+        if (sortBy is not null && sortBy != "name" && sortBy != "updatedAt")
+        {
+            return BadRequest("sortBy must be 'name' or 'updatedAt'.");
+        }
+
+        if (sortDirection is not null &&
+            !sortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase) &&
+            !sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("sortDirection must be 'desc' or 'asc'.");
+        }
+
+        pageSize = Math.Clamp(pageSize, 1, 100);
         var userId = User.GetUserIdOrAnonymous();
-        var templates = await _templateService.GetTemplatesAsync(userId, forceRefresh, cancellationToken);
-        return Ok(templates.Select(ToResponse));
+        var normalizedSortDirection = sortDirection?.ToLowerInvariant();
+
+        var (items, nextToken) = await _templateService.ListTemplatesAsync(
+            userId,
+            continuationToken,
+            pageSize,
+            search,
+            tag,
+            sortBy,
+            normalizedSortDirection,
+            cancellationToken);
+
+        return Ok(new PagedResponse<PromptTemplateResponse>
+        {
+            Items = items.Select(ToResponse),
+            ContinuationToken = nextToken,
+        });
     }
 
     [HttpGet("{id}")]
