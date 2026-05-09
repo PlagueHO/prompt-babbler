@@ -21,7 +21,17 @@ export default defineConfig({
         items: [
           { text: 'Quick Start (Local)', link: '/QUICKSTART-LOCAL' },
           { text: 'Quick Start (Azure)', link: '/QUICKSTART-AZURE' },
-          { text: 'User Guide', link: '/USER-GUIDE' },
+          { text: 'Getting Started', link: '/GETTING-STARTED' },
+        ],
+      },
+      {
+        text: 'User Guide',
+        items: [
+          { text: 'Overview', link: '/USER-GUIDE' },
+          { text: 'Home Page', link: '/HOME-PAGE' },
+          { text: 'Create a Babble', link: '/CREATE-A-BABBLE' },
+          { text: 'Edit a Babble', link: '/EDIT-A-BABBLE' },
+          { text: 'Templates Page', link: '/TEMPLATES-PAGE' },
         ],
       },
       {

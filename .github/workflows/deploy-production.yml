@@ -42,7 +42,7 @@ jobs:
       ENVIRONMENT: prod
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
-      AZURE_ENV_NAME: pmtblr-prod
+      AZURE_ENV_NAME: pbblr-prod
       CONTAINER_IMAGE_API: ${{ inputs.CONTAINER_IMAGE_API }}
       CONTAINER_IMAGE_MCP_SERVER: ${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}
     secrets:
@@ -59,7 +59,7 @@ jobs:
       ENVIRONMENT: prod
       BUILD_VERSION: ${{ inputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ inputs.AZURE_LOCATION }}
-      AZURE_ENV_NAME: pmtblr-prod
+      AZURE_ENV_NAME: pbblr-prod
       CONTAINER_IMAGE_API: ${{ inputs.CONTAINER_IMAGE_API }}
       CONTAINER_IMAGE_MCP_SERVER: ${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}
     secrets:
