@@ -6,6 +6,9 @@ hero:
   tagline: Record voice notes as babbles, then generate structured AI prompts using Foundry Models and configurable templates.
   actions:
     - theme: brand
+      text: User Guide
+      link: /USER-GUIDE
+    - theme: alt
       text: Quick Start (Local)
       link: /QUICKSTART-LOCAL
     - theme: alt

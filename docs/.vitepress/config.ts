@@ -10,8 +10,9 @@ export default defineConfig({
   appearance: 'auto',
   themeConfig: {
     nav: [
-      { text: 'Quick Start', link: '/QUICKSTART-LOCAL' },
       { text: 'User Guide', link: '/USER-GUIDE' },
+      { text: 'Quickstart (Local)', link: '/QUICKSTART-LOCAL' },
+      { text: 'Quickstart (Azure)', link: '/QUICKSTART-AZURE' },
       { text: 'Architecture', link: '/ARCHITECTURE' },
       { text: 'API', link: '/API' },
     ],
