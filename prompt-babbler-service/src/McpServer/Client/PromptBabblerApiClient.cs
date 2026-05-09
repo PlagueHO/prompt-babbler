@@ -111,12 +111,12 @@ public sealed class PromptBabblerApiClient : IPromptBabblerApiClient
     public async Task<string> GeneratePromptAsync(
         string babbleId, string templateId, string? promptFormat, bool? allowEmojis, CancellationToken cancellationToken)
     {
-        var url = $"api/babbles/{Uri.EscapeDataString(babbleId)}/generate?templateId={Uri.EscapeDataString(templateId)}";
-        if (promptFormat is not null) url += $"&promptFormat={Uri.EscapeDataString(promptFormat)}";
-        if (allowEmojis.HasValue) url += $"&allowEmojis={allowEmojis.Value.ToString().ToLowerInvariant()}";
+        var url = $"api/babbles/{Uri.EscapeDataString(babbleId)}/generate";
+        var body = new { templateId, promptFormat, allowEmojis };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("text/event-stream"));
+        request.Content = JsonContent.Create(body, options: JsonOptions);
 
         using var response = await _httpClient.SendAsync(
             request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
