@@ -4,7 +4,12 @@ import * as api from '@/services/api-client';
 import { isAuthConfigured } from '@/auth/authConfig';
 import { useAuthToken, useAccountCount } from '@/hooks/useAuthToken';
 
-export function useTemplates() {
+interface UseTemplatesOptions {
+  lazy?: boolean;
+}
+
+export function useTemplates(options: UseTemplatesOptions = {}) {
+  const { lazy = false } = options;
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,13 +36,17 @@ export function useTemplates() {
   }, [getAuthToken]);
 
   useEffect(() => {
+    if (lazy) {
+      setLoading(false);
+      return;
+    }
     if (isAuthConfigured && accountCount === 0) {
       setTemplates([]);
       setLoading(false);
     } else {
       fetchTemplates();
     }
-  }, [fetchTemplates, accountCount]);
+  }, [fetchTemplates, accountCount, lazy]);
 
   const createTemplate = useCallback(
     async (template: api.TemplateRequest): Promise<PromptTemplate> => {

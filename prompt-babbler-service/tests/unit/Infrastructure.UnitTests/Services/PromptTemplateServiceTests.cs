@@ -52,6 +52,33 @@ public sealed class PromptTemplateServiceTests
     // ---- GetTemplatesAsync ----
 
     [TestMethod]
+    public async Task ListTemplatesAsync_DelegatesToRepository()
+    {
+        _repository.ListTemplatesAsync(
+                TestUserId,
+                "ct",
+                10,
+                "writer",
+                "creative",
+                "name",
+                "asc",
+                Arg.Any<CancellationToken>())
+            .Returns((new List<PromptTemplate> { CreateTemplate() }, "next"));
+
+        var (items, continuationToken) = await _service.ListTemplatesAsync(
+            TestUserId,
+            "ct",
+            10,
+            "writer",
+            "creative",
+            "name",
+            "asc");
+
+        items.Should().HaveCount(1);
+        continuationToken.Should().Be("next");
+    }
+
+    [TestMethod]
     public async Task GetTemplatesAsync_MergesBuiltInAndUserTemplates()
     {
         var builtIn = CreateTemplate("b1", "_builtin", "Built-in", isBuiltIn: true);

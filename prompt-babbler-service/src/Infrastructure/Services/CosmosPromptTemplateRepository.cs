@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using PromptBabbler.Domain.Interfaces;
@@ -9,6 +10,7 @@ namespace PromptBabbler.Infrastructure.Services;
 public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
 {
     public const string BuiltInUserId = "_builtin";
+    public const string AnonymousUserId = "_anonymous";
     public const string DatabaseName = "prompt-babbler";
     public const string ContainerName = "prompt-templates";
 
@@ -24,6 +26,72 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
     public async Task<IReadOnlyList<PromptTemplate>> GetBuiltInTemplatesAsync(CancellationToken cancellationToken = default)
     {
         return await QueryByPartitionKeyAsync(BuiltInUserId, cancellationToken);
+    }
+
+    public async Task<(IReadOnlyList<PromptTemplate> Items, string? ContinuationToken)> ListTemplatesAsync(
+        string userId,
+        string? continuationToken = null,
+        int pageSize = 20,
+        string? search = null,
+        string? tag = null,
+        string? sortBy = null,
+        string? sortDirection = null,
+        CancellationToken cancellationToken = default)
+    {
+        var isAnonymous = string.Equals(userId, AnonymousUserId, StringComparison.Ordinal);
+        var userFilter = isAnonymous
+            ? "c.userId = @builtInUserId"
+            : "(c.userId = @builtInUserId OR c.userId = @userId)";
+
+        var queryText = new StringBuilder($"SELECT * FROM c WHERE {userFilter}");
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            queryText.Append(" AND CONTAINS(LOWER(c.name), @search)");
+        }
+
+        if (!string.IsNullOrWhiteSpace(tag))
+        {
+            queryText.Append(" AND EXISTS(SELECT VALUE t FROM t IN c.tags WHERE LOWER(t) = @tag)");
+        }
+
+        var orderByField = sortBy == "name" ? "c.name" : "c.updatedAt";
+        var orderByDirection = string.Equals(sortDirection, "asc", StringComparison.OrdinalIgnoreCase) ? "ASC" : "DESC";
+        queryText.Append($" ORDER BY {orderByField} {orderByDirection}");
+
+        var queryDefinition = new QueryDefinition(queryText.ToString())
+            .WithParameter("@builtInUserId", BuiltInUserId);
+
+        if (!isAnonymous)
+        {
+            queryDefinition = queryDefinition.WithParameter("@userId", userId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            queryDefinition = queryDefinition.WithParameter("@search", search.Trim().ToLowerInvariant());
+        }
+
+        if (!string.IsNullOrWhiteSpace(tag))
+        {
+            queryDefinition = queryDefinition.WithParameter("@tag", tag.Trim().ToLowerInvariant());
+        }
+
+        var options = new QueryRequestOptions
+        {
+            MaxItemCount = pageSize,
+        };
+
+        var results = new List<PromptTemplate>();
+        using var iterator = _container.GetItemQueryIterator<PromptTemplate>(queryDefinition, continuationToken, options);
+        if (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync(cancellationToken);
+            results.AddRange(response);
+            return (results.AsReadOnly(), response.ContinuationToken);
+        }
+
+        return (results.AsReadOnly(), null);
     }
 
     public async Task<IReadOnlyList<PromptTemplate>> GetUserTemplatesAsync(string userId, CancellationToken cancellationToken = default)

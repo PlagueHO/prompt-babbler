@@ -51,9 +51,30 @@ public sealed class PromptBabblerApiClient : IPromptBabblerApiClient
 
     public async Task<IReadOnlyList<PromptTemplateDto>> GetTemplatesAsync(CancellationToken cancellationToken)
     {
-        var response = await _httpClient.GetAsync("api/templates", cancellationToken);
-        response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<IReadOnlyList<PromptTemplateDto>>(JsonOptions, cancellationToken))!;
+        var templates = new List<PromptTemplateDto>();
+        string? continuationToken = null;
+
+        do
+        {
+            var url = "api/templates?pageSize=100";
+            if (!string.IsNullOrEmpty(continuationToken))
+            {
+                url += $"&continuationToken={Uri.EscapeDataString(continuationToken)}";
+            }
+
+            var response = await _httpClient.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var page = await response.Content.ReadFromJsonAsync<PagedResponseDto<PromptTemplateDto>>(JsonOptions, cancellationToken);
+            if (page is null)
+            {
+                break;
+            }
+
+            templates.AddRange(page.Items);
+            continuationToken = page.ContinuationToken;
+        } while (!string.IsNullOrEmpty(continuationToken));
+
+        return templates;
     }
 
     public async Task<PromptTemplateDto?> GetTemplateAsync(string id, CancellationToken cancellationToken)

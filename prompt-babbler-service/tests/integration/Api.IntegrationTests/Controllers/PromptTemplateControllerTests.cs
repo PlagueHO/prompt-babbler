@@ -21,8 +21,16 @@ public sealed class PromptTemplateControllerTests
         var client = factory.CreateClient();
 
         var templateService = factory.Services.GetRequiredService<IPromptTemplateService>();
-        templateService.GetTemplatesAsync(Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
-            .Returns(new List<PromptTemplate> { PromptTemplateFixtures.CreateUserTemplate() });
+        templateService.ListTemplatesAsync(
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<int>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns((new List<PromptTemplate> { PromptTemplateFixtures.CreateUserTemplate() }, null));
 
         var response = await client.GetAsync("/api/templates");
 

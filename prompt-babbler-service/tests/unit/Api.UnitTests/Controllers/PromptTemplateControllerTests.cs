@@ -7,6 +7,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using PromptBabbler.Api.Controllers;
 using PromptBabbler.Api.Models.Requests;
+using PromptBabbler.Api.Models.Responses;
 using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Domain.Models;
 
@@ -66,19 +67,39 @@ public sealed class PromptTemplateControllerTests
     public async Task GetTemplates_ReturnsAllTemplates()
     {
         var templates = new List<PromptTemplate> { CreateTemplate(), CreateTemplate("id2", name: "Second") };
-        _templateService.GetTemplatesAsync(TestUserId, false, Arg.Any<CancellationToken>())
-            .Returns(templates);
+        _templateService.ListTemplatesAsync(
+            TestUserId,
+            null,
+            20,
+            null,
+            null,
+            null,
+            null,
+            Arg.Any<CancellationToken>())
+            .Returns((templates, null));
 
         var result = await _controller.GetTemplates(cancellationToken: CancellationToken.None);
 
-        result.Should().BeOfType<OkObjectResult>();
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var response = ok.Value.Should().BeOfType<PagedResponse<PromptTemplateResponse>>().Subject;
+        response.Items.Should().HaveCount(2);
     }
 
     [TestMethod]
     public async Task GetTemplates_WithForceRefresh_PassesFlagToService()
     {
         _templateService.GetTemplatesAsync(TestUserId, true, Arg.Any<CancellationToken>())
-            .Returns(new List<PromptTemplate>());
+            .Returns(Array.Empty<PromptTemplate>());
+        _templateService.ListTemplatesAsync(
+            TestUserId,
+            null,
+            20,
+            null,
+            null,
+            null,
+            null,
+            Arg.Any<CancellationToken>())
+            .Returns((Array.Empty<PromptTemplate>(), null));
 
         await _controller.GetTemplates(forceRefresh: true, cancellationToken: CancellationToken.None);
 
@@ -88,13 +109,63 @@ public sealed class PromptTemplateControllerTests
     [TestMethod]
     public async Task GetTemplates_EmptyResult_ReturnsEmptyArray()
     {
-        _templateService.GetTemplatesAsync(TestUserId, false, Arg.Any<CancellationToken>())
-            .Returns(new List<PromptTemplate>());
+        _templateService.ListTemplatesAsync(
+            TestUserId,
+            null,
+            20,
+            null,
+            null,
+            null,
+            null,
+            Arg.Any<CancellationToken>())
+            .Returns((Array.Empty<PromptTemplate>(), null));
 
         var result = await _controller.GetTemplates(cancellationToken: CancellationToken.None);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeAssignableTo<IEnumerable<object>>();
+        var response = ok.Value.Should().BeOfType<PagedResponse<PromptTemplateResponse>>().Subject;
+        response.Items.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public async Task GetTemplates_WithFiltersAndSort_PassesParametersToService()
+    {
+        _templateService.ListTemplatesAsync(
+            TestUserId,
+            "ct",
+            25,
+            "writer",
+            "creative",
+            "name",
+            "asc",
+            Arg.Any<CancellationToken>())
+            .Returns((Array.Empty<PromptTemplate>(), null));
+
+        await _controller.GetTemplates(
+            continuationToken: "ct",
+            pageSize: 25,
+            search: "writer",
+            tag: "creative",
+            sortBy: "name",
+            sortDirection: "asc",
+            cancellationToken: CancellationToken.None);
+
+        await _templateService.Received(1).ListTemplatesAsync(
+            TestUserId,
+            "ct",
+            25,
+            "writer",
+            "creative",
+            "name",
+            "asc",
+            Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task GetTemplates_InvalidSortBy_ReturnsBadRequest()
+    {
+        var result = await _controller.GetTemplates(sortBy: "invalid", cancellationToken: CancellationToken.None);
+        result.Should().BeOfType<BadRequestObjectResult>();
     }
 
     // ---- GET /api/templates/{id} ----

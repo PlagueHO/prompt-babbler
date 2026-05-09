@@ -1,18 +1,37 @@
 import type { PromptTemplate } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { TemplateCard } from './TemplateCard';
+import { TemplateListSection } from '@/components/templates/TemplateListSection';
+import type { TemplateOrder } from '@/hooks/useTemplateList';
 
 interface TemplateListProps {
   templates: PromptTemplate[];
   onSelect: (template: PromptTemplate) => void;
   onCreate: () => void;
+  nameFilter: string;
+  onNameFilterChange: (value: string) => void;
+  tagFilter: string;
+  onTagFilterChange: (value: string) => void;
+  order: TemplateOrder;
+  onOrderChange: (value: TemplateOrder) => void;
+  loadMore: () => void;
+  loadingMore: boolean;
+  loading: boolean;
 }
 
 export function TemplateList({
   templates,
   onSelect,
   onCreate,
+  nameFilter,
+  onNameFilterChange,
+  tagFilter,
+  onTagFilterChange,
+  order,
+  onOrderChange,
+  loadMore,
+  loadingMore,
+  loading,
 }: TemplateListProps) {
   return (
     <div className="space-y-4">
@@ -23,15 +42,19 @@ export function TemplateList({
           Create Template
         </Button>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {templates.map((t) => (
-          <TemplateCard
-            key={t.id}
-            template={t}
-            onClick={() => onSelect(t)}
-          />
-        ))}
-      </div>
+      <TemplateListSection
+        templates={templates}
+        nameFilter={nameFilter}
+        onNameFilterChange={onNameFilterChange}
+        tagFilter={tagFilter}
+        onTagFilterChange={onTagFilterChange}
+        order={order}
+        onOrderChange={onOrderChange}
+        onSelect={onSelect}
+        loadMore={loadMore}
+        loadingMore={loadingMore}
+        loading={loading}
+      />
     </div>
   );
 }

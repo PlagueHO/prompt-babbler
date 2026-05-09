@@ -87,9 +87,52 @@ export async function getAccessStatus(): Promise<AccessControlStatus> {
 
 // Template APIs
 
+export interface ListTemplatesOptions {
+  continuationToken?: string | null;
+  pageSize?: number;
+  search?: string;
+  tag?: string;
+  sortBy?: 'name' | 'updatedAt';
+  sortDirection?: 'desc' | 'asc';
+  forceRefresh?: boolean;
+}
+
+export async function listTemplates(
+  options: ListTemplatesOptions = {},
+  accessToken?: string,
+): Promise<PagedResponse<PromptTemplate>> {
+  const params = new URLSearchParams();
+  if (options.continuationToken) params.set('continuationToken', options.continuationToken);
+  params.set('pageSize', String(options.pageSize ?? 20));
+  if (options.search) params.set('search', options.search);
+  if (options.tag) params.set('tag', options.tag);
+  if (options.sortBy) params.set('sortBy', options.sortBy);
+  if (options.sortDirection) params.set('sortDirection', options.sortDirection);
+  if (options.forceRefresh) params.set('forceRefresh', 'true');
+  const query = params.toString();
+  return fetchJson<PagedResponse<PromptTemplate>>(`/api/templates?${query}`, undefined, accessToken);
+}
+
 export async function getTemplates(forceRefresh = false, accessToken?: string): Promise<PromptTemplate[]> {
-  const query = forceRefresh ? '?forceRefresh=true' : '';
-  return fetchJson<PromptTemplate[]>(`/api/templates${query}`, undefined, accessToken);
+  const templates: PromptTemplate[] = [];
+  let continuationToken: string | null = null;
+  let isFirstPage = true;
+
+  do {
+    const page = await listTemplates(
+      {
+        continuationToken,
+        pageSize: 100,
+        forceRefresh: isFirstPage && forceRefresh,
+      },
+      accessToken,
+    );
+    templates.push(...page.items);
+    continuationToken = page.continuationToken;
+    isFirstPage = false;
+  } while (continuationToken);
+
+  return templates;
 }
 
 export async function getTemplate(id: string, accessToken?: string): Promise<PromptTemplate> {

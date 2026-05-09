@@ -68,6 +68,28 @@ public sealed class PromptTemplateService : IPromptTemplateService
         return merged;
     }
 
+    public async Task<(IReadOnlyList<PromptTemplate> Items, string? ContinuationToken)> ListTemplatesAsync(
+        string? userId,
+        string? continuationToken = null,
+        int pageSize = 20,
+        string? search = null,
+        string? tag = null,
+        string? sortBy = null,
+        string? sortDirection = null,
+        CancellationToken cancellationToken = default)
+    {
+        var effectiveUserId = userId ?? AnonymousUserId;
+        return await _repository.ListTemplatesAsync(
+            effectiveUserId,
+            continuationToken,
+            pageSize,
+            search,
+            tag,
+            sortBy,
+            sortDirection,
+            cancellationToken);
+    }
+
     public async Task<PromptTemplate?> GetByIdAsync(
         string? userId,
         string templateId,
