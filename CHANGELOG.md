@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-05-09
+
+### Fixed
+
+- Allow MCP health and liveness endpoints when access code protection is enabled
+- Add MCP middleware unit tests for allowlisted and protected endpoint behavior
+
 ## [1.1.1] - 2026-05-09
 
 ### Fixed

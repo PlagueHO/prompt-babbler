@@ -5,11 +5,24 @@ namespace PromptBabbler.McpServer;
 
 public sealed class McpAccessCodeMiddleware(RequestDelegate next, IConfiguration configuration)
 {
+    private static readonly string[] AllowlistedPathPrefixes =
+    [
+        "/health",
+        "/alive",
+    ];
+
     private readonly string _accessCode = configuration["AccessControl:AccessCode"] ?? string.Empty;
 
     public async Task InvokeAsync(HttpContext context)
     {
         if (string.IsNullOrEmpty(_accessCode))
+        {
+            await next(context);
+            return;
+        }
+
+        var requestPath = context.Request.Path.Value ?? string.Empty;
+        if (IsAllowlisted(requestPath))
         {
             await next(context);
             return;
@@ -33,5 +46,18 @@ public sealed class McpAccessCodeMiddleware(RequestDelegate next, IConfiguration
         }
 
         await next(context);
+    }
+
+    private static bool IsAllowlisted(string path)
+    {
+        foreach (var prefix in AllowlistedPathPrefixes)
+        {
+            if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
