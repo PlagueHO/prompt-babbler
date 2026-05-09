@@ -67,6 +67,8 @@ export function TemplatePicker({
     setOpen(false);
   };
 
+  const templateCountLabel = `${filteredTemplates.length} template${filteredTemplates.length === 1 ? '' : 's'}`;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -123,7 +125,7 @@ export function TemplatePicker({
           </div>
           <CommandList className="max-h-[360px]">
             <CommandEmpty>No templates match your filters.</CommandEmpty>
-            <CommandGroup heading={`${filteredTemplates.length} template${filteredTemplates.length === 1 ? '' : 's'}`}>
+            <CommandGroup heading={templateCountLabel}>
               {filteredTemplates.map((template) => (
                 <CommandItem
                   key={template.id}

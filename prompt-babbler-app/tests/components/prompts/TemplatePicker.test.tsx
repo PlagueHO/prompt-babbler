@@ -27,11 +27,13 @@ const templates: PromptTemplate[] = [
 ];
 
 beforeAll(() => {
-  global.ResizeObserver = class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  };
+  class MockResizeObserver {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  }
+
+  global.ResizeObserver = MockResizeObserver;
   Element.prototype.scrollIntoView = vi.fn();
 });
 
@@ -62,7 +64,8 @@ describe('TemplatePicker', () => {
     expect(within(dialog).getByText('First template')).toBeInTheDocument();
     expect(within(dialog).getByText('summary')).toBeInTheDocument();
     expect(within(dialog).getByText('Template Two')).toBeInTheDocument();
-    expect(within(dialog).getAllByText('Built-in')).toHaveLength(2);
+    expect(within(dialog).getByRole('button', { name: 'Built-in' })).toBeInTheDocument();
+    expect(within(dialog).getAllByText('Built-in', { selector: 'span' })).toHaveLength(1);
   });
 
   it('filters templates by search and type filter', () => {
