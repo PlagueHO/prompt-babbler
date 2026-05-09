@@ -6,9 +6,12 @@ import { useUserSettings } from '@/hooks/useUserSettings';
 import { useTheme } from '@/hooks/useTheme';
 import { CheckCircle, XCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { ThemeMode } from '@/types';
 
 export function SettingsPage() {
+  usePageTitle('Settings');
+
   const { isConnected, isLoading: statusLoading, error: statusError, refresh } = useSettings();
   const { settings, loading: settingsLoading, error: settingsError, updateSettings } = useUserSettings();
   const { setTheme } = useTheme();

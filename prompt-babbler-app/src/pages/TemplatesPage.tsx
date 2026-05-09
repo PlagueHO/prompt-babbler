@@ -6,6 +6,7 @@ import { AuthGuard } from '@/components/layout/AuthGuard';
 import { ErrorBanner } from '@/components/ui/error-banner';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useTemplateList } from '@/hooks/useTemplateList';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { PromptTemplate } from '@/types';
 import type { TemplateRequest } from '@/services/api-client';
 
@@ -27,6 +28,19 @@ export function TemplatesPage() {
   } = useTemplateList();
   const [selected, setSelected] = useState<PromptTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  let pageTitle = 'Templates';
+  if (isCreating) {
+    pageTitle = 'Create Template';
+  } else if (selected) {
+    if (selected.isBuiltIn) {
+      pageTitle = selected.name ? `Template: ${selected.name}` : 'View Template';
+    } else {
+      pageTitle = selected.name ? `Edit Template: ${selected.name}` : 'Edit Template';
+    }
+  }
+
+  usePageTitle(pageTitle);
 
   const handleCreate = useCallback(() => {
     setSelected(null);

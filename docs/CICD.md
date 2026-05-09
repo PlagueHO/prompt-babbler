@@ -249,6 +249,7 @@ Actions → Repository secrets):
 | `AZURE_TENANT_ID` | Your Microsoft Entra tenant ID | Used for federated auth |
 | `AZURE_SUBSCRIPTION_ID` | Your Azure subscription ID | Target subscription |
 | `AZURE_CLIENT_ID` | The managed identity's **client (app) ID** | Identity for OIDC login |
+| `AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN` | Custom domain hostname (for example, `app.contoso.com`) | Optional. Set as an environment secret (for example, `prod`) to bind a Static Web App custom domain during provisioning |
 
 > **Important:** Use the **client ID** (app ID), not the principal (object) ID.
 

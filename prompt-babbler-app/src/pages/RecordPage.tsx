@@ -23,6 +23,7 @@ import { AuthGuard } from '@/components/layout/AuthGuard';
 import { Save, ChevronDown, Sparkles, Loader2, Upload } from 'lucide-react';
 import { ClearTranscriptDialog } from '@/components/recording/ClearTranscriptDialog';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import type { Babble } from '@/types';
 
 export function RecordPage() {
@@ -51,6 +52,18 @@ export function RecordPage() {
   const [existingBabble, setExistingBabble] = useState<Babble | null>(null);
   const [babbleLoading, setBabbleLoading] = useState(isAppendMode);
   const [babbleNotFound, setBabbleNotFound] = useState(false);
+
+  let pageTitle = 'Create a Babble';
+  if (isAppendMode) {
+    pageTitle = 'Continue Babble';
+    if (existingBabble?.title) {
+      pageTitle = `Continue: ${existingBabble.title}`;
+    } else if (!babbleLoading && babbleNotFound) {
+      pageTitle = 'Babble not found';
+    }
+  }
+
+  usePageTitle(pageTitle);
 
   useEffect(() => {
     if (!babbleId) return;

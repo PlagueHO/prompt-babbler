@@ -167,6 +167,7 @@ These values are set automatically by `azd` and do not need to be configured man
 | Variable | Default | Description |
 | --- | --- | --- |
 | `AZURE_STATIC_WEB_APP_LOCATION` | *(same as primary)* | Override region for the Static Web App. Must be one of: `centralus`, `eastasia`, `eastus2`, `westeurope`, `westus2` |
+| `AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN` | *(empty)* | Optional custom domain hostname for the Static Web App (for example, `app.contoso.com`). Leave empty to disable custom domain binding. |
 | `AZURE_CONTAINER_APP_API_IMAGE` | `ghcr.io/plagueho/prompt-babbler-api:latest` | Container image deployed to the API Container App |
 | `AZURE_CONTAINER_APP_MCP_SERVER_IMAGE` | `ghcr.io/plagueho/prompt-babbler-mcp-server:latest` | Container image deployed to the MCP Server Container App |
 | `ENABLE_PUBLIC_NETWORK_ACCESS` | `true` | Set to `false` to restrict all resources to private network access only |
@@ -210,6 +211,11 @@ azd up
 ```
 
 For CI/CD deployments, store the access code as a GitHub Actions secret named `ACCESS_CODE`. The delivery pipeline passes it through to the infrastructure provisioning step automatically.
+
+To configure a production custom domain in CI/CD, add an environment secret named `AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN` with the domain hostname value (for example, `app.contoso.com`). The pipeline passes this into `azd`, and the Static Web App AVM module configures the custom domain during provisioning.
+
+> [!IMPORTANT]
+> Ensure your DNS CNAME record points your custom domain host to the deployed Static Web App default hostname (`AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME`). Domain validation can take time while DNS changes propagate.
 
 ### Entra ID mode
 

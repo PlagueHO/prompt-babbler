@@ -105,6 +105,9 @@ on:
       ACCESS_CODE:
         description: "Optional access code for single-user mode protection"
         required: false
+      AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN:
+        description: "Optional custom domain hostname for Static Web App (for example, app.contoso.com)"
+        required: false
 
 jobs:
   provision-infrastructure:
@@ -215,6 +218,11 @@ jobs:
           SWA_LOCATION="${{ vars.AZURE_STATIC_WEB_APP_LOCATION }}"
           if [ -n "$SWA_LOCATION" ]; then
             azd env set AZURE_STATIC_WEB_APP_LOCATION "$SWA_LOCATION"
+          fi
+          # Set optional Static Web App custom domain when configured.
+          SWA_CUSTOM_DOMAIN="${{ secrets.AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN }}"
+          if [ -n "$SWA_CUSTOM_DOMAIN" ]; then
+            azd env set AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN "$SWA_CUSTOM_DOMAIN"
           fi
           # Enable Entra ID app registrations via preprovision hook when configured.
           # Requires Application.ReadWrite.All Graph permission on the deploying identity.

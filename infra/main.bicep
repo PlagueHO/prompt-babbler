@@ -52,6 +52,9 @@ param spaClientId string = ''
 ])
 param staticWebAppLocation string = ''
 
+@sys.description('Optional custom domain hostname for the Azure Static Web App (for example, app.contoso.com). Leave empty to disable custom domain binding.')
+param staticWebAppCustomDomain string = ''
+
 @sys.description('Container image to deploy for the backend API Container App.')
 param containerImageApi string = 'ghcr.io/plagueho/prompt-babbler-api:latest'
 
@@ -577,7 +580,9 @@ module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
           ] : [])
           {
             name: 'CORS__AllowedOrigins'
-            value: 'https://${staticWebApp.outputs.defaultHostname}'
+            value: !empty(staticWebAppCustomDomain)
+              ? 'https://${staticWebApp.outputs.defaultHostname},https://${staticWebAppCustomDomain}'
+              : 'https://${staticWebApp.outputs.defaultHostname}'
           }
           ...(!empty(accessCode) ? [
             {
@@ -730,6 +735,10 @@ module staticWebApp 'br/public:avm/res/web/static-site:0.9.4' = {
   params: {
     name: staticWebAppName
     location: effectiveStaticWebAppLocation
+    customDomains: !empty(staticWebAppCustomDomain) ? [
+      staticWebAppCustomDomain
+    ] : []
+    validationMethod: !empty(staticWebAppCustomDomain) ? 'cname-delegation' : null
     tags: union(tags, {
       'azd-service-name': 'frontend'
     })

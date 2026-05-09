@@ -20,6 +20,10 @@ param mcpClientId = readEnvironmentVariable('AZURE_AD_MCP_CLIENT_ID', '')
 // Leave empty to use the primary location.
 param staticWebAppLocation = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_LOCATION', ''))
 
+// Optional Static Web App custom domain hostname (for example, app.contoso.com).
+// Leave empty to disable custom domain binding.
+param staticWebAppCustomDomain = toLower(readEnvironmentVariable('AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN', ''))
+
 // Container images to deploy to Azure Container Apps
 param containerImageApi = readEnvironmentVariable('AZURE_CONTAINER_APP_API_IMAGE', 'ghcr.io/plagueho/prompt-babbler-api:latest')
 param containerImageMcpServer = readEnvironmentVariable('AZURE_CONTAINER_APP_MCP_SERVER_IMAGE', 'ghcr.io/plagueho/prompt-babbler-mcp-server:latest')

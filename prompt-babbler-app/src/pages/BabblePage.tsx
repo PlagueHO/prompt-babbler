@@ -19,6 +19,7 @@ import { useTemplates } from '@/hooks/useTemplates';
 import { usePromptGeneration } from '@/hooks/usePromptGeneration';
 import { useGeneratedPrompts } from '@/hooks/useGeneratedPrompts';
 import { useAuthToken } from '@/hooks/useAuthToken';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import * as api from '@/services/api-client';
 import type { Babble, GeneratedPrompt } from '@/types';
 import type { PromptGenerateOptions } from '@/components/prompts/PromptGenerator';
@@ -49,6 +50,15 @@ export function BabblePage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInputValue, setTitleInputValue] = useState('');
   const autoGenerateTriggered = useRef(false);
+
+  let pageTitle = 'Babble not found';
+  if (babbleLoading) {
+    pageTitle = 'Loading Babble';
+  } else if (babble?.title) {
+    pageTitle = `Babble: ${babble.title}`;
+  }
+
+  usePageTitle(pageTitle);
 
   // Fetch babble from API on mount.
   useEffect(() => {

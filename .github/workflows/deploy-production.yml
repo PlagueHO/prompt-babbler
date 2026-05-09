@@ -33,6 +33,9 @@ on:
       ACCESS_CODE:
         description: "Optional access code for single-user mode protection"
         required: false
+      AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN:
+        description: "Optional custom domain hostname for Static Web App (for example, app.contoso.com)"
+        required: false
 
 jobs:
   validate-prod-infrastructure:
@@ -67,6 +70,7 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
+      AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN: ${{ secrets.AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN }}
 
   deploy-prod-frontend:
     name: Deploy Prod Frontend

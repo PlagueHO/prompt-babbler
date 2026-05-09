@@ -6,8 +6,11 @@ import { BabbleBubbles } from '@/components/babbles/BabbleBubbles';
 import { BabbleListSection } from '@/components/babbles/BabbleListSection';
 import { AuthGuard } from '@/components/layout/AuthGuard';
 import { useBabbles } from '@/hooks/useBabbles';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 export function HomePage() {
+  usePageTitle('Home');
+
   const {
     bubbleBabbles,
     bubblesLoading,
