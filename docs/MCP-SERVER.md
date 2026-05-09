@@ -58,16 +58,16 @@ Create or update `.vscode/mcp.json` in your workspace root:
       "headers": {
         "Authorization": "Bearer ${input:promptBabblerCode}"
       },
-      "inputs": [
-        {
-          "id": "promptBabblerCode",
-          "type": "promptString",
-          "description": "Prompt Babbler access code",
-          "password": true
-        }
-      ]
     }
-  }
+  },
+  "inputs": [
+    {
+      "id": "promptBabblerCode",
+      "type": "promptString",
+      "description": "Prompt Babbler access code",
+      "password": true
+    }
+  ]  
 }
 ```
 
