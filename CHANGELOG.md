@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-09
+
+### Added
+
+- Add MCP Server with API client and health checks
+- Add audio file upload and transcription
+- Add semantic search with embeddings and vector search
+- Add built-in prompt template creation scripts
+- Add babble tag editing and colored tag display enhancements
+- Add AI Coding Tool application description template
+- Add Cosmos vector container initialization service
+- Add issue templates for bug reports, chores, and feature requests
+
+### Changed
+
+- Redesign template listing with pagination, filter and sort controls, and babbles-style UX
+- Redesign prompt template selection with a searchable, filterable template browser
+- Update prompt generation to use POST requests
+- Update prompt template terminology and structure
+- Update template hashes and vector data types
+- Add retry logic for Cosmos DB upserts
+- Normalize container image references in workflows
+- Update environment name length and add extensions
+- Clean up code structure and change tracking artifacts
+- Add new images and update Bicep configuration
+
+### Documentation
+
+- Update documentation to reflect Foundry Models
+- Update README badge links and descriptions
+- Expand authentication, MCP server, API, quickstart, and user guide documentation
+- Update agent and Copilot guidance
+
+### Infrastructure
+
+- Add Cosmos DB vector container infrastructure and model deployment configuration
+- Update CI/CD, smoke test, and production deployment workflows for API and MCP server releases
+
+### Dependencies
+
+- Bump `TypeScript` from 5.9.3 to 6.0.3 in frontend
+- Bump frontend ESLint packages
+- Bump frontend testing packages and `jsdom`
+- Bump `lucide-react` in frontend
+- Bump frontend OpenTelemetry packages
+- Bump `Microsoft.Azure.Cosmos` from 3.58.0 to 3.59.0
+- Bump `Microsoft.Extensions.AI.OpenAI` from 10.5.0 to 10.5.1
+- Bump `Microsoft.Extensions.Http.Resilience` from 10.4.0 to 10.5.0
+- Bump `Microsoft.Extensions.ServiceDiscovery` from 10.4.0 to 10.5.0
+- Bump `Microsoft.Identity.Web` from 4.7.0 to 4.9.0
+- Bump `System.Security.Cryptography.Xml` from 10.0.6 to 10.0.7
+- Bump `MSTest.Sdk` and `MSTest.TestFramework`
+- Bump GitHub Actions workflow dependencies
+
 ## [1.0.1] - 2026-04-25
 
 ### Changed
