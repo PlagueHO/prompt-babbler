@@ -44,7 +44,6 @@ export function TemplateListSection({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef(loadMore);
   const nameDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tagDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadMoreRef.current = loadMore;
@@ -78,7 +77,6 @@ export function TemplateListSection({
   useEffect(() => {
     return () => {
       if (nameDebounceRef.current) clearTimeout(nameDebounceRef.current);
-      if (tagDebounceRef.current) clearTimeout(tagDebounceRef.current);
     };
   }, []);
 
@@ -98,12 +96,20 @@ export function TemplateListSection({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setTagInput(value);
-      if (tagDebounceRef.current) clearTimeout(tagDebounceRef.current);
-      tagDebounceRef.current = setTimeout(() => {
-        onTagFilterChange(value);
-      }, 300);
+      if (value === '') {
+        onTagFilterChange('');
+      }
     },
     [onTagFilterChange],
+  );
+
+  const handleTagKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        onTagFilterChange(tagInput);
+      }
+    },
+    [onTagFilterChange, tagInput],
   );
 
   const orderLabel = order === 'alphabetical' ? 'Alphabetical' : 'Recently used';
@@ -130,6 +136,7 @@ export function TemplateListSection({
             className="pl-8"
             value={tagInput}
             onChange={handleTagInput}
+            onKeyDown={handleTagKeyDown}
             aria-label="Filter templates by tag"
           />
         </div>

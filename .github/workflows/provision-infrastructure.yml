@@ -181,15 +181,34 @@ jobs:
 
       - name: Set Azure Developer CLI environment variables
         run: |
+          normalize_image_ref() {
+            local image="$1"
+            local name="$image"
+            local suffix=""
+
+            # Preserve tag/digest while lowercasing only the repository reference.
+            if [[ "$image" == *@* ]]; then
+              name="${image%@*}"
+              suffix="@${image##*@}"
+            elif [[ "$image" =~ :([^/:]+)$ ]]; then
+              name="${image%:*}"
+              suffix=":${image##*:}"
+            fi
+
+            echo "${name,,}${suffix}"
+          }
+
           azd env set AZURE_PRINCIPAL_ID_TYPE "$AZURE_PRINCIPAL_ID_TYPE"
           azd env set AZURE_RESOURCE_GROUP "rg-${AZURE_ENV_NAME}"
           CONTAINER_IMAGE_API="${{ inputs.CONTAINER_IMAGE_API }}"
           if [ -n "$CONTAINER_IMAGE_API" ]; then
-            azd env set AZURE_CONTAINER_APP_API_IMAGE "$CONTAINER_IMAGE_API"
+            NORMALIZED_CONTAINER_IMAGE_API="$(normalize_image_ref "$CONTAINER_IMAGE_API")"
+            azd env set AZURE_CONTAINER_APP_API_IMAGE "$NORMALIZED_CONTAINER_IMAGE_API"
           fi
           CONTAINER_IMAGE_MCP="${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}"
           if [ -n "$CONTAINER_IMAGE_MCP" ]; then
-            azd env set AZURE_CONTAINER_APP_MCP_SERVER_IMAGE "$CONTAINER_IMAGE_MCP"
+            NORMALIZED_CONTAINER_IMAGE_MCP="$(normalize_image_ref "$CONTAINER_IMAGE_MCP")"
+            azd env set AZURE_CONTAINER_APP_MCP_SERVER_IMAGE "$NORMALIZED_CONTAINER_IMAGE_MCP"
           fi
           # Override Static Web App location when configured.
           # Must be one of: centralus, eastasia, eastus2, westeurope, westus2.

@@ -53,8 +53,6 @@ jobs:
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME || inputs.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION || inputs.AZURE_LOCATION }}
       AZURE_PRINCIPAL_ID_TYPE: 'ServicePrincipal'
-      AZURE_CONTAINER_APP_API_IMAGE: ${{ inputs.CONTAINER_IMAGE_API }}
-      AZURE_CONTAINER_APP_MCP_SERVER_IMAGE: ${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}
 
     steps:
       - name: Download Build Artifacts
@@ -66,6 +64,35 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
+
+      - name: Normalize container image inputs
+        run: |
+          normalize_image_ref() {
+            local image="$1"
+            local name="$image"
+            local suffix=""
+
+            # Preserve tag/digest while lowercasing only the repository reference.
+            if [[ "$image" == *@* ]]; then
+              name="${image%@*}"
+              suffix="@${image##*@}"
+            elif [[ "$image" =~ :([^/:]+)$ ]]; then
+              name="${image%:*}"
+              suffix=":${image##*:}"
+            fi
+
+            echo "${name,,}${suffix}"
+          }
+
+          CONTAINER_IMAGE_API="${{ inputs.CONTAINER_IMAGE_API }}"
+          if [ -n "$CONTAINER_IMAGE_API" ]; then
+            echo "AZURE_CONTAINER_APP_API_IMAGE=$(normalize_image_ref "$CONTAINER_IMAGE_API")" >> "$GITHUB_ENV"
+          fi
+
+          CONTAINER_IMAGE_MCP="${{ inputs.CONTAINER_IMAGE_MCP_SERVER }}"
+          if [ -n "$CONTAINER_IMAGE_MCP" ]; then
+            echo "AZURE_CONTAINER_APP_MCP_SERVER_IMAGE=$(normalize_image_ref "$CONTAINER_IMAGE_MCP")" >> "$GITHUB_ENV"
+          fi
 
       - name: Validate
         id: validate-azure-infrastructure
