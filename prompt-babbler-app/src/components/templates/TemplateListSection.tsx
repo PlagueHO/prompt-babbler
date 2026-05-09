@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowDownAZ, Clock3, Loader2, Search, Tag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,8 @@ export function TemplateListSection({
   loadingMore,
   loading,
 }: TemplateListSectionProps) {
+  const [nameInput, setNameInput] = useState(nameFilter);
+  const [tagInput, setTagInput] = useState(tagFilter);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef(loadMore);
   const nameDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,6 +49,14 @@ export function TemplateListSection({
   useEffect(() => {
     loadMoreRef.current = loadMore;
   }, [loadMore]);
+
+  useEffect(() => {
+    setNameInput(nameFilter);
+  }, [nameFilter]);
+
+  useEffect(() => {
+    setTagInput(tagFilter);
+  }, [tagFilter]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -75,6 +85,7 @@ export function TemplateListSection({
   const handleNameInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
+      setNameInput(value);
       if (nameDebounceRef.current) clearTimeout(nameDebounceRef.current);
       nameDebounceRef.current = setTimeout(() => {
         onNameFilterChange(value);
@@ -86,6 +97,7 @@ export function TemplateListSection({
   const handleTagInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
+      setTagInput(value);
       if (tagDebounceRef.current) clearTimeout(tagDebounceRef.current);
       tagDebounceRef.current = setTimeout(() => {
         onTagFilterChange(value);
@@ -105,7 +117,7 @@ export function TemplateListSection({
             type="search"
             placeholder="Filter by name..."
             className="pl-8"
-            defaultValue={nameFilter}
+            value={nameInput}
             onChange={handleNameInput}
             aria-label="Filter templates by name"
           />
@@ -116,7 +128,7 @@ export function TemplateListSection({
             type="search"
             placeholder="Filter by tag..."
             className="pl-8"
-            defaultValue={tagFilter}
+            value={tagInput}
             onChange={handleTagInput}
             aria-label="Filter templates by tag"
           />
