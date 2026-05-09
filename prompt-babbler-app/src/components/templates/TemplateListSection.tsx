@@ -141,11 +141,19 @@ export function TemplateListSection({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onOrderChange('recentlyUsed')}>
+            <DropdownMenuItem
+              onClick={() => onOrderChange('recentlyUsed')}
+              aria-selected={order === 'recentlyUsed'}
+              className={order === 'recentlyUsed' ? 'font-medium' : ''}
+            >
               Recently used
               {order === 'recentlyUsed' && <span className="ml-auto text-primary">✓</span>}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onOrderChange('alphabetical')}>
+            <DropdownMenuItem
+              onClick={() => onOrderChange('alphabetical')}
+              aria-selected={order === 'alphabetical'}
+              className={order === 'alphabetical' ? 'font-medium' : ''}
+            >
               Alphabetical
               {order === 'alphabetical' && <span className="ml-auto text-primary">✓</span>}
             </DropdownMenuItem>

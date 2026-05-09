@@ -72,4 +72,26 @@ describe('useTemplateList', () => {
       expect(result.current.templates).toHaveLength(2);
     });
   });
+
+  it('refresh does not force backend cache refresh', async () => {
+    const { listTemplates } = await import('@/services/api-client');
+    const mockedListTemplates = listTemplates as ReturnType<typeof vi.fn>;
+
+    const { result } = renderHook(() => useTemplateList());
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    mockedListTemplates.mockClear();
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(mockedListTemplates).toHaveBeenCalledWith(
+      expect.not.objectContaining({ forceRefresh: true }),
+      'mock-access-token',
+    );
+  });
 });

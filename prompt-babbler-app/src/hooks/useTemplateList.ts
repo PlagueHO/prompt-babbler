@@ -98,6 +98,6 @@ export function useTemplateList() {
     order,
     setOrder,
     loadMore,
-    refresh: () => fetchTemplates(false, null, true),
+    refresh: () => fetchTemplates(false, null),
   };
 }

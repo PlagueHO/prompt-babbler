@@ -17,11 +17,19 @@ export function TemplateListItem({ template, onSelect }: TemplateListItemProps) 
 
   return (
     <tr
+      role="button"
+      tabIndex={0}
       className={cn(
         'cursor-pointer transition-colors hover:bg-accent/50',
         template.isBuiltIn && 'bg-primary/5',
       )}
       onClick={() => onSelect(template)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(template);
+        }
+      }}
     >
       <td className="py-2 pl-2 pr-4 whitespace-nowrap">
         <div className="flex items-center gap-2">

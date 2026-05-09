@@ -59,17 +59,16 @@ public sealed class PromptTemplateController : ControllerBase
             return BadRequest("sortBy must be 'name' or 'updatedAt'.");
         }
 
-        if (sortDirection is not null && sortDirection != "desc" && sortDirection != "asc")
+        if (sortDirection is not null &&
+            !sortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase) &&
+            !sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest("sortDirection must be 'desc' or 'asc'.");
         }
 
         pageSize = Math.Clamp(pageSize, 1, 100);
         var userId = User.GetUserIdOrAnonymous();
-        if (forceRefresh)
-        {
-            await _templateService.GetTemplatesAsync(userId, forceRefresh: true, cancellationToken);
-        }
+        var normalizedSortDirection = sortDirection?.ToLowerInvariant();
 
         var (items, nextToken) = await _templateService.ListTemplatesAsync(
             userId,
@@ -78,7 +77,7 @@ public sealed class PromptTemplateController : ControllerBase
             search,
             tag,
             sortBy,
-            sortDirection,
+            normalizedSortDirection,
             cancellationToken);
 
         return Ok(new PagedResponse<PromptTemplateResponse>

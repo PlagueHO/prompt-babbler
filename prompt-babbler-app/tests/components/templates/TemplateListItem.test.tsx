@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { TemplateListItem } from '@/components/templates/TemplateListItem';
 import type { PromptTemplate } from '@/types';
 
@@ -28,5 +28,20 @@ describe('TemplateListItem', () => {
     expect(screen.getByText('Short description for list view')).toBeInTheDocument();
     expect(screen.getByText('creative')).toBeInTheDocument();
     expect(screen.queryByText('Long full content that should not appear in the list row')).not.toBeInTheDocument();
+  });
+
+  it('supports keyboard selection', () => {
+    const onSelect = vi.fn();
+    render(
+      <table>
+        <tbody>
+          <TemplateListItem template={template} onSelect={onSelect} />
+        </tbody>
+      </table>,
+    );
+
+    const rowButton = screen.getByRole('button');
+    fireEvent.keyDown(rowButton, { key: 'Enter' });
+    expect(onSelect).toHaveBeenCalledWith(template);
   });
 });

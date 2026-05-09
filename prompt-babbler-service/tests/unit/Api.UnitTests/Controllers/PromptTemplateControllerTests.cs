@@ -86,10 +86,8 @@ public sealed class PromptTemplateControllerTests
     }
 
     [TestMethod]
-    public async Task GetTemplates_WithForceRefresh_PassesFlagToService()
+    public async Task GetTemplates_WithForceRefresh_UsesPagedQueryOnly()
     {
-        _templateService.GetTemplatesAsync(TestUserId, true, Arg.Any<CancellationToken>())
-            .Returns(Array.Empty<PromptTemplate>());
         _templateService.ListTemplatesAsync(
             TestUserId,
             null,
@@ -103,7 +101,16 @@ public sealed class PromptTemplateControllerTests
 
         await _controller.GetTemplates(forceRefresh: true, cancellationToken: CancellationToken.None);
 
-        await _templateService.Received(1).GetTemplatesAsync(TestUserId, true, Arg.Any<CancellationToken>());
+        await _templateService.Received(1).ListTemplatesAsync(
+            TestUserId,
+            null,
+            20,
+            null,
+            null,
+            null,
+            null,
+            Arg.Any<CancellationToken>());
+        await _templateService.DidNotReceive().GetTemplatesAsync(Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
@@ -166,6 +173,36 @@ public sealed class PromptTemplateControllerTests
     {
         var result = await _controller.GetTemplates(sortBy: "invalid", cancellationToken: CancellationToken.None);
         result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [TestMethod]
+    public async Task GetTemplates_SortDirection_IsCaseInsensitive()
+    {
+        _templateService.ListTemplatesAsync(
+            TestUserId,
+            null,
+            20,
+            null,
+            null,
+            "updatedAt",
+            "desc",
+            Arg.Any<CancellationToken>())
+            .Returns((Array.Empty<PromptTemplate>(), null));
+
+        await _controller.GetTemplates(
+            sortBy: "updatedAt",
+            sortDirection: "DESC",
+            cancellationToken: CancellationToken.None);
+
+        await _templateService.Received(1).ListTemplatesAsync(
+            TestUserId,
+            null,
+            20,
+            null,
+            null,
+            "updatedAt",
+            "desc",
+            Arg.Any<CancellationToken>());
     }
 
     // ---- GET /api/templates/{id} ----

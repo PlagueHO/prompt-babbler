@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
+using PromptBabbler.Domain.Constants;
 using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Domain.Models;
 
@@ -10,7 +11,6 @@ namespace PromptBabbler.Infrastructure.Services;
 public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
 {
     public const string BuiltInUserId = "_builtin";
-    public const string AnonymousUserId = "_anonymous";
     public const string DatabaseName = "prompt-babbler";
     public const string ContainerName = "prompt-templates";
 
@@ -38,7 +38,7 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
         string? sortDirection = null,
         CancellationToken cancellationToken = default)
     {
-        var isAnonymous = string.Equals(userId, AnonymousUserId, StringComparison.Ordinal);
+        var isAnonymous = string.Equals(userId, UserIds.Anonymous, StringComparison.Ordinal);
         var userFilter = isAnonymous
             ? "c.userId = @builtInUserId"
             : "(c.userId = @builtInUserId OR c.userId = @userId)";

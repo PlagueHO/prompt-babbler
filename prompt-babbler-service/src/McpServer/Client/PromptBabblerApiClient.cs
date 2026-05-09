@@ -67,7 +67,7 @@ public sealed class PromptBabblerApiClient : IPromptBabblerApiClient
             var page = await response.Content.ReadFromJsonAsync<PagedResponseDto<PromptTemplateDto>>(JsonOptions, cancellationToken);
             if (page is null)
             {
-                break;
+                throw new InvalidOperationException("Template list response body was empty.");
             }
 
             templates.AddRange(page.Items);
