@@ -27,14 +27,19 @@ const templates: PromptTemplate[] = [
 ];
 
 beforeAll(() => {
-  class MockResizeObserver {
-    observe(): void {}
-    unobserve(): void {}
-    disconnect(): void {}
+  if (typeof global.ResizeObserver === 'undefined') {
+    class MockResizeObserver {
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    }
+
+    global.ResizeObserver = MockResizeObserver;
   }
 
-  global.ResizeObserver = MockResizeObserver;
-  Element.prototype.scrollIntoView = vi.fn();
+  if (typeof Element.prototype.scrollIntoView !== 'function') {
+    Element.prototype.scrollIntoView = vi.fn();
+  }
 });
 
 describe('TemplatePicker', () => {
