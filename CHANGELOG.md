@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-10
+
+### Added
+
+- Prompt Babbler agent orchestration and Foundry runner support
+- MCP agent tools for orchestration and execution
+- Additional unit tests for agent orchestration and tools
+- New application favicon assets
+
+### Changed
+
+- Refresh release-planning and validation artifacts
+- Remove legacy Speckit prompts, agents, and templates
+- Update deployment and documentation assets
+
 ## [1.1.2] - 2026-05-09
 
 ### Fixed
