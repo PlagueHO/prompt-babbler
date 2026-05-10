@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-10
+
+### Added
+
+- Add a reusable `usePageTitle` hook and apply it across app pages for consistent document titles
+
+### Changed
+
+- Update MCP server configuration structure and documentation for local development setup
+
 ## [1.2.0] - 2026-05-10
 
 ### Added
