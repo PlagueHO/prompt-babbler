@@ -564,6 +564,10 @@ module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
             name: 'ConnectionStrings__ai-foundry'
             value: 'Endpoint=${foundryProjectEndpoint}'
           }
+          {
+            name: 'Speech__Region'
+            value: toLower(location)
+          }
           ...(!empty(apiClientId) ? [
             {
               name: 'AzureAd__ClientId'
