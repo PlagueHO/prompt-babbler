@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-05-10
+
+### Added
+
+- Add Speech region environment variable for the API container app to enable production transcription session startup
+
 ## [1.3.0] - 2026-05-10
 
 ### Added
