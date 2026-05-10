@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-05-10
+
+### Fixed
+
+- Improve WebSocket error handling in smoke tests
+
 ## [1.4.1] - 2026-05-10
 
 ### Fixed
