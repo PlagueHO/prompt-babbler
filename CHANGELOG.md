@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-05-10
+
+### Added
+
+- Add optional custom frontend domain validation to smoke tests when a custom domain is configured
+
+### Changed
+
+- Enhance deployment and smoke-test workflows to pass custom domain configuration through CI/CD
+- Refactor smoke test header handling with a shared helper for clearer authenticated request setup
+
 ## [1.3.1] - 2026-05-10
 
 ### Added
