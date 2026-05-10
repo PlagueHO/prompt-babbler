@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.43.1.21952",
-      "templateHash": "17707329185042441977"
+      "templateHash": "17766054375070129029"
     }
   },
   "parameters": {
@@ -34822,6 +34822,11 @@
             "value": [
               {
                 "roleDefinitionIdOrName": "Cognitive Services OpenAI User",
+                "principalType": "ServicePrincipal",
+                "principalId": "[coalesce(tryGet(tryGet(reference('containerApp').outputs, 'systemAssignedMIPrincipalId'), 'value'), '')]"
+              },
+              {
+                "roleDefinitionIdOrName": "Cognitive Services User",
                 "principalType": "ServicePrincipal",
                 "principalId": "[coalesce(tryGet(tryGet(reference('containerApp').outputs, 'systemAssignedMIPrincipalId'), 'value'), '')]"
               },

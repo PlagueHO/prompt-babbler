@@ -607,11 +607,17 @@ module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
   }
 }
 
-// Assign Cognitive Services OpenAI User + Speech User roles to the Container App's
-// managed identity so it can call Foundry models and Speech Service via managed identity
+// Assign Cognitive Services data-plane roles to the Container App's managed identity
+// so it can call Foundry models and Speech Service via managed identity.
+// Cognitive Services User is required for STS token issuance used by Speech SDK.
 var containerAppFoundryRoleAssignments = [
   {
     roleDefinitionIdOrName: 'Cognitive Services OpenAI User'
+    principalType: 'ServicePrincipal'
+    principalId: containerApp.outputs.?systemAssignedMIPrincipalId ?? ''
+  }
+  {
+    roleDefinitionIdOrName: 'Cognitive Services User'
     principalType: 'ServicePrincipal'
     principalId: containerApp.outputs.?systemAssignedMIPrincipalId ?? ''
   }

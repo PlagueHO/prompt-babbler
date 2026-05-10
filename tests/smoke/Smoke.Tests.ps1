@@ -9,8 +9,22 @@ param(
     [string]$FrontendBaseUrl,
 
     [Parameter()]
+    [string]$CustomFrontendBaseUrl = '',
+
+    [Parameter()]
     [string]$AccessCode = ''
 )
+
+function Get-SmokeHeaders {
+    param([string]$Code)
+
+    $headers = @{}
+    if ($Code) {
+        $headers['X-Access-Code'] = $Code
+    }
+
+    return $headers
+}
 
 Describe 'Backend API' {
     BeforeAll {
@@ -134,12 +148,75 @@ Describe 'Backend API' {
     }
 
     It 'Babbles API returns 200' {
-        $headers = @{}
-        if ($AccessCode) {
-            $headers['X-Access-Code'] = $AccessCode
-        }
+        $headers = Get-SmokeHeaders -Code $AccessCode
         $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/babbles" -Headers $headers -UseBasicParsing -TimeoutSec 10
         $response.StatusCode | Should -Be 200
+    }
+
+    It 'Templates API returns 200' {
+        $headers = Get-SmokeHeaders -Code $AccessCode
+        $response = Invoke-WebRequest -Uri "$ApiBaseUrl/api/templates?pageSize=1" -Headers $headers -UseBasicParsing -TimeoutSec 10
+        $response.StatusCode | Should -Be 200
+
+        $payload = $response.Content | ConvertFrom-Json
+        $payload.PSObject.Properties.Name | Should -Contain 'items'
+    }
+
+    It 'Transcription WebSocket starts without session error' {
+        $query = if ($AccessCode) {
+            '?access_code=' + [Uri]::EscapeDataString($AccessCode)
+        }
+        else {
+            ''
+        }
+        $wsUri = [Uri]::new("$($ApiBaseUrl.Replace('https://', 'wss://'))/api/transcribe/stream$query")
+
+        $socket = [System.Net.WebSockets.ClientWebSocket]::new()
+        $timeoutCts = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(30))
+
+        try {
+            $socket.ConnectAsync($wsUri, $timeoutCts.Token).GetAwaiter().GetResult()
+            $socket.State | Should -Be ([System.Net.WebSockets.WebSocketState]::Open)
+
+            $silentFrame = [byte[]](0..319 | ForEach-Object { 0 })
+            $sendSegment = [ArraySegment[byte]]::new($silentFrame)
+            $socket.SendAsync($sendSegment, [System.Net.WebSockets.WebSocketMessageType]::Binary, $true, $timeoutCts.Token).GetAwaiter().GetResult()
+
+            $receiveBuffer = New-Object byte[] 4096
+            $receiveSegment = [ArraySegment[byte]]::new($receiveBuffer)
+            $receiveTask = $socket.ReceiveAsync($receiveSegment, $timeoutCts.Token)
+            $completedTask = [System.Threading.Tasks.Task]::WhenAny($receiveTask, [System.Threading.Tasks.Task]::Delay(12000)).GetAwaiter().GetResult()
+
+            if ($completedTask -eq $receiveTask) {
+                $result = $receiveTask.GetAwaiter().GetResult()
+
+                if ($result.MessageType -eq [System.Net.WebSockets.WebSocketMessageType]::Text) {
+                    $text = [System.Text.Encoding]::UTF8.GetString($receiveBuffer, 0, $result.Count)
+                    $parsed = $text | ConvertFrom-Json -ErrorAction SilentlyContinue
+                    if ($null -ne $parsed -and $parsed.PSObject.Properties.Name -contains 'error') {
+                        throw "Transcription WebSocket returned startup error: $($parsed.error)"
+                    }
+                }
+                elseif ($result.MessageType -eq [System.Net.WebSockets.WebSocketMessageType]::Close) {
+                    throw "Transcription WebSocket closed during startup. CloseStatus=$($socket.CloseStatus) Description=$($socket.CloseStatusDescription)"
+                }
+            }
+
+            # If no startup message arrives within the observation window and socket stays open,
+            # treat that as healthy startup waiting for additional audio.
+            $socket.State | Should -Be ([System.Net.WebSockets.WebSocketState]::Open)
+        }
+        finally {
+            if ($socket.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
+                $socket.CloseAsync(
+                    [System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure,
+                    'Smoke test completed',
+                    [System.Threading.CancellationToken]::None).GetAwaiter().GetResult()
+            }
+
+            $socket.Dispose()
+            $timeoutCts.Dispose()
+        }
     }
 }
 
@@ -162,6 +239,17 @@ Describe 'Frontend SPA' {
         $assetUrl = "$FrontendBaseUrl$($assetMatch.Groups[1].Value)"
         $response = Invoke-WebRequest -Uri $assetUrl -UseBasicParsing -TimeoutSec 10
         $response.StatusCode | Should -Be 200
+    }
+
+    It 'Custom domain serves frontend when configured' {
+        if (-not $CustomFrontendBaseUrl) {
+            Set-ItResult -Inconclusive -Because 'Custom frontend domain is not configured for this environment'
+            return
+        }
+
+        $response = Invoke-WebRequest -Uri $CustomFrontendBaseUrl -UseBasicParsing -TimeoutSec 10
+        $response.StatusCode | Should -Be 200
+        $response.Content | Should -Match '<div id="root"'
     }
 }
 
