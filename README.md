@@ -15,6 +15,8 @@
 
 💬 Prompt Babbler is a speech-to-prompt web application that captures stream-of-consciousness speech, transcribes it using Microsoft Foundry, and generates structured prompts for target systems like GitHub Copilot. It can run locally with a Cosmos DB emulator or be deployed to Azure with a fully managed Cosmos DB instance and Microsoft Foundry resources. The app is built with a React frontend and a .NET backend, orchestrated by .NET Aspire for seamless local and cloud development.
 
+![Create babble recorded screen](docs/public/images/create-babble-recorded.png)
+
 ## What It Does
 
 Prompt Babbler turns rough speech into polished, structured prompts ready to use with AI tools. The typical workflow is:
