@@ -37,7 +37,7 @@
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- Testing -->
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.4" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.3.0" />
     <PackageVersion Include="FluentAssertions" Version="8.9.0" />
     <PackageVersion Include="JsonSchema.Net" Version="9.2.0" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.2.2" />
