@@ -26,5 +26,5 @@ public interface IBabbleRepository
 
     Task<IReadOnlyList<BabbleSearchResult>> SearchByVectorAsync(string userId, ReadOnlyMemory<float> vector, int topN, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<BabbleSearchResult>> SearchByTitleAsync(string userId, string query, int topN, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<BabbleSearchResult>> SearchByKeywordAsync(string userId, string query, int topN, CancellationToken cancellationToken = default);
 }

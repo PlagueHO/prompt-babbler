@@ -236,7 +236,7 @@ public sealed class BabbleServiceTests
     [TestMethod]
     public async Task SearchAsync_WithQuery_ReturnsRankedResults()
     {
-        // "test query that is long enough" — 3 words, routes to vector
+        // "test query string" — 3 words, routes to vector + keyword
         var query = "test query string";
         var vector = new ReadOnlyMemory<float>(new float[] { 0.1f, 0.2f, 0.3f });
         var vectorResults = new List<BabbleSearchResult>
@@ -247,7 +247,7 @@ public sealed class BabbleServiceTests
 
         _embeddingService.GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>())
             .Returns(vector);
-        _babbleRepository.SearchByTitleAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
+        _babbleRepository.SearchByKeywordAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
             .Returns(new List<BabbleSearchResult>().AsReadOnly());
         _babbleRepository.SearchByVectorAsync("test-user-id", vector, 10, Arg.Any<CancellationToken>())
             .Returns(vectorResults.AsReadOnly());
@@ -262,57 +262,77 @@ public sealed class BabbleServiceTests
     }
 
     [TestMethod]
-    public async Task SearchAsync_ShortQuery_SkipsEmbeddingAndReturnsTitleResults()
+    public async Task SearchAsync_SingleWordShortQuery_SkipsEmbeddingAndReturnsKeywordResults()
     {
-        // 2 words, < 15 chars — routes to title search only
-        var query = "my idea";
-        var titleResults = new List<BabbleSearchResult>
+        // 1 word, < 10 chars — routes to keyword search only
+        var query = "idea";
+        var keywordResults = new List<BabbleSearchResult>
         {
-            new(CreateBabble(id: "title-match"), 1.0),
+            new(CreateBabble(id: "keyword-match"), 1.0),
         };
 
-        _babbleRepository.SearchByTitleAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
-            .Returns(titleResults.AsReadOnly());
+        _babbleRepository.SearchByKeywordAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
+            .Returns(keywordResults.AsReadOnly());
 
         var results = await _service.SearchAsync("test-user-id", query, 10);
 
         results.Should().HaveCount(1);
-        results[0].Babble.Id.Should().Be("title-match");
+        results[0].Babble.Id.Should().Be("keyword-match");
         await _embeddingService.DidNotReceiveWithAnyArgs().GenerateEmbeddingAsync(default!, default);
         await _babbleRepository.DidNotReceiveWithAnyArgs().SearchByVectorAsync(default!, default, default, default);
     }
 
     [TestMethod]
-    public async Task SearchAsync_TitleMatchWithNoVectorMatch_IncludesResult()
+    public async Task SearchAsync_TwoWordQuery_TriggersSemanticSearch()
     {
-        // 3-word query routes to vector; title match comes through even with no vector hit
+        // 2 words — meets the new threshold, routes to keyword + vector
+        var query = "my idea";
+        var vector = new ReadOnlyMemory<float>(new float[] { 0.1f, 0.2f, 0.3f });
+
+        _embeddingService.GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>())
+            .Returns(vector);
+        _babbleRepository.SearchByKeywordAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
+            .Returns(new List<BabbleSearchResult>().AsReadOnly());
+        _babbleRepository.SearchByVectorAsync("test-user-id", vector, 10, Arg.Any<CancellationToken>())
+            .Returns(new List<BabbleSearchResult>().AsReadOnly());
+
+        await _service.SearchAsync("test-user-id", query, 10);
+
+        await _embeddingService.Received(1).GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>());
+        await _babbleRepository.Received(1).SearchByVectorAsync("test-user-id", vector, 10, Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task SearchAsync_KeywordMatchWithNoVectorMatch_IncludesResult()
+    {
+        // 3-word query routes to vector; keyword match comes through even with no vector hit
         var query = "unique title match";
         var vector = new ReadOnlyMemory<float>(new float[] { 0.1f, 0.2f, 0.3f });
-        var titleResult = new BabbleSearchResult(CreateBabble(id: "title-match"), 1.0);
+        var keywordResult = new BabbleSearchResult(CreateBabble(id: "keyword-match"), 1.0);
 
         _embeddingService.GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>()).Returns(vector);
-        _babbleRepository.SearchByTitleAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
-            .Returns(new List<BabbleSearchResult> { titleResult }.AsReadOnly());
+        _babbleRepository.SearchByKeywordAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
+            .Returns(new List<BabbleSearchResult> { keywordResult }.AsReadOnly());
         _babbleRepository.SearchByVectorAsync("test-user-id", vector, 10, Arg.Any<CancellationToken>())
             .Returns(new List<BabbleSearchResult>().AsReadOnly());
 
         var results = await _service.SearchAsync("test-user-id", query, 10);
 
         results.Should().HaveCount(1);
-        results[0].Babble.Id.Should().Be("title-match");
+        results[0].Babble.Id.Should().Be("keyword-match");
         results[0].SimilarityScore.Should().Be(1.0);
     }
 
     [TestMethod]
-    public async Task SearchAsync_BabbleMatchesBothTitleAndVector_KeepsHigherScore()
+    public async Task SearchAsync_BabbleMatchesBothKeywordAndVector_KeepsHigherScore()
     {
-        // Same babble returned by both — deduplication keeps the higher title score
+        // Same babble returned by both — deduplication keeps the higher keyword score
         var query = "overlap query here";
         var vector = new ReadOnlyMemory<float>(new float[] { 0.1f, 0.2f, 0.3f });
         var sharedBabble = CreateBabble(id: "shared");
 
         _embeddingService.GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>()).Returns(vector);
-        _babbleRepository.SearchByTitleAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
+        _babbleRepository.SearchByKeywordAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
             .Returns(new List<BabbleSearchResult> { new(sharedBabble, 1.0) }.AsReadOnly());
         _babbleRepository.SearchByVectorAsync("test-user-id", vector, 10, Arg.Any<CancellationToken>())
             .Returns(new List<BabbleSearchResult> { new(sharedBabble, 0.82) }.AsReadOnly());
@@ -330,7 +350,7 @@ public sealed class BabbleServiceTests
         var query = "test query here";
         _embeddingService.GenerateEmbeddingAsync(query, Arg.Any<CancellationToken>())
             .Throws(new InvalidOperationException("Embedding service unavailable"));
-        _babbleRepository.SearchByTitleAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
+        _babbleRepository.SearchByKeywordAsync("test-user-id", query, 10, Arg.Any<CancellationToken>())
             .Returns(new List<BabbleSearchResult>().AsReadOnly());
 
         await _service.Invoking(s => s.SearchAsync("test-user-id", query, 10))

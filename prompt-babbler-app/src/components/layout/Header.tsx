@@ -1,10 +1,8 @@
 import { NavLink } from 'react-router';
-import { Home, Mic, FileText, Search } from 'lucide-react';
+import { Home, Mic, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/layout/UserMenu';
-
-const isMac = /Mac/i.test(navigator.platform);
+import { SearchBar } from '@/components/search/SearchBar';
 
 const navItems = [
   { to: '/', label: 'Home', icon: Home },
@@ -40,18 +38,7 @@ export function Header() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2"
-            onClick={() => document.dispatchEvent(new CustomEvent('babble:open-search'))}
-            aria-label="Search babbles"
-          >
-            <Search className="h-4 w-4 xl:mr-2" />
-            <span className="hidden xl:inline-flex">Search babbles...</span>
-            <kbd className="pointer-events-none absolute right-1.5 top-2 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100 xl:flex">
-              {isMac ? <><span className="text-xs">⌘</span>K</> : <>Ctrl K</>}
-            </kbd>
-          </Button>
+          <SearchBar />
           <UserMenu />
         </div>
       </div>

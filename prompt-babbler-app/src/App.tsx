@@ -5,7 +5,6 @@ import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { BrowserCheck } from '@/components/layout/BrowserCheck';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import { AccessCodeDialog } from '@/components/layout/AccessCodeDialog';
-import { SearchCommand } from '@/components/search/SearchCommand';
 import { useTheme } from '@/hooks/useTheme';
 import { useAccessCode } from '@/hooks/useAccessCode';
 import { HomePage } from '@/pages/HomePage';
@@ -54,7 +53,6 @@ function AppContent() {
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </PageLayout>
-      <SearchCommand />
       <ThemedToaster />
     </BrowserRouter>
   );

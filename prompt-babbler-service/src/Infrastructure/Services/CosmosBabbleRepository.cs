@@ -18,7 +18,7 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
     /// semantic search results. Range: 0.0 (no similarity) to 1.0 (identical).
     /// Raise this value to tighten relevance; lower it to broaden results.
     /// </summary>
-    public const double MinimumSimilarityScore = 0.75;
+    public const double MinimumSimilarityScore = 0.65;
 
     private readonly Container _container;
     private readonly ILogger<CosmosBabbleRepository> _logger;
@@ -40,10 +40,17 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
         CancellationToken cancellationToken = default)
     {
         var queryText = new StringBuilder("SELECT * FROM c WHERE c.userId = @userId");
+        string[]? searchWords = null;
 
         if (!string.IsNullOrEmpty(search))
         {
-            queryText.Append(" AND CONTAINS(LOWER(c.title), @search)");
+            searchWords = search.ToLowerInvariant()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            for (var i = 0; i < searchWords.Length; i++)
+            {
+                queryText.Append($" AND (CONTAINS(LOWER(c.title), @s{i}) OR CONTAINS(LOWER(c.text), @s{i}))");
+            }
         }
 
         if (isPinned.HasValue)
@@ -58,9 +65,12 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
         var queryDefinition = new QueryDefinition(queryText.ToString())
             .WithParameter("@userId", userId);
 
-        if (!string.IsNullOrEmpty(search))
+        if (searchWords is not null)
         {
-            queryDefinition = queryDefinition.WithParameter("@search", search.ToLowerInvariant());
+            for (var i = 0; i < searchWords.Length; i++)
+            {
+                queryDefinition = queryDefinition.WithParameter($"@s{i}", searchWords[i]);
+            }
         }
 
         if (isPinned.HasValue)
@@ -226,20 +236,35 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
         return results.AsReadOnly();
     }
 
-    public async Task<IReadOnlyList<BabbleSearchResult>> SearchByTitleAsync(
+    public async Task<IReadOnlyList<BabbleSearchResult>> SearchByKeywordAsync(
         string userId,
         string query,
         int topN,
         CancellationToken cancellationToken = default)
     {
-        const string queryText =
-            "SELECT TOP @topN * FROM c " +
-            "WHERE c.userId = @userId AND CONTAINS(LOWER(c.title), @search)";
+        var words = query.ToLowerInvariant()
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (words.Length == 0)
+        {
+            return Array.Empty<BabbleSearchResult>();
+        }
+
+        var wordClauses = words.Select((_, i) =>
+            $"(CONTAINS(LOWER(c.title), @w{i}) OR CONTAINS(LOWER(c.text), @w{i}))");
+
+        var queryText =
+            $"SELECT TOP @topN * FROM c " +
+            $"WHERE c.userId = @userId AND {string.Join(" AND ", wordClauses)}";
 
         var queryDefinition = new QueryDefinition(queryText)
             .WithParameter("@topN", topN)
-            .WithParameter("@userId", userId)
-            .WithParameter("@search", query.ToLowerInvariant());
+            .WithParameter("@userId", userId);
+
+        for (var i = 0; i < words.Length; i++)
+        {
+            queryDefinition = queryDefinition.WithParameter($"@w{i}", words[i]);
+        }
 
         var options = new QueryRequestOptions
         {

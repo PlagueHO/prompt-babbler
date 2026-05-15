@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
-import { useSemanticSearch } from '@/hooks/useSemanticSearch';
+import { useSearch } from '@/hooks/useSearch';
 
 const mockSearchBabbles = vi.hoisted(() =>
   vi.fn().mockResolvedValue({
@@ -22,14 +22,14 @@ vi.mock('@/services/api-client', () => ({
   searchBabbles: mockSearchBabbles,
 }));
 
-describe('useSemanticSearch', () => {
+describe('useSearch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useRealTimers();
   });
 
   it('should return empty results for query under 2 characters', () => {
-    const { result } = renderHook(() => useSemanticSearch('a'));
+    const { result } = renderHook(() => useSearch('a'));
 
     expect(result.current.results).toEqual([]);
     expect(result.current.loading).toBe(false);
@@ -37,7 +37,7 @@ describe('useSemanticSearch', () => {
   });
 
   it('should return results from API for valid query', async () => {
-    const { result } = renderHook(() => useSemanticSearch('test query'));
+    const { result } = renderHook(() => useSearch('test query'));
 
     await waitFor(() => {
       expect(result.current.results).toHaveLength(1);
@@ -50,7 +50,7 @@ describe('useSemanticSearch', () => {
   it('should handle API errors gracefully', async () => {
     mockSearchBabbles.mockRejectedValueOnce(new Error('Network error'));
 
-    const { result } = renderHook(() => useSemanticSearch('test query'));
+    const { result } = renderHook(() => useSearch('test query'));
 
     await waitFor(() => {
       expect(result.current.error).toBe('Network error');
@@ -62,7 +62,7 @@ describe('useSemanticSearch', () => {
   it('should debounce API calls by 300ms', async () => {
     vi.useFakeTimers();
 
-    const { result } = renderHook(() => useSemanticSearch('test query'));
+    const { result } = renderHook(() => useSearch('test query'));
 
     // API should not be called immediately
     expect(mockSearchBabbles).not.toHaveBeenCalled();
@@ -82,7 +82,7 @@ describe('useSemanticSearch', () => {
     vi.useFakeTimers();
 
     const { rerender } = renderHook(
-      ({ query }: { query: string }) => useSemanticSearch(query),
+      ({ query }: { query: string }) => useSearch(query),
       { initialProps: { query: 'fir' } }
     );
 
@@ -99,7 +99,7 @@ describe('useSemanticSearch', () => {
   it('should pass abort signal to API call', async () => {
     vi.useFakeTimers();
 
-    renderHook(() => useSemanticSearch('test query'));
+    renderHook(() => useSearch('test query'));
 
     await act(async () => { vi.advanceTimersByTime(300); });
 
