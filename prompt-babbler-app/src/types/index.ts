@@ -84,8 +84,6 @@ export interface BabbleSearchResultItem {
   createdAt: string;
   isPinned: boolean;
   score: number;
-  isPinned: boolean;
-  score: number;
 }
 
 export interface BabbleSearchResponse {
