@@ -141,6 +141,44 @@ public sealed class BabbleControllerTests
     }
 
     [TestMethod]
+    public async Task CreateBabble_WithClientProvidedId_UpsertsAndReturns200()
+    {
+        var request = new CreateBabbleRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = "Seed Babble",
+            Text = "This is a seed babble.",
+        };
+
+        _babbleService.UpsertAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var result = await _controller.CreateBabble(request, CancellationToken.None);
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        ok.StatusCode.Should().Be(200);
+        await _babbleService.Received(1).UpsertAsync(Arg.Is<Babble>(b => b.Id == request.Id), Arg.Any<CancellationToken>());
+        await _babbleService.DidNotReceive().CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task CreateBabble_InvalidClientProvidedId_Returns400()
+    {
+        var request = new CreateBabbleRequest
+        {
+            Id = "not-a-guid",
+            Title = "Valid Title",
+            Text = "Valid text.",
+        };
+
+        var result = await _controller.CreateBabble(request, CancellationToken.None);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+        await _babbleService.DidNotReceive().CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
+        await _babbleService.DidNotReceive().UpsertAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
     public async Task CreateBabble_EmptyTitle_Returns400()
     {
         var request = new CreateBabbleRequest

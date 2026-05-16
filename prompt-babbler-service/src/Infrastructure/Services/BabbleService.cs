@@ -57,18 +57,15 @@ public sealed class BabbleService : IBabbleService
 
     public async Task<Babble> CreateAsync(Babble babble, CancellationToken cancellationToken = default)
     {
-        var babbleToSave = babble;
-        try
-        {
-            var vector = await _embeddingService.GenerateEmbeddingAsync(babble.Text, cancellationToken);
-            babbleToSave = babble with { ContentVector = vector.ToArray() };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to generate embedding for babble {BabbleId}. Saving without vector.", babble.Id);
-        }
+        var babbleToSave = await TryAddEmbeddingAsync(babble, "Saving without vector.", cancellationToken);
 
         return await _babbleRepository.CreateAsync(babbleToSave, cancellationToken);
+    }
+
+    public async Task<Babble> UpsertAsync(Babble babble, CancellationToken cancellationToken = default)
+    {
+        var babbleToSave = await TryAddEmbeddingAsync(babble, "Upserting without vector.", cancellationToken);
+        return await _babbleRepository.UpsertAsync(babbleToSave, cancellationToken);
     }
 
     public async Task<Babble> UpdateAsync(string userId, Babble babble, CancellationToken cancellationToken = default)
@@ -136,5 +133,19 @@ public sealed class BabbleService : IBabbleService
         }
 
         return merged.Values.OrderByDescending(r => r.SimilarityScore).ToList().AsReadOnly();
+    }
+
+    private async Task<Babble> TryAddEmbeddingAsync(Babble babble, string warningSuffix, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var vector = await _embeddingService.GenerateEmbeddingAsync(babble.Text, cancellationToken);
+            return babble with { ContentVector = vector.ToArray() };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to generate embedding for babble {BabbleId}. {WarningSuffix}", babble.Id, warningSuffix);
+            return babble;
+        }
     }
 }

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "6f6a8f9f-7b4e-4f7d-a8f1-0c0d7a8f0011",
+    "title": "Refactor sort utility for readability",
+    "text": "Refactor my TypeScript sort utility so it is easier to read and maintain. Keep the same output behavior, but break the function into smaller helpers with clear names. Add comments only where the logic is non-obvious. Include tests for empty arrays, already sorted arrays, reverse order arrays, and arrays containing duplicate values. I also want the final version to avoid mutating the original input array.",
+    "tags": ["coding", "typescript", "refactor"]
+  },
+  {
+    "id": "7a7b9aaf-8c5f-40ae-b9f2-1d1e8b9a0022",
+    "title": "Image prompt for cozy rainy bookstore",
+    "text": "Create a detailed image generation prompt for a cozy independent bookstore on a rainy evening. Include warm tungsten lighting, shelves with mixed old and new books, soft reflections on the wooden floor, and a cat sleeping near the window. Add camera framing guidance, lens style, depth of field, and color mood so I can use it directly in an image model.",
+    "tags": ["image", "creative"]
+  },
+  {
+    "id": "8b8cabbf-9d60-41bf-caf3-2e2f9cab0033",
+    "title": "Weekly engineering to-do list",
+    "text": "Help me turn this rough week into an actionable to-do list. I need to finish API pagination, review two pull requests, write release notes, set up one customer call, and complete unit test coverage for the import workflow. Prioritize by risk first, then by deadline. Give me a schedule split into focused morning and afternoon blocks, and include one daily buffer slot for interruptions.",
+    "tags": ["planning", "productivity"]
+  },
+  {
+    "id": "9c9dbccf-ae71-42c0-dbf4-3f30adbc0044",
+    "title": "Rewrite status email to leadership",
+    "text": "Rewrite my status email to leadership so it is concise, confident, and clear. Keep it under two short paragraphs. The key points are: migration phase one completed, no production incidents this week, one dependency risk remains on vendor onboarding, and next week we will start integration validation. End with a direct ask for quick approval on the revised timeline. Keep tone professional and factual.",
+    "tags": ["writing", "email"]
+  },
+  {
+    "id": "adadcdde-bf82-43d1-ecf5-4041becd0055",
+    "title": "Analyze campaign CSV metrics",
+    "text": "I have a CSV with columns date, campaign, impressions, clicks, spend, and conversions. Provide a step by step analysis plan to identify top performing campaigns, detect outliers, and calculate week over week trends. Include formulas for CTR, CPC, and conversion rate. Suggest how to visualize the findings for a non-technical audience and how to highlight statistically suspicious changes without over-claiming certainty.",
+    "tags": ["data", "analysis"]
+  },
+  {
+    "id": "bebedeef-c093-44e2-f0f6-5152cfde0066",
+    "title": "Brainstorm fantasy short story opener",
+    "text": "Draft three alternative opening paragraphs for a fantasy short story set in a floating city above a storm sea. Each opening should establish tension quickly, hint at a larger political conflict, and introduce a main character with a distinct voice. Keep each opening between eighty and one hundred words. Avoid cliches like chosen one prophecy and dark lord references.",
+    "tags": ["creative-writing"]
+  },
+  {
+    "id": "cfcfeeff-d1a4-45f3-a1f7-6263d0ef0077",
+    "title": "Meeting notes to decisions and actions",
+    "text": "Convert these meeting notes into a clear summary with decisions, owners, and due dates. The notes are messy and include side discussions. I only want concrete outcomes and dependencies. If an action has no owner, flag it as unresolved. Also add a section called risks and assumptions where we capture items that could block delivery if they are not clarified within the next two days.",
+    "tags": ["meeting-notes", "operations"]
+  },
+  {
+    "id": "d0d0ff00-e2b5-4604-b2f8-7374e1f00088",
+    "title": "Recipe ideas from pantry leftovers",
+    "text": "Give me three dinner recipes I can make using chickpeas, spinach, rice, canned tomatoes, garlic, and onions. One should be a quick one-pot meal under thirty minutes, one should be meal-prep friendly for three days, and one should be more creative with spices. Include ingredient quantities, short instructions, and suggested substitutions for dairy-free cooking.",
+    "tags": ["food", "recipe"]
+  },
+  {
+    "id": "e1e10011-f3c6-4715-c3f9-8485f2000999",
+    "title": "Research question framing for RAG",
+    "text": "I need help framing research questions for evaluating a retrieval augmented generation system. Propose categories for factual accuracy, citation quality, retrieval relevance, hallucination resistance, and latency trade-offs. Include measurable success criteria for each category and suggest a lightweight test matrix that can be run weekly. I want to compare two retrievers and three chunking strategies without creating a huge manual review burden.",
+    "tags": ["research", "ai", "rag"]
+  },
+  {
+    "id": "f2f21122-04d7-4826-d4fa-9596f3110aaa",
+    "title": "Draft customer apology with next steps",
+    "text": "Write a customer apology message for a delayed export feature rollout. Acknowledge the delay without being defensive, explain that quality gates found two reliability issues late in testing, and share a revised launch date. Add two immediate mitigation steps customers can use now and include a short invitation for direct feedback. Keep the message empathetic, plain language, and under two hundred words.",
+    "tags": ["customer", "communication"]
+  },
+  {
+    "id": "03132233-15e8-4937-e5fb-a6a7f4220bbb",
+    "title": "Long form architecture decision narrative",
+    "text": "I am documenting an architecture decision for moving from synchronous API export generation to asynchronous job-based processing. Write a long-form narrative that explains context, constraints, alternatives considered, and why asynchronous processing is better for reliability and user experience. Cover failure modes, retry behavior, user notification expectations, and operational visibility. Include the impact on API contracts, frontend polling design, and support workflows. I want the narrative to read like an ADR section that can be copied into documentation with minimal edits. Keep it concrete and technical, and include explicit trade-offs such as higher implementation complexity, eventual consistency in status reporting, and the need for background job monitoring. Also mention rollout strategy, feature flags, and backout plan in case of unexpected production behavior.",
+    "tags": ["architecture", "documentation"]
+  },
+  {
+    "id": "14243344-26f9-4a48-f6fc-b7b8f5330ccc",
+    "title": "Prompt cleanup for model consistency",
+    "text": "Take this rough prompt and improve consistency across instructions, examples, and output format. The model currently returns mixed tone and inconsistent section ordering. I need a polished version with strict headings, concise style, and one deterministic template. Keep all existing intent, remove ambiguity, and include one negative example to reduce common failure modes. Make sure the final prompt is easy to maintain.",
+    "tags": ["prompt-engineering"]
+  },
+  {
+    "id": "25354455-370a-4b59-a7fd-c8c9f6440ddd",
+    "title": "Plan onboarding checklist for new engineer",
+    "text": "Build a two-week onboarding checklist for a new engineer joining our full stack team. Include environment setup, repository walkthrough, architecture reading order, first bug fix, first feature shadowing task, and expected checkpoints with a mentor. Split tasks by day, keep workload realistic, and include specific outcomes for each checkpoint so we can measure progress consistently.",
+    "tags": ["onboarding", "team"]
+  },
+  {
+    "id": "36465566-481b-4c6a-b8fe-d9daf7550eee",
+    "title": "Convert transcript into summary bullets",
+    "text": "Summarize this transcript into bullet points grouped by themes. Keep each bullet under twenty words. Include action items, open questions, and decisions separately. Avoid repeating similar points. If parts are ambiguous, mark them with a confidence note so readers know where follow-up is needed. The audience is engineering managers who need a fast readout before the next stand-up.",
+    "tags": ["summary", "transcript"]
+  },
+  {
+    "id": "47576677-592c-4d7b-c9ff-eaeb086610ff",
+    "title": "Generate SQL optimization checklist",
+    "text": "Create a practical SQL query optimization checklist for analysts who are not database experts. Cover index usage, selective filters, join order awareness, avoiding unnecessary wildcard scans, and safe limits for exploratory queries. Add a quick diagnostic workflow for slow queries and examples of before and after query patterns. Keep language accessible but technically correct.",
+    "tags": ["sql", "performance"]
+  },
+  {
+    "id": "58687788-6a3d-4e8c-da10-fbfc19772110",
+    "title": "Compose social post announcing beta",
+    "text": "Draft a short social media post announcing our private beta for prompt templates. Tone should be excited but credible, no hype language. Mention that users can save custom templates, import or export data, and generate prompts from voice notes. End with a clear call to action for signups. Provide one version for LinkedIn and one version for X.",
+    "tags": ["marketing", "launch"]
+  },
+  {
+    "id": "69798899-7b4e-4f9d-eb11-0c0d2a883221",
+    "title": "Incident timeline reconstruction",
+    "text": "Help me reconstruct an incident timeline from logs and chat snippets. I need a structured sequence with timestamp, observed symptom, suspected cause, action taken, and outcome. Identify where uncertainty remains and where timestamps are missing. End with three follow-up actions to improve future incident response quality, especially around alert clarity and ownership during handoffs.",
+    "tags": ["incident", "sre"]
+  },
+  {
+    "id": "7a8a99aa-8c5f-40ae-fc12-1d1e3b994332",
+    "title": "Design interview question set",
+    "text": "Create a balanced interview question set for a mid-level full stack developer. Include coding fundamentals, API design trade-offs, frontend state management, test strategy, and debugging approach. For each question, provide what a strong answer should contain and one follow-up probe to test depth. Keep the set practical and aligned with real day-to-day engineering work.",
+    "tags": ["hiring", "interview"]
+  },
+  {
+    "id": "8b9baaab-9d60-41bf-ad13-2e2f4caa5443",
+    "title": "Roadmap narrative for Q3 planning",
+    "text": "Write a roadmap narrative for Q3 that connects our planned work to user outcomes. Priorities include improving search relevance, reducing prompt generation latency, and shipping import export reliability upgrades. Explain why each initiative matters, what success looks like, and what we are deliberately deferring. Keep it strategic enough for leadership review and concrete enough for engineering planning.",
+    "tags": ["roadmap", "strategy"]
+  },
+  {
+    "id": "9cacbbbc-ae71-42c0-be14-3f305dbb6554",
+    "title": "Comprehensive workshop agenda",
+    "text": "Create a comprehensive half-day workshop agenda for product and engineering teams to align on prompt quality standards. The workshop should start with clear objectives and a brief framing section that explains current quality gaps observed in customer examples. Include collaborative exercises where small groups evaluate prompts against a shared rubric, then compare scoring differences to expose ambiguity in criteria. Add a segment for designing remediation actions, including ownership, expected timeline, and measurable outcomes. Reserve time for a realistic mock review where participants practice rewriting weak prompts under time constraints. End with a final alignment discussion that locks baseline standards, escalation paths, and follow-up checkpoints over the next month. Provide suggested durations, facilitator notes, and required preparation materials.",
+    "tags": ["workshop", "quality", "facilitation"]
+  }
+]

@@ -1,4 +1,18 @@
-# Quickstart: Local Development with Aspire
+---
+title: Quickstart Local Development with Aspire
+description: Run Prompt Babbler locally with Aspire, including local services, optional access-code protection, and automatic sample babble seeding.
+author: Prompt Babbler Team
+ms.date: 2026-05-17
+ms.topic: how-to
+keywords:
+  - aspire
+  - local development
+  - prompt babbler
+  - seed data
+estimated_reading_time: 10
+---
+
+## Quickstart: Local Development with Aspire
 
 Get Prompt Babbler running locally in anonymous single-user mode using .NET Aspire. Aspire orchestrates all services (API, frontend, Cosmos DB emulator, Microsoft Foundry) with a single command — including dependency installation, builds, and service startup.
 
@@ -123,7 +137,20 @@ Aspire handles all dependency installation (NuGet restore, pnpm install), builds
 
 The app runs in **anonymous single-user mode** — no sign-in is required. All API endpoints are accessible and data is stored under a synthetic `_anonymous` user identity.
 
+On startup, Aspire also runs a seed import step that loads 20 sample babbles from `samples/babbles/babbles.json`. The seed data is idempotent, so restarting the app updates the same records instead of creating duplicates.
+
 Open the **Aspire Dashboard** (URL shown in terminal output) to find all service endpoints.
+
+## Seeded sample data
+
+The local developer experience includes seeded sample babbles automatically.
+
+* The seed importer runs after the API is ready.
+* The frontend does not wait for the seeding step to finish.
+* Seed records use deterministic IDs so repeated local runs do not create duplicates.
+* Sample data covers multiple use cases, including coding, writing, planning, research, image prompting, incident analysis, and recipes.
+
+If you change `samples/babbles/babbles.json`, the next local run upserts those records by ID.
 
 ## Protect with an access code (optional)
 
@@ -220,7 +247,7 @@ Open `Ctrl+Shift+P` → **Tasks: Run Task** for common workflows:
 
 ## Next steps
 
-- [Deploy to Azure](QUICKSTART-AZURE.md) with the Azure Developer CLI
-- See the [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
-- Browse the specs/ folder for feature specifications and design documents
-- See [infra/README.md](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for Azure deployment architecture
+* [Deploy to Azure](QUICKSTART-AZURE.md) with the Azure Developer CLI
+* See the [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
+* Browse the specs/ folder for feature specifications and design documents
+* See [infra/README.md](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for Azure deployment architecture

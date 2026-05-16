@@ -20,6 +20,8 @@ public interface IBabbleRepository
 
     Task<Babble> CreateAsync(Babble babble, CancellationToken cancellationToken = default);
 
+    Task<Babble> UpsertAsync(Babble babble, CancellationToken cancellationToken = default);
+
     Task<Babble> UpdateAsync(Babble babble, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string userId, string babbleId, CancellationToken cancellationToken = default);

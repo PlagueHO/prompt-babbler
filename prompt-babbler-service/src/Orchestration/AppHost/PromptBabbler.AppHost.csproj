@@ -14,5 +14,6 @@
     <PackageReference Include="Microsoft.Azure.Cosmos" />
     <ProjectReference Include="..\..\Api\PromptBabbler.Api.csproj" />
     <ProjectReference Include="..\..\McpServer\PromptBabbler.McpServer.csproj" />
+    <ProjectReference Include="..\..\Tools\Cli\PromptBabbler.Tools.Cli.csproj" />
   </ItemGroup>
 </Project>

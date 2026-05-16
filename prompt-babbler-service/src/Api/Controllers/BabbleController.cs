@@ -162,9 +162,10 @@ public sealed class BabbleController : ControllerBase
 
         var now = DateTimeOffset.UtcNow;
         var userId = User.GetUserIdOrAnonymous();
+        var hasClientProvidedId = !string.IsNullOrWhiteSpace(request.Id);
         var babble = new Babble
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = hasClientProvidedId ? request.Id! : Guid.NewGuid().ToString(),
             UserId = userId,
             Title = request.Title,
             Text = request.Text,
@@ -173,6 +174,13 @@ public sealed class BabbleController : ControllerBase
             CreatedAt = now,
             UpdatedAt = now,
         };
+
+        if (hasClientProvidedId)
+        {
+            var upserted = await _babbleService.UpsertAsync(babble, cancellationToken);
+            _logger.LogInformation("Upserted babble {BabbleId} for user {UserId}", upserted.Id, upserted.UserId);
+            return Ok(ToResponse(upserted));
+        }
 
         var created = await _babbleService.CreateAsync(babble, cancellationToken);
         _logger.LogInformation("Created babble {BabbleId} for user {UserId}", created.Id, created.UserId);
@@ -470,6 +478,12 @@ public sealed class BabbleController : ControllerBase
 
     private static bool ValidateCreateRequest(CreateBabbleRequest request, out string? error)
     {
+        if (!string.IsNullOrWhiteSpace(request.Id) && !Guid.TryParse(request.Id, out _))
+        {
+            error = "Id must be a valid GUID when provided.";
+            return false;
+        }
+
         if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Length > 200)
         {
             error = "Title is required and must be between 1 and 200 characters.";

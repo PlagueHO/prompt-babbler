@@ -18,6 +18,8 @@ public interface IBabbleService
 
     Task<Babble> CreateAsync(Babble babble, CancellationToken cancellationToken = default);
 
+    Task<Babble> UpsertAsync(Babble babble, CancellationToken cancellationToken = default);
+
     Task<Babble> UpdateAsync(string userId, Babble babble, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string userId, string babbleId, CancellationToken cancellationToken = default);

@@ -146,6 +146,18 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
         return response.Resource;
     }
 
+    public async Task<Babble> UpsertAsync(Babble babble, CancellationToken cancellationToken = default)
+    {
+        var response = await _container.UpsertItemAsync(
+            babble,
+            new PartitionKey(babble.UserId),
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Upserted babble {BabbleId} for user {UserId}", babble.Id, babble.UserId);
+
+        return response.Resource;
+    }
+
     public async Task<Babble> UpdateAsync(Babble babble, CancellationToken cancellationToken = default)
     {
         var response = await _container.ReplaceItemAsync(

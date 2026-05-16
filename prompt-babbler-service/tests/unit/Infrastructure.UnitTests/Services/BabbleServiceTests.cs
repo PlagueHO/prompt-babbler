@@ -80,6 +80,20 @@ public sealed class BabbleServiceTests
         await _babbleRepository.Received(1).CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
     }
 
+    [TestMethod]
+    public async Task UpsertAsync_DelegatesToRepository()
+    {
+        var babble = CreateBabble();
+        _babbleRepository.UpsertAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var result = await _service.UpsertAsync(babble);
+
+        result.Id.Should().Be(babble.Id);
+        result.Text.Should().Be(babble.Text);
+        await _babbleRepository.Received(1).UpsertAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
+    }
+
     // ---- UpdateAsync ----
 
     [TestMethod]
@@ -208,6 +222,21 @@ public sealed class BabbleServiceTests
 
         result.ContentVector.Should().BeNull();
         await _babbleRepository.Received(1).CreateAsync(Arg.Is<Babble>(b => b.ContentVector == null), Arg.Any<CancellationToken>());
+    }
+
+    [TestMethod]
+    public async Task UpsertAsync_EmbeddingServiceFails_UpsertsBabbleWithoutVector()
+    {
+        var babble = CreateBabble();
+        _embeddingService.GenerateEmbeddingAsync(babble.Text, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("Embedding service unavailable"));
+        _babbleRepository.UpsertAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Babble>());
+
+        var result = await _service.UpsertAsync(babble);
+
+        result.ContentVector.Should().BeNull();
+        await _babbleRepository.Received(1).UpsertAsync(Arg.Is<Babble>(b => b.ContentVector == null), Arg.Any<CancellationToken>());
     }
 
     // ---- UpdateAsync with embedding ----

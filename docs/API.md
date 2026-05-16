@@ -1,4 +1,19 @@
-# Prompt Babbler API Reference
+---
+title: Prompt Babbler API Reference
+description: REST and WebSocket API reference for babbles, prompt generation, templates, import and export, and transcription.
+author: Prompt Babbler Team
+ms.date: 2026-05-17
+ms.topic: reference
+keywords:
+  - api
+  - prompt babbler
+  - babbles
+  - import
+  - export
+estimated_reading_time: 12
+---
+
+## Prompt Babbler API Reference
 
 The Prompt Babbler service exposes a REST (and WebSocket) API for babble management, generated prompt storage, prompt generation, prompt template management, real-time audio transcription, and health status.
 
@@ -7,6 +22,8 @@ Base path: `/api`
 ## Authentication
 
 All API endpoints except `GET /api/status` require authentication via **JWT Bearer tokens** issued by Microsoft Entra ID.
+
+For local single-user development, the API can also enforce an optional access code. When configured, clients send the code in the `X-Access-Code` header. This is separate from Entra ID bearer authentication and is primarily used to protect local development environments.
 
 **Setup:**
 
@@ -19,6 +36,10 @@ All API endpoints except `GET /api/status` require authentication via **JWT Bear
 
 ```http
 Authorization: Bearer {access_token}
+```
+
+```http
+X-Access-Code: {access_code}
 ```
 
 **Error Responses:**
@@ -193,21 +214,28 @@ Creates a new babble.
 
 | Field | Type | Required | Constraints |
 |---|---|---|---|
+| `id` | `string` | No | GUID. When provided, the API upserts the babble using this ID. |
 | `title` | `string` | Yes | 1–200 characters |
 | `text` | `string` | Yes | 1–50 000 characters |
 
 ```json
 {
+  "id": "6f6a8f9f-7b4e-4f7d-a8f1-0c0d7a8f0011",
   "title": "Sort function request",
   "text": "I want a function that sorts a list of numbers..."
 }
 ```
 
-**Response** `201 Created` — the created babble object with a `Location` header.
+**Response**
+
+- `201 Created` — when no `id` is supplied and a new babble is created. Includes a `Location` header.
+- `200 OK` — when an `id` is supplied and the babble is upserted.
 
 | Status | Condition |
 |---|---|
 | `400 Bad Request` | Validation failure (see constraints above). |
+
+When you provide `id`, the API validates it as a GUID and uses it for idempotent import or seed scenarios. Repeating the same request with the same `id` updates the existing babble instead of creating a duplicate.
 
 #### `PUT /api/babbles/{id}`
 

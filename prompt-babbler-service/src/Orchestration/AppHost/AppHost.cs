@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Azure AI Foundry resources — host for account-level endpoints and project for model routing.
@@ -81,6 +83,7 @@ var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithEnvironment("Azure__TenantId", tenantId)
     .WithEnvironment("AZURE_TENANT_ID", tenantId)
     .WithEnvironment("Speech__Region", builder.Configuration["Azure:Location"] ?? "")
+    .WithEnvironment("ACCESS_CODE", builder.Configuration["AccessControl:AccessCode"] ?? string.Empty)
     .WithEnvironment("AzureAd__ClientId", apiClientId)
     .WithEnvironment("AzureAd__TenantId", tenantId)
     .WithEnvironment("AzureAd__Instance", "https://login.microsoftonline.com/");
@@ -106,4 +109,16 @@ builder.AddViteApp("frontend", "../../../../prompt-babbler-app", "dev")
     .WithEnvironment("MSAL_CLIENT_ID", spaClientId)
     .WithEnvironment("MSAL_TENANT_ID", tenantId);
 
+var seedDataPath = Path.GetFullPath(
+    Path.Combine(GetSourceFileDirectory(), "..", "..", "..", "..", "samples", "babbles", "babbles.json"));
+
+builder.AddProject<Projects.PromptBabbler_Tools_Cli>("seed-importer")
+    .WithEnvironment("PROMPT_BABBLER_API_URL", apiService.GetEndpoint("http"))
+    .WithEnvironment("PROMPT_BABBLER_ACCESS_CODE", builder.Configuration["AccessControl:AccessCode"] ?? string.Empty)
+    .WithEnvironment("PROMPT_BABBLER_SEED_DATA_PATH", seedDataPath)
+    .WaitFor(apiService);
+
 builder.Build().Run();
+
+static string GetSourceFileDirectory([CallerFilePath] string sourceFilePath = "")
+    => Path.GetDirectoryName(sourceFilePath)!;

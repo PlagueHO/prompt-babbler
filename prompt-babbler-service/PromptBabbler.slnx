@@ -6,12 +6,14 @@
     <Project Path="src/McpServer/PromptBabbler.McpServer.csproj" />
     <Project Path="src/Orchestration/AppHost/PromptBabbler.AppHost.csproj" />
     <Project Path="src/Orchestration/ServiceDefaults/PromptBabbler.ServiceDefaults.csproj" />
+    <Project Path="src/Tools/Cli/PromptBabbler.Tools.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/unit/">
     <Project Path="tests/unit/Api.UnitTests/PromptBabbler.Api.UnitTests.csproj" />
     <Project Path="tests/unit/Domain.UnitTests/PromptBabbler.Domain.UnitTests.csproj" />
     <Project Path="tests/unit/Infrastructure.UnitTests/PromptBabbler.Infrastructure.UnitTests.csproj" />
     <Project Path="tests/unit/McpServer.UnitTests/PromptBabbler.McpServer.UnitTests.csproj" />
+    <Project Path="tests/unit/Tools.Cli.UnitTests/PromptBabbler.Tools.Cli.UnitTests.csproj" />
   </Folder>
   <Folder Name="/tests/integration/">
     <Project Path="tests/integration/Api.IntegrationTests/PromptBabbler.Api.IntegrationTests.csproj" />

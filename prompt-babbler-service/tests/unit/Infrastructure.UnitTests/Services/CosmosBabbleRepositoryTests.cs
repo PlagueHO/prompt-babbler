@@ -82,6 +82,30 @@ public sealed class CosmosBabbleRepositoryTests
             Arg.Any<CancellationToken>());
     }
 
+    [TestMethod]
+    public async Task UpsertAsync_ValidBabble_CallsUpsertItemAsync()
+    {
+        var babble = CreateBabble();
+        var response = Substitute.For<ItemResponse<Babble>>();
+        response.Resource.Returns(babble);
+
+        _container.UpsertItemAsync(
+            babble,
+            Arg.Any<PartitionKey>(),
+            Arg.Any<ItemRequestOptions>(),
+            Arg.Any<CancellationToken>())
+            .Returns(response);
+
+        var result = await _repository.UpsertAsync(babble);
+
+        result.Should().Be(babble);
+        await _container.Received(1).UpsertItemAsync(
+            babble,
+            Arg.Any<PartitionKey>(),
+            Arg.Any<ItemRequestOptions>(),
+            Arg.Any<CancellationToken>());
+    }
+
     // ---- UpdateAsync ----
 
     [TestMethod]
