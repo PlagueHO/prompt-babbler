@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.43.1.21952",
-      "templateHash": "17766054375070129029"
+      "templateHash": "11018742381189567716"
     }
   },
   "parameters": {
@@ -25977,6 +25977,12 @@
                   },
                   {
                     "name": "users",
+                    "paths": [
+                      "/userId"
+                    ]
+                  },
+                  {
+                    "name": "import-export-jobs",
                     "paths": [
                       "/userId"
                     ]

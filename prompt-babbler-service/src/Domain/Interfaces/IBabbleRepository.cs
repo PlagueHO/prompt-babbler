@@ -4,6 +4,8 @@ namespace PromptBabbler.Domain.Interfaces;
 
 public interface IBabbleRepository
 {
+    Task<int> CountByUserAsync(string userId, CancellationToken cancellationToken = default);
+
     Task<(IReadOnlyList<Babble> Items, string? ContinuationToken)> GetByUserAsync(
         string userId,
         string? continuationToken = null,

@@ -452,6 +452,12 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
               '/userId'
             ]
           }
+          {
+            name: 'import-export-jobs'
+            paths: [
+              '/userId'
+            ]
+          }
         ]
       }
     ]

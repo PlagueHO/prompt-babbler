@@ -4,6 +4,8 @@ namespace PromptBabbler.Domain.Interfaces;
 
 public interface IPromptTemplateRepository
 {
+    Task<int> CountByUserAsync(string userId, CancellationToken cancellationToken = default);
+
     Task<(IReadOnlyList<PromptTemplate> Items, string? ContinuationToken)> ListTemplatesAsync(
         string userId,
         string? continuationToken = null,

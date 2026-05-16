@@ -4,6 +4,14 @@ namespace PromptBabbler.Domain.Interfaces;
 
 public interface IGeneratedPromptRepository
 {
+    Task<int> CountByUserAsync(string userId, CancellationToken cancellationToken = default);
+
+    Task<(IReadOnlyList<GeneratedPrompt> Items, string? ContinuationToken)> GetByUserAsync(
+        string userId,
+        string? continuationToken = null,
+        int pageSize = 200,
+        CancellationToken cancellationToken = default);
+
     Task<(IReadOnlyList<GeneratedPrompt> Items, string? ContinuationToken)> GetByBabbleAsync(
         string babbleId,
         string? continuationToken = null,

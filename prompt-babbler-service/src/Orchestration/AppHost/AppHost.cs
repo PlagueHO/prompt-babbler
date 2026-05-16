@@ -55,6 +55,7 @@ var promptTemplatesContainer = cosmosDb.AddContainer("prompt-templates", "/userI
 var babblesContainer = cosmosDb.AddContainer("babbles", "/userId");
 var generatedPromptsContainer = cosmosDb.AddContainer("generated-prompts", "/babbleId");
 var usersContainer = cosmosDb.AddContainer("users", "/userId");
+var importExportJobsContainer = cosmosDb.AddContainer("import-export-jobs", "/userId");
 
 // Speech-to-text uses Azure AI Speech Service (part of the same AIServices resource)
 // instead of an OpenAI model deployment. No Aspire deployment needed — the Speech SDK
@@ -73,6 +74,7 @@ var apiService = builder.AddProject<Projects.PromptBabbler_Api>("api")
     .WithReference(babblesContainer)
     .WithReference(generatedPromptsContainer)
     .WithReference(usersContainer)
+    .WithReference(importExportJobsContainer)
     .WaitFor(chatDeployment)
     .WaitFor(embeddingDeployment)
     .WaitFor(cosmos)

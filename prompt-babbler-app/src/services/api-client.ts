@@ -3,6 +3,7 @@ import type {
   BabbleSearchResponse,
   Babble,
   GeneratedPrompt,
+  ImportExportJob,
   PagedResponse,
   PromptFormat,
   PromptTemplate,
@@ -450,4 +451,103 @@ export async function uploadAudioFile(
     throw new Error(`Upload failed (${res.status}): ${text}`);
   }
   return res.json() as Promise<Babble>;
+}
+
+// Import/Export APIs
+
+interface StartJobResponse {
+  jobId: string;
+}
+
+export interface StartExportRequest {
+  includeBabbles: boolean;
+  includeGeneratedPrompts: boolean;
+  includeUserTemplates: boolean;
+  includeSemanticVectors: boolean;
+}
+
+export async function startExport(
+  request: StartExportRequest,
+  accessToken?: string,
+): Promise<string> {
+  const response = await fetchJson<StartJobResponse>('/api/exports', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  }, accessToken);
+
+  return response.jobId;
+}
+
+export async function getExportJob(jobId: string, accessToken?: string): Promise<ImportExportJob> {
+  return fetchJson<ImportExportJob>(`/api/exports/${encodeURIComponent(jobId)}`, undefined, accessToken);
+}
+
+export async function downloadExport(jobId: string, accessToken?: string): Promise<Blob> {
+  const base = getApiBaseUrl();
+  let res: Response;
+
+  try {
+    res = await fetch(`${base}/api/exports/${encodeURIComponent(jobId)}/download`, {
+      method: 'GET',
+      headers: buildHeaders(undefined, accessToken),
+    });
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+
+  return res.blob();
+}
+
+export async function startImport(
+  file: File,
+  overwrite: boolean,
+  accessToken?: string,
+): Promise<string> {
+  const base = getApiBaseUrl();
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const headers: Record<string, string> = {};
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  if (currentAccessCode) {
+    headers['X-Access-Code'] = currentAccessCode;
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/imports?overwrite=${overwrite}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+  } catch {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+
+  if (isHtmlResponse(res)) {
+    throw new Error(BACKEND_UNAVAILABLE_MSG);
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+
+  const response = await res.json() as StartJobResponse;
+  return response.jobId;
+}
+
+export async function getImportJob(jobId: string, accessToken?: string): Promise<ImportExportJob> {
+  return fetchJson<ImportExportJob>(`/api/imports/${encodeURIComponent(jobId)}`, undefined, accessToken);
 }

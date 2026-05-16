@@ -29,6 +29,26 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
         _logger = logger;
     }
 
+    public async Task<int> CountByUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var query = new QueryDefinition("SELECT VALUE COUNT(1) FROM c WHERE c.userId = @userId")
+            .WithParameter("@userId", userId);
+
+        var options = new QueryRequestOptions
+        {
+            PartitionKey = new PartitionKey(userId),
+        };
+
+        using var iterator = _container.GetItemQueryIterator<int>(query, requestOptions: options);
+        if (!iterator.HasMoreResults)
+        {
+            return 0;
+        }
+
+        var response = await iterator.ReadNextAsync(cancellationToken);
+        return response.Resource.FirstOrDefault();
+    }
+
     public async Task<(IReadOnlyList<Babble> Items, string? ContinuationToken)> GetByUserAsync(
         string userId,
         string? continuationToken = null,

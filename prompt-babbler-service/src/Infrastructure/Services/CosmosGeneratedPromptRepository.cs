@@ -20,6 +20,48 @@ public sealed class CosmosGeneratedPromptRepository : IGeneratedPromptRepository
         _logger = logger;
     }
 
+    public async Task<int> CountByUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var query = new QueryDefinition("SELECT VALUE COUNT(1) FROM c WHERE c.userId = @userId")
+            .WithParameter("@userId", userId);
+
+        using var iterator = _container.GetItemQueryIterator<int>(query);
+        if (!iterator.HasMoreResults)
+        {
+            return 0;
+        }
+
+        var response = await iterator.ReadNextAsync(cancellationToken);
+        return response.Resource.FirstOrDefault();
+    }
+
+    public async Task<(IReadOnlyList<GeneratedPrompt> Items, string? ContinuationToken)> GetByUserAsync(
+        string userId,
+        string? continuationToken = null,
+        int pageSize = 200,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId ORDER BY c.generatedAt DESC")
+            .WithParameter("@userId", userId);
+
+        var options = new QueryRequestOptions
+        {
+            MaxItemCount = pageSize,
+        };
+
+        var results = new List<GeneratedPrompt>();
+        using var iterator = _container.GetItemQueryIterator<GeneratedPrompt>(query, continuationToken, options);
+
+        if (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync(cancellationToken);
+            results.AddRange(response);
+            return (results.AsReadOnly(), response.ContinuationToken);
+        }
+
+        return (results.AsReadOnly(), null);
+    }
+
     public async Task<(IReadOnlyList<GeneratedPrompt> Items, string? ContinuationToken)> GetByBabbleAsync(
         string babbleId,
         string? continuationToken = null,

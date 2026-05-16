@@ -86,6 +86,20 @@ public static class DependencyInjection
         });
         services.AddSingleton<IUserService, UserService>();
 
+        // Async import/export job infrastructure.
+        services.AddSingleton<IImportExportJobRepository>(sp =>
+        {
+            var cosmosClient = sp.GetRequiredService<CosmosClient>();
+            var logger = sp.GetRequiredService<ILogger<CosmosImportExportJobRepository>>();
+            return new CosmosImportExportJobRepository(cosmosClient, logger);
+        });
+        services.AddSingleton<IImportExportJobQueue, ChannelImportExportJobQueue>();
+        services.AddSingleton<IExportJobProcessor, ExportJobProcessor>();
+        services.AddSingleton<IImportJobProcessor, ImportJobProcessor>();
+        services.AddSingleton<IExportService, ExportService>();
+        services.AddSingleton<IImportService, ImportService>();
+        services.AddHostedService<ImportExportJobWorker>();
+
         return services;
     }
 }

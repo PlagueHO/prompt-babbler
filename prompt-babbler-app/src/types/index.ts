@@ -89,3 +89,37 @@ export interface BabbleSearchResultItem {
 export interface BabbleSearchResponse {
   results: BabbleSearchResultItem[];
 }
+
+export interface ExportSelection {
+  includeBabbles: boolean;
+  includeGeneratedPrompts: boolean;
+  includeUserTemplates: boolean;
+  includeSemanticVectors: boolean;
+}
+
+export interface ImportExportJobCounts {
+  babblesImported: number;
+  babblesSkipped: number;
+  generatedPromptsImported: number;
+  generatedPromptsSkipped: number;
+  templatesImported: number;
+  templatesSkipped: number;
+  failed: number;
+}
+
+export interface ImportExportJob {
+  id: string;
+  jobType: 'Export' | 'Import';
+  status: 'Queued' | 'Running' | 'Completed' | 'Failed' | 'Cancelled';
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  progressPercentage: number;
+  currentStage?: string;
+  totalItems: number;
+  processedItems: number;
+  errorMessage?: string;
+  overwriteExisting: boolean;
+  exportSelection?: ExportSelection;
+  counts?: ImportExportJobCounts;
+}
