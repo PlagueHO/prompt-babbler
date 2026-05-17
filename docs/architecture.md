@@ -50,10 +50,10 @@ prompt-babbler/
 │   ├── hooks/                  # azd preprovision hooks
 │   └── cognitive-services/     # Custom Foundry module
 ├── docs/                       # Documentation
-│   ├── QUICKSTART-LOCAL.md     # Local development guide
-│   ├── QUICKSTART-AZURE.md     # Azure deployment guide
-│   ├── API.md                  # Full API reference
-│   └── CICD.md                 # CI/CD pipeline setup
+│   ├── quickstart-local.md     # Local development guide
+│   ├── quickstart-azure.md     # Azure deployment guide
+│   ├── api.md                  # Full API reference
+│   └── cicd.md                 # CI/CD pipeline setup
 ├── .github/workflows/          # CI/CD pipelines (12 workflows)
 └── specs/                      # Feature specifications
 ```
@@ -117,7 +117,7 @@ Single-page application built with React 19:
 | `/api/transcribe/stream` | WebSocket | Real-time speech transcription |
 | `/api/status` | GET | Health check |
 
-See [API.md](API.md) for the full API reference with request/response schemas.
+See [api.md](api.md) for the full API reference with request/response schemas.
 
 ## Azure Infrastructure
 
@@ -143,7 +143,7 @@ RBAC roles assigned to the Container App managed identity:
 
 ## CI/CD
 
-GitHub Actions with 12 workflows covering CI, CD, IaC validation, linting, and E2E testing. See [CICD.md](CICD.md) for pipeline configuration.
+GitHub Actions with 12 workflows covering CI, CD, IaC validation, linting, and E2E testing. See [cicd.md](cicd.md) for pipeline configuration.
 
 | Workflow | Trigger | Description |
 |----------|---------|-------------|

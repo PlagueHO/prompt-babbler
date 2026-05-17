@@ -6,7 +6,7 @@ description: Deploy Prompt Babbler to Azure using the Azure Developer CLI (azd) 
 Deploy Prompt Babbler to Azure using the Azure Developer CLI (`azd`). This provisions all required infrastructure and deploys the application with a single command.
 
 > [!NOTE]
-> Looking for local development? See [Local Development with Aspire](QUICKSTART-LOCAL.md).
+> Looking for local development? See [Local Development with Aspire](quickstart-local.md).
 
 ## Prerequisites
 
@@ -236,7 +236,7 @@ The [preprovision hook](https://github.com/PlagueHO/prompt-babbler/blob/main/inf
 > [!NOTE]
 > This step is idempotent — re-running `azd up` reuses existing app registrations and does not create duplicates.
 
-The deploying principal requires **`Application.ReadWrite.All`** Microsoft Graph permission. This can be granted via the **Application Administrator**, **Cloud Application Administrator**, or **Application Developer** Entra ID role. See the [CI/CD Setup Guide](CICD.md) for details.
+The deploying principal requires **`Application.ReadWrite.All`** Microsoft Graph permission. This can be granted via the **Application Administrator**, **Cloud Application Administrator**, or **Application Developer** Entra ID role. See the [CI/CD Setup Guide](cicd.md) for details.
 
 When Entra ID is enabled:
 
@@ -291,7 +291,7 @@ azd down --force --purge
 | `azd auth login` fails | Run `az login` first, then retry `azd auth login`. Ensure your account has Contributor access to the target subscription. |
 | `InvalidAuthenticationTokenTenant` | Wrong tenant. Run `az login --tenant <tenant-id>`. |
 | Deployment times out | AI Foundry model deployments can take several minutes. Re-run `azd up` — it resumes from where it left off. |
-| Deployment fails with Graph permission error | The deploying principal needs `Application.ReadWrite.All`. See [CI/CD Setup Guide](CICD.md). |
+| Deployment fails with Graph permission error | The deploying principal needs `Application.ReadWrite.All`. See [CI/CD Setup Guide](cicd.md). |
 | `ENABLE_ENTRA_AUTH` set but no app registrations created | Check that `AZURE_AD_API_CLIENT_ID` is not already set: `azd env get-value AZURE_AD_API_CLIENT_ID`. The hook skips if already provisioned. To force re-creation, clear it: `azd env set AZURE_AD_API_CLIENT_ID ""`. |
 | Frontend can't reach API | Check that the Container App is running in the Azure Portal. Verify environment variables are set correctly with `azd env get-values`. |
 | Container App not starting | Check Container Apps logs in the Azure Portal or via `az containerapp logs show`. Verify the managed identity has the required RBAC roles. |
@@ -300,6 +300,6 @@ azd down --force --purge
 
 ## Next steps
 
-* [Local development with Aspire](QUICKSTART-LOCAL.md) for running locally
-* [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
+* [Local development with Aspire](quickstart-local.md) for running locally
+* [CI/CD Setup Guide](cicd.md) for GitHub Actions pipeline configuration
 * [Infrastructure documentation](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for detailed resource and networking information

@@ -16,7 +16,7 @@ estimated_reading_time: 10
 
 Get Prompt Babbler running locally in anonymous single-user mode using .NET Aspire. Aspire orchestrates all services (API, frontend, Cosmos DB emulator, Microsoft Foundry) with a single command — including dependency installation, builds, and service startup.
 
-> **Looking to deploy to Azure?** See [Deploy to Azure with Azure Developer CLI](QUICKSTART-AZURE.md).
+> **Looking to deploy to Azure?** See [Deploy to Azure with Azure Developer CLI](quickstart-azure.md).
 
 ## Prerequisites
 
@@ -247,7 +247,7 @@ Open `Ctrl+Shift+P` → **Tasks: Run Task** for common workflows:
 
 ## Next steps
 
-* [Deploy to Azure](QUICKSTART-AZURE.md) with the Azure Developer CLI
-* See the [CI/CD Setup Guide](CICD.md) for GitHub Actions pipeline configuration
+* [Deploy to Azure](quickstart-azure.md) with the Azure Developer CLI
+* See the [CI/CD Setup Guide](cicd.md) for GitHub Actions pipeline configuration
 * Browse the specs/ folder for feature specifications and design documents
 * See [infra/README.md](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for Azure deployment architecture

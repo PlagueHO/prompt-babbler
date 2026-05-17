@@ -62,7 +62,7 @@ bicep lint ./infra/main.bicep
 1. Add or update the controller in `Api/Controllers/`
 1. Add unit tests with `[TestCategory("Unit")]` in `tests/unit/`
 1. Run `dotnet format` and `dotnet test --filter TestCategory=Unit`
-1. Update `docs/API.md` if the public API surface changed
+1. Update `docs/api.md` if the public API surface changed
 
 ## CI Pipeline
 

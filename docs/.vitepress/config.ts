@@ -8,55 +8,58 @@ export default defineConfig({
   base: '/prompt-babbler/',
   outDir: 'dist',
   appearance: 'auto',
+
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/prompt-babbler/favicon.svg' }],
   ],
+
   themeConfig: {
     nav: [
-      { text: 'User Guide', link: '/USER-GUIDE' },
-      { text: 'Quickstart (Local)', link: '/QUICKSTART-LOCAL' },
-      { text: 'Quickstart (Azure)', link: '/QUICKSTART-AZURE' },
-      { text: 'Architecture', link: '/ARCHITECTURE' },
-      { text: 'API', link: '/API' },
+      { text: 'User Guide', link: '/user-guide' },
+      { text: 'Quickstart (Local)', link: '/quickstart-local' },
+      { text: 'Quickstart (Azure)', link: '/quickstart-azure' },
+      { text: 'Architecture', link: '/architecture' },
+      { text: 'API', link: '/api' },
     ],
+
     sidebar: [
       {
         text: 'Getting Started',
         items: [
-          { text: 'Quick Start (Local)', link: '/QUICKSTART-LOCAL' },
-          { text: 'Quick Start (Azure)', link: '/QUICKSTART-AZURE' },
-          { text: 'Getting Started', link: '/GETTING-STARTED' },
+          { text: 'Quick Start (Local)', link: '/quickstart-local' },
+          { text: 'Quick Start (Azure)', link: '/quickstart-azure' },
+          { text: 'Getting Started', link: '/getting-started' },
         ],
       },
       {
         text: 'User Guide',
         items: [
-          { text: 'Overview', link: '/USER-GUIDE' },
-          { text: 'Home Page', link: '/HOME-PAGE' },
-          { text: 'Create a Babble', link: '/CREATE-A-BABBLE' },
-          { text: 'Edit a Babble', link: '/EDIT-A-BABBLE' },
-          { text: 'Templates Page', link: '/TEMPLATES-PAGE' },
+          { text: 'Overview', link: '/user-guide' },
+          { text: 'Home Page', link: '/home-page' },
+          { text: 'Create a Babble', link: '/create-a-babble' },
+          { text: 'Edit a Babble', link: '/edit-a-babble' },
+          { text: 'Templates Page', link: '/templates-page' },
         ],
       },
       {
         text: 'Reference',
         items: [
-          { text: 'Architecture', link: '/ARCHITECTURE' },
-          { text: 'API Reference', link: '/API' },
-          { text: 'Authentication', link: '/AUTHENTICATION' },
-          { text: 'CI/CD', link: '/CICD' },
-          { text: 'MCP Server', link: '/MCP-SERVER' },
+          { text: 'Architecture', link: '/architecture' },
+          { text: 'API Reference', link: '/api' },
+          { text: 'Authentication', link: '/authentication' },
+          { text: 'CI/CD', link: '/cicd' },
+          { text: 'MCP Server', link: '/mcp-server' },
+          { text: 'Testing', link: '/testing' },
         ],
-      },
-      {
-        text: 'Research',
-        items: [
-          { text: 'Entra ID Auth Research', link: '/research/ENTRA-ID-AUTH-RESEARCH' },
-        ],
-      },
+      }
     ],
+
     socialLinks: [
       { icon: 'github', link: 'https://github.com/PlagueHO/prompt-babbler' },
     ],
+
+    footer: {
+      message: 'Released under the MIT License.',
+    },
   },
 })
