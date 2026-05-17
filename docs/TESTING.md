@@ -19,11 +19,11 @@ estimated_reading_time: 8
 
 | Layer | Test type | Primary scope | Runner | Key entry points |
 |---|---|---|---|---|
-| Frontend | Unit and component tests | React components, hooks, services, utility functions | Vitest + Testing Library | [prompt-babbler-app/package.json](../prompt-babbler-app/package.json), [prompt-babbler-app/vitest.config.ts](../prompt-babbler-app/vitest.config.ts), [.vscode/tasks.json](../.vscode/tasks.json) |
-| Frontend | Accessibility-focused tests | Accessibility assertions for selected UI components | Vitest + jest-axe | [TagInput.test.tsx](../prompt-babbler-app/tests/components/ui/TagInput.test.tsx), [ErrorBanner.test.tsx](../prompt-babbler-app/tests/components/ui/ErrorBanner.test.tsx), [AccessCodeDialog.test.tsx](../prompt-babbler-app/tests/components/layout/AccessCodeDialog.test.tsx) |
-| Backend | Unit tests | Controllers, services, health checks, client logic | MSTest + FluentAssertions + NSubstitute | [prompt-babbler-service/tests/unit](../prompt-babbler-service/tests/unit), [.vscode/tasks.json](../.vscode/tasks.json) |
-| Backend | Integration tests | API pipeline behavior, startup/auth mode wiring, Aspire resource validation | MSTest + WebApplicationFactory + Aspire testing | [prompt-babbler-service/tests/integration](../prompt-babbler-service/tests/integration), [.vscode/tasks.json](../.vscode/tasks.json) |
-| End-to-end smoke | Deployed service checks | API, frontend, MCP health and critical endpoint readiness | Pester (PowerShell) | [tests/smoke/Smoke.Tests.ps1](../tests/smoke/Smoke.Tests.ps1) |
+| Frontend | Unit and component tests | React components, hooks, services, utility functions | Vitest + Testing Library | [prompt-babbler-app/package.json](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/package.json), [prompt-babbler-app/vitest.config.ts](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/vitest.config.ts), [.vscode/tasks.json](https://github.com/PlagueHO/prompt-babbler/blob/main/.vscode/tasks.json) |
+| Frontend | Accessibility-focused tests | Accessibility assertions for selected UI components | Vitest + jest-axe | [TagInput.test.tsx](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/tests/components/ui/TagInput.test.tsx), [ErrorBanner.test.tsx](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/tests/components/ui/ErrorBanner.test.tsx), [AccessCodeDialog.test.tsx](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/tests/components/layout/AccessCodeDialog.test.tsx) |
+| Backend | Unit tests | Controllers, services, health checks, client logic | MSTest + FluentAssertions + NSubstitute | [prompt-babbler-service/tests/unit](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/unit), [.vscode/tasks.json](https://github.com/PlagueHO/prompt-babbler/blob/main/.vscode/tasks.json) |
+| Backend | Integration tests | API pipeline behavior, startup/auth mode wiring, Aspire resource validation | MSTest + WebApplicationFactory + Aspire testing | [prompt-babbler-service/tests/integration](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/integration), [.vscode/tasks.json](https://github.com/PlagueHO/prompt-babbler/blob/main/.vscode/tasks.json) |
+| End-to-end smoke | Deployed service checks | API, frontend, MCP health and critical endpoint readiness | Pester (PowerShell) | [tests/smoke/Smoke.Tests.ps1](https://github.com/PlagueHO/prompt-babbler/blob/main/tests/smoke/Smoke.Tests.ps1) |
 
 ## Frontend Automated Tests
 
@@ -37,14 +37,14 @@ estimated_reading_time: 8
 
 Examples:
 
-* Components: [prompt-babbler-app/tests/components](../prompt-babbler-app/tests/components)
-* Hooks: [prompt-babbler-app/tests/hooks](../prompt-babbler-app/tests/hooks)
-* Services: [prompt-babbler-app/tests/services](../prompt-babbler-app/tests/services)
-* Utilities: [prompt-babbler-app/tests/lib](../prompt-babbler-app/tests/lib)
+* Components: [prompt-babbler-app/tests/components](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-app/tests/components)
+* Hooks: [prompt-babbler-app/tests/hooks](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-app/tests/hooks)
+* Services: [prompt-babbler-app/tests/services](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-app/tests/services)
+* Utilities: [prompt-babbler-app/tests/lib](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-app/tests/lib)
 
 ### How to run
 
-From [prompt-babbler-app](../prompt-babbler-app):
+From [prompt-babbler-app](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-app):
 
 1. Install dependencies.
 
@@ -76,7 +76,7 @@ pnpm test:coverage
 pnpm test -t accessibility
 ```
 
-Equivalent VS Code tasks are defined in [.vscode/tasks.json](../.vscode/tasks.json):
+Equivalent VS Code tasks are defined in [.vscode/tasks.json](https://github.com/PlagueHO/prompt-babbler/blob/main/.vscode/tasks.json):
 
 * app: test
 * app: test (watch)
@@ -89,14 +89,14 @@ Equivalent VS Code tasks are defined in [.vscode/tasks.json](../.vscode/tasks.js
 
 References:
 
-* [prompt-babbler-app/vitest.config.ts](../prompt-babbler-app/vitest.config.ts)
-* [useBabbles.test.ts](../prompt-babbler-app/tests/hooks/useBabbles.test.ts)
-* [SettingsPage.test.tsx](../prompt-babbler-app/tests/components/settings/SettingsPage.test.tsx)
+* [prompt-babbler-app/vitest.config.ts](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/vitest.config.ts)
+* [useBabbles.test.ts](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/tests/hooks/useBabbles.test.ts)
+* [SettingsPage.test.tsx](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/tests/components/settings/SettingsPage.test.tsx)
 
 ### Dependencies needed
 
 * Node.js and pnpm
-* Frontend package dependencies from [prompt-babbler-app/package.json](../prompt-babbler-app/package.json)
+* Frontend package dependencies from [prompt-babbler-app/package.json](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-app/package.json)
 * No Docker is required for frontend unit and component tests
 
 ## Backend Unit Tests
@@ -110,16 +110,16 @@ References:
 
 Projects:
 
-* [Api.UnitTests](../prompt-babbler-service/tests/unit/Api.UnitTests)
-* [ApiClient.UnitTests](../prompt-babbler-service/tests/unit/ApiClient.UnitTests)
-* [Domain.UnitTests](../prompt-babbler-service/tests/unit/Domain.UnitTests)
-* [Infrastructure.UnitTests](../prompt-babbler-service/tests/unit/Infrastructure.UnitTests)
-* [McpServer.UnitTests](../prompt-babbler-service/tests/unit/McpServer.UnitTests)
-* [Tools.Cli.UnitTests](../prompt-babbler-service/tests/unit/Tools.Cli.UnitTests)
+* [Api.UnitTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/unit/Api.UnitTests)
+* [ApiClient.UnitTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/unit/ApiClient.UnitTests)
+* [Domain.UnitTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/unit/Domain.UnitTests)
+* [Infrastructure.UnitTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/unit/Infrastructure.UnitTests)
+* [McpServer.UnitTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/unit/McpServer.UnitTests)
+* [Tools.Cli.UnitTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/unit/Tools.Cli.UnitTests)
 
 ### How to run
 
-From [prompt-babbler-service](../prompt-babbler-service):
+From [prompt-babbler-service](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service):
 
 1. Restore.
 
@@ -135,7 +135,7 @@ dotnet test --solution PromptBabbler.slnx --filter TestCategory=Unit --configura
 
 Recommended task:
 
-* service: test (unit) in [.vscode/tasks.json](../.vscode/tasks.json)
+* service: test (unit) in [.vscode/tasks.json](https://github.com/PlagueHO/prompt-babbler/blob/main/.vscode/tasks.json)
 
 ### Mocks and fakes used
 
@@ -144,13 +144,13 @@ Recommended task:
 
 Examples:
 
-* [UserControllerTests.cs](../prompt-babbler-service/tests/unit/Api.UnitTests/Controllers/UserControllerTests.cs)
-* [CosmosDbHealthCheckTests.cs](../prompt-babbler-service/tests/unit/Api.UnitTests/HealthChecks/CosmosDbHealthCheckTests.cs)
+* [UserControllerTests.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/unit/Api.UnitTests/Controllers/UserControllerTests.cs)
+* [CosmosDbHealthCheckTests.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/unit/Api.UnitTests/HealthChecks/CosmosDbHealthCheckTests.cs)
 
 ### Dependencies needed
 
 * .NET SDK 10
-* NuGet packages centrally managed in [prompt-babbler-service/Directory.Packages.props](../prompt-babbler-service/Directory.Packages.props)
+* NuGet packages centrally managed in [prompt-babbler-service/Directory.Packages.props](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/Directory.Packages.props)
 * No Docker is required for backend unit tests
 
 ## Backend Integration Tests
@@ -164,14 +164,14 @@ Examples:
 
 Projects:
 
-* [Api.IntegrationTests](../prompt-babbler-service/tests/integration/Api.IntegrationTests)
-* [Infrastructure.IntegrationTests](../prompt-babbler-service/tests/integration/Infrastructure.IntegrationTests)
-* [Orchestration.IntegrationTests](../prompt-babbler-service/tests/integration/Orchestration.IntegrationTests)
-* Shared fixture utilities in [IntegrationTests.Shared](../prompt-babbler-service/tests/integration/IntegrationTests.Shared)
+* [Api.IntegrationTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/integration/Api.IntegrationTests)
+* [Infrastructure.IntegrationTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/integration/Infrastructure.IntegrationTests)
+* [Orchestration.IntegrationTests](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/integration/Orchestration.IntegrationTests)
+* Shared fixture utilities in [IntegrationTests.Shared](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service/tests/integration/IntegrationTests.Shared)
 
 ### How to run
 
-From [prompt-babbler-service](../prompt-babbler-service):
+From [prompt-babbler-service](https://github.com/PlagueHO/prompt-babbler/tree/main/prompt-babbler-service):
 
 1. Run all integration tests by category.
 
@@ -204,7 +204,7 @@ VS Code tasks:
 * service: test (integration - Infrastructure)
 * service: test (integration - Orchestration)
 
-Defined in [.vscode/tasks.json](../.vscode/tasks.json).
+Defined in [.vscode/tasks.json](https://github.com/PlagueHO/prompt-babbler/blob/main/.vscode/tasks.json).
 
 ### Mocks and fakes used
 
@@ -217,24 +217,24 @@ API integration tests use a hybrid approach:
 
 Key references:
 
-* [CustomWebApplicationFactory.cs](../prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/CustomWebApplicationFactory.cs)
-* [NoAuthWebApplicationFactory.cs](../prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/NoAuthWebApplicationFactory.cs)
-* [AnonymousModeWebApplicationFactory.cs](../prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/AnonymousModeWebApplicationFactory.cs)
-* [TestAuthHandler.cs](../prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/TestAuthHandler.cs)
+* [CustomWebApplicationFactory.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/CustomWebApplicationFactory.cs)
+* [NoAuthWebApplicationFactory.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/NoAuthWebApplicationFactory.cs)
+* [AnonymousModeWebApplicationFactory.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/AnonymousModeWebApplicationFactory.cs)
+* [TestAuthHandler.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/Api.IntegrationTests/Infrastructure/TestAuthHandler.cs)
 
 Infrastructure integration uses Aspire AppHost fixture lifecycle:
 
-* [AppHostFixture.cs](../prompt-babbler-service/tests/integration/IntegrationTests.Shared/AppHostFixture.cs)
+* [AppHostFixture.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/IntegrationTests.Shared/AppHostFixture.cs)
 
 ### Dependencies needed
 
 * .NET SDK 10
 * Docker Desktop for tests that start or depend on Aspire resources and Cosmos emulator
-* Aspire test dependencies from [prompt-babbler-service/Directory.Packages.props](../prompt-babbler-service/Directory.Packages.props)
+* Aspire test dependencies from [prompt-babbler-service/Directory.Packages.props](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/Directory.Packages.props)
 * Non-parallel execution is enforced in integration assemblies:
-  * [Api.IntegrationTests/AssemblyInfo.cs](../prompt-babbler-service/tests/integration/Api.IntegrationTests/AssemblyInfo.cs)
-  * [Infrastructure.IntegrationTests/AssemblyInfo.cs](../prompt-babbler-service/tests/integration/Infrastructure.IntegrationTests/AssemblyInfo.cs)
-  * [Orchestration.IntegrationTests/AssemblyInfo.cs](../prompt-babbler-service/tests/integration/Orchestration.IntegrationTests/AssemblyInfo.cs)
+  * [Api.IntegrationTests/AssemblyInfo.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/Api.IntegrationTests/AssemblyInfo.cs)
+  * [Infrastructure.IntegrationTests/AssemblyInfo.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/Infrastructure.IntegrationTests/AssemblyInfo.cs)
+  * [Orchestration.IntegrationTests/AssemblyInfo.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/Orchestration.IntegrationTests/AssemblyInfo.cs)
 
 ## Smoke Tests
 
@@ -250,7 +250,7 @@ Smoke tests validate deployed environment readiness and core API/frontend/MCP ro
 
 Reference:
 
-* [tests/smoke/Smoke.Tests.ps1](../tests/smoke/Smoke.Tests.ps1)
+* [tests/smoke/Smoke.Tests.ps1](https://github.com/PlagueHO/prompt-babbler/blob/main/tests/smoke/Smoke.Tests.ps1)
 
 ### How to run
 
@@ -276,7 +276,7 @@ Backend coverage workflow:
 
 Task definitions:
 
-* [.vscode/tasks.json](../.vscode/tasks.json)
+* [.vscode/tasks.json](https://github.com/PlagueHO/prompt-babbler/blob/main/.vscode/tasks.json)
 
 ## Practical Notes
 
