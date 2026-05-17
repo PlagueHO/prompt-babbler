@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-05-18
+
+### Added
+
+- Add new API client library for babble management operations
+
+### Changed
+
+- Enhance backend status UI with improved display
+- Add unit test project for CLI tools
+- Rename documentation files to lowercase for consistency
+- Update ApiClient and CLI tools project paths in Dockerfile and solution references
+
+### Fixed
+
+- Fix broken documentation links caused by the lowercase file rename across index.md, getting-started.md, and user-guide.md
+
 ## [1.5.0] - 2026-05-17
 
 ### Added
