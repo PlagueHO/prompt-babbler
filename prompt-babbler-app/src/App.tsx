@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { BrowserCheck } from '@/components/layout/BrowserCheck';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import { AccessCodeDialog } from '@/components/layout/AccessCodeDialog';
+import { AppLoadingScreen } from '@/components/layout/AppLoadingScreen';
 import { useTheme } from '@/hooks/useTheme';
 import { useAccessCode } from '@/hooks/useAccessCode';
 import { HomePage } from '@/pages/HomePage';
@@ -22,11 +23,7 @@ function AppContent() {
   const { accessCodeRequired, isVerified, isLoading, error, submitCode } = useAccessCode();
 
   if (isLoading && !accessCodeRequired) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+    return <AppLoadingScreen />;
   }
 
   if (accessCodeRequired && !isVerified) {

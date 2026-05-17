@@ -95,7 +95,7 @@ describe('SettingsPage Data import/export', () => {
     const user = userEvent.setup();
     render(<SettingsPage />);
 
-    await user.click(screen.getByRole('button', { name: 'Start export' }));
+    await user.click(screen.getByRole('button', { name: 'Start Export' }));
 
     await waitFor(() => {
       expect(mockStartExport).toHaveBeenCalledWith(
@@ -114,12 +114,12 @@ describe('SettingsPage Data import/export', () => {
     const user = userEvent.setup();
     render(<SettingsPage />);
 
-    const fileInput = screen.getByLabelText('Overwrite existing records').closest('div')?.previousElementSibling as HTMLInputElement;
+    const fileInput = screen.getByLabelText('Backup ZIP') as HTMLInputElement;
     const file = new File(['zip-content'], 'payload.zip', { type: 'application/zip' });
     await user.upload(fileInput, file);
 
     await user.click(screen.getByLabelText('Overwrite existing records'));
-    await user.click(screen.getByRole('button', { name: 'Start import' }));
+    await user.click(screen.getByRole('button', { name: 'Start Import' }));
 
     await waitFor(() => {
       expect(mockStartImport).toHaveBeenCalledWith(file, true, 'mock-token');
