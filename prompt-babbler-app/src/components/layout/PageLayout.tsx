@@ -9,9 +9,11 @@ export function PageLayout({ children }: PageLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
-        {children}
-      </main>
+      <div className="flex w-full flex-1">
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

@@ -13,10 +13,16 @@ const navItems = [
 export function Header() {
   return (
     <header className="border-b bg-background">
-      <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
-        <NavLink to="/" className="gradient-brand text-lg font-bold tracking-tight">
-          Prompt Babbler
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4">
+        {/* Left: Icon + Heading */}
+        <NavLink to="/" className="flex items-center gap-2">
+          <Mic className="size-5 text-primary" />
+          <span className="gradient-brand text-lg font-bold tracking-tight">
+            Prompt Babbler
+          </span>
         </NavLink>
+
+        {/* Navigation */}
         <nav className="flex items-center gap-1">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
@@ -37,10 +43,14 @@ export function Header() {
             </NavLink>
           ))}
         </nav>
-        <div className="ml-auto flex items-center gap-2">
+
+        {/* Center: Search */}
+        <div className="ml-auto mr-2 hidden sm:block">
           <SearchBar />
-          <UserMenu />
         </div>
+
+        {/* Right: User Menu */}
+        <UserMenu />
       </div>
     </header>
   );
