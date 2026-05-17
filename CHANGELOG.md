@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-05-17
+
+### Added
+
+- Add babble import and export support
+- Add babble upsert support and CLI tooling
+
+### Changed
+
+- Refresh the settings page layout, loading screen, header, and page layout components
+- Refactor the API client and update testing documentation
+- Improve the Docker build to include the missing ApiClient project copy
+
+### Fixed
+
+- Fix the search flow for multi-word keywords and replace the modal search UI with an inline search bar
+- Resolve the build failure introduced in the release branch
+
+### Dependencies
+
+- Bump frontend Vite, Tailwind, React, TypeScript ESLint, testing, and protobuf-related packages
+- Bump `Microsoft.Extensions.AI.OpenAI` from 10.5.1 to 10.5.2
+- Bump `ModelContextProtocol.AspNetCore` from 1.2.0 to 1.3.0
+- Bump `fast-uri` from 3.1.0 to 3.1.2 in the frontend
+- Bump `actions/upload-pages-artifact`
+
 ## [1.4.2] - 2026-05-10
 
 ### Fixed
