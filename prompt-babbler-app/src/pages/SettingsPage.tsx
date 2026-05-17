@@ -192,6 +192,8 @@ export function SettingsPage() {
             </div>
           )}
 
+          <Separator />
+
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Appearance</h2>
             <ThemeSelector value={settings.theme} onChange={handleThemeChange} />
@@ -314,27 +316,50 @@ export function SettingsPage() {
 
       <Separator />
 
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Backend Status</h2>
-        <div className="flex items-center gap-3">
-          {statusLoading ? (
-            <span className="text-sm text-muted-foreground">Checking…</span>
-          ) : isConnected ? (
-            <div className="flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-200">
-              <CheckCircle className="size-4" />
-              <span>Backend connected</span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Backend Status</CardTitle>
+          <CardDescription>
+            Monitor your connection to the backend service
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 space-y-2">
+              {statusLoading ? (
+                <div className="flex items-center gap-2 text-sm">
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <span className="text-muted-foreground">Checking status…</span>
+                </div>
+              ) : isConnected ? (
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="size-4 text-green-600 dark:text-green-400" />
+                  <span className="font-medium text-green-700 dark:text-green-300">Connected</span>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <XCircle className="size-4 text-red-600 dark:text-red-400" />
+                    <span className="font-medium text-red-700 dark:text-red-300">Disconnected</span>
+                  </div>
+                  {statusError && (
+                    <p className="text-xs text-muted-foreground ml-6">{statusError}</p>
+                  )}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center gap-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
-              <XCircle className="size-4" />
-              <span>{statusError ?? 'Unable to reach backend'}</span>
-            </div>
-          )}
-          <Button variant="ghost" size="sm" onClick={() => void refresh()}>
-            <RefreshCw className="size-4" />
-          </Button>
-        </div>
-      </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void refresh()}
+              disabled={statusLoading}
+            >
+              <RefreshCw className="size-4" />
+              <span>Refresh</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
