@@ -60,7 +60,7 @@ Prompt Babbler keeps both the original babble and the generated prompt:
 
 Use these pages when you want more detail:
 
-* [Home Page](./HOME-PAGE.md)
-* [Create a Babble](./CREATE-A-BABBLE.md)
-* [Edit a Babble](./EDIT-A-BABBLE.md)
-* [Templates Page](./TEMPLATES-PAGE.md)
+* [Home Page](./home-page.md)
+* [Create a Babble](./create-a-babble.md)
+* [Edit a Babble](./edit-a-babble.md)
+* [Templates Page](./templates-page.md)
