@@ -8,7 +8,7 @@ WORKDIR /src
 
 COPY Directory.Build.props Directory.Packages.props ./
 COPY src/McpServer/PromptBabbler.McpServer.csproj src/McpServer/
-COPY src/ApiClient/PromptBabbler.ApiClient.csproj src/ApiClient/
+COPY src/Client/Api/PromptBabbler.ApiClient.csproj src/Client/Api/
 COPY src/Domain/PromptBabbler.Domain.csproj src/Domain/
 COPY src/Orchestration/ServiceDefaults/PromptBabbler.ServiceDefaults.csproj src/Orchestration/ServiceDefaults/
 RUN dotnet restore src/McpServer/PromptBabbler.McpServer.csproj
