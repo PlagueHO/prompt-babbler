@@ -3,8 +3,8 @@ using FluentAssertions;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
+using PromptBabbler.ApiClient;
 using PromptBabbler.McpServer.Agents;
-using PromptBabbler.McpServer.Client;
 
 namespace PromptBabbler.McpServer.UnitTests.Agents;
 

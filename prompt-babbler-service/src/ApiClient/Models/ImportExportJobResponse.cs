@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace PromptBabbler.Tools.Cli.Models;
+namespace PromptBabbler.ApiClient.Models;
 
 public sealed record ImportExportJobResponse
 {

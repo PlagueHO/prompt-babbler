@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json;
 using ModelContextProtocol.Server;
-using PromptBabbler.McpServer.Client;
+using PromptBabbler.ApiClient;
 
 namespace PromptBabbler.McpServer.Tools;
 

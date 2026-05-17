@@ -1,6 +1,6 @@
-using PromptBabbler.McpServer.Client.Models;
+using PromptBabbler.ApiClient.Models;
 
-namespace PromptBabbler.McpServer.Client;
+namespace PromptBabbler.ApiClient;
 
 public interface IPromptBabblerApiClient
 {
@@ -22,4 +22,12 @@ public interface IPromptBabblerApiClient
 
     // Generation
     Task<string> GeneratePromptAsync(string babbleId, string templateId, string? promptFormat, bool? allowEmojis, CancellationToken cancellationToken);
+
+    // Import/Export
+    Task<HttpResponseMessage> UpsertBabbleAsync(BabbleImportItem item, CancellationToken cancellationToken);
+    Task<string> StartImportAsync(string zipFilePath, bool overwrite, CancellationToken cancellationToken);
+    Task<string> StartExportAsync(ExportRequest request, CancellationToken cancellationToken);
+    Task<ImportExportJobResponse> GetImportJobAsync(string jobId, CancellationToken cancellationToken);
+    Task<ImportExportJobResponse> GetExportJobAsync(string jobId, CancellationToken cancellationToken);
+    Task DownloadExportAsync(string jobId, string outputPath, CancellationToken cancellationToken);
 }

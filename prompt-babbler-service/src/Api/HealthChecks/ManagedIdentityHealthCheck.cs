@@ -6,13 +6,24 @@ namespace PromptBabbler.Api.HealthChecks;
 
 public sealed class ManagedIdentityHealthCheck : IHealthCheck
 {
+    private readonly TokenCredential _credential;
+
+    public ManagedIdentityHealthCheck()
+        : this(new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned))
+    {
+    }
+
+    public ManagedIdentityHealthCheck(TokenCredential credential)
+    {
+        _credential = credential;
+    }
+
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var credential = new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
-            await credential.GetTokenAsync(
+            await _credential.GetTokenAsync(
                 new TokenRequestContext(["https://management.azure.com/.default"]),
                 cancellationToken);
 

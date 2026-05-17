@@ -1,10 +1,10 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using PromptBabbler.Tools.Cli.Api;
-using PromptBabbler.Tools.Cli.Models;
+using PromptBabbler.ApiClient;
+using PromptBabbler.ApiClient.Models;
 
-namespace PromptBabbler.Tools.Cli.UnitTests;
+namespace PromptBabbler.ApiClient.UnitTests;
 
 [TestClass]
 [TestCategory("Unit")]
@@ -14,7 +14,8 @@ public sealed class PromptBabblerApiClientTests
     public async Task UpsertBabbleAsync_SendsAccessCodeAndJsonBody()
     {
         var handler = new RecordingHttpMessageHandler();
-        using var client = new PromptBabblerApiClient("https://example.test", "seed-code", handler);
+        using var httpClient = CreateHttpClient(handler, "seed-code");
+        var client = new PromptBabblerApiClient(httpClient);
 
         var response = await client.UpsertBabbleAsync(new BabbleImportItem
         {
@@ -42,7 +43,8 @@ public sealed class PromptBabblerApiClientTests
         {
             Content = new StringContent("{\"jobId\":\"job-123\"}", Encoding.UTF8, "application/json"),
         });
-        using var client = new PromptBabblerApiClient("https://example.test", null, handler);
+        using var httpClient = CreateHttpClient(handler);
+        var client = new PromptBabblerApiClient(httpClient);
 
         var jobId = await client.StartExportAsync(new ExportRequest
         {
@@ -55,6 +57,36 @@ public sealed class PromptBabblerApiClientTests
         jobId.Should().Be("job-123");
         handler.Request.Should().NotBeNull();
         handler.Request!.RequestUri!.PathAndQuery.Should().Be("/api/exports");
+    }
+
+    [TestMethod]
+    public async Task GetTemplateAsync_WhenNotFound_ReturnsNull()
+    {
+        var handler = new RecordingHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = CreateHttpClient(handler);
+        var client = new PromptBabblerApiClient(httpClient);
+
+        var template = await client.GetTemplateAsync("missing-id", CancellationToken.None);
+
+        template.Should().BeNull();
+        handler.Request.Should().NotBeNull();
+        handler.Request!.RequestUri!.PathAndQuery.Should().Be("/api/templates/missing-id");
+    }
+
+    private static HttpClient CreateHttpClient(HttpMessageHandler handler, string? accessCode = null)
+    {
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/", UriKind.Absolute),
+            Timeout = TimeSpan.FromMinutes(5),
+        };
+
+        if (!string.IsNullOrWhiteSpace(accessCode))
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Access-Code", accessCode);
+        }
+
+        return httpClient;
     }
 
     private sealed class RecordingHttpMessageHandler : HttpMessageHandler

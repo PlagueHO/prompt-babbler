@@ -1,7 +1,7 @@
 using System.CommandLine;
 using System.Text.Json;
-using PromptBabbler.Tools.Cli.Api;
-using PromptBabbler.Tools.Cli.Models;
+using PromptBabbler.ApiClient;
+using PromptBabbler.ApiClient.Models;
 
 var cancellationTokenSource = new CancellationTokenSource();
 Console.CancelKeyPress += (_, eventArgs) =>
@@ -164,7 +164,8 @@ static async Task<int> ImportBabblesAsync(string file, string? apiUrlOverride, s
     var apiUrl = ResolveApiUrl(apiUrlOverride);
     var accessCode = ResolveAccessCode(accessCodeOverride);
 
-    using var client = new PromptBabblerApiClient(apiUrl, accessCode);
+    using var httpClient = CreateApiHttpClient(apiUrl, accessCode);
+    var client = new PromptBabblerApiClient(httpClient);
 
     var successCount = 0;
     var failureCount = 0;
@@ -210,7 +211,8 @@ static async Task<int> ImportPackageAsync(string file, bool overwrite, string? a
 
     try
     {
-        using var client = new PromptBabblerApiClient(apiUrl, accessCode);
+        using var httpClient = CreateApiHttpClient(apiUrl, accessCode);
+        var client = new PromptBabblerApiClient(httpClient);
         var jobId = await client.StartImportAsync(file, overwrite, cancellationToken);
         Console.WriteLine($"Started import job: {jobId}");
         return await WaitForJobAsync(
@@ -233,7 +235,8 @@ static async Task<int> ExportPackageAsync(string outputPath, ExportRequest reque
 
     try
     {
-        using var client = new PromptBabblerApiClient(apiUrl, accessCode);
+        using var httpClient = CreateApiHttpClient(apiUrl, accessCode);
+        var client = new PromptBabblerApiClient(httpClient);
         var jobId = await client.StartExportAsync(request, cancellationToken);
         Console.WriteLine($"Started export job: {jobId}");
 
@@ -314,4 +317,20 @@ static string? ResolveAccessCode(string? accessCodeOverride)
     return string.IsNullOrWhiteSpace(accessCodeOverride)
         ? Environment.GetEnvironmentVariable("PROMPT_BABBLER_ACCESS_CODE")
         : accessCodeOverride;
+}
+
+static HttpClient CreateApiHttpClient(string apiUrl, string? accessCode)
+{
+    var httpClient = new HttpClient
+    {
+        BaseAddress = new Uri(apiUrl.TrimEnd('/') + "/", UriKind.Absolute),
+        Timeout = TimeSpan.FromMinutes(5),
+    };
+
+    if (!string.IsNullOrWhiteSpace(accessCode))
+    {
+        httpClient.DefaultRequestHeaders.Add("X-Access-Code", accessCode);
+    }
+
+    return httpClient;
 }

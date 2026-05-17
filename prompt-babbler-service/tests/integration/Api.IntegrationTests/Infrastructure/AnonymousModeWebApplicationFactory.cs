@@ -10,11 +10,10 @@ using PromptBabbler.Infrastructure.Services;
 namespace PromptBabbler.Api.IntegrationTests.Infrastructure;
 
 /// <summary>
-/// WebApplicationFactory WITHOUT test authentication.
-/// Requests are unauthenticated, so protected endpoints return 401.
-/// Used to test that auth enforcement works correctly.
+/// WebApplicationFactory for anonymous single-user mode (AzureAd not configured).
+/// Used to verify Program.cs startup wiring for auth-disabled scenarios.
 /// </summary>
-public class NoAuthWebApplicationFactory : WebApplicationFactory<Program>
+public class AnonymousModeWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -22,17 +21,10 @@ public class NoAuthWebApplicationFactory : WebApplicationFactory<Program>
             "ConnectionStrings:cosmos",
             "AccountEndpoint=https://localhost:8081/;AccountKey=AQIDBAUGBwgJCgsMDQ4PEA==;");
 
-        // Provide fake AzureAd config so JwtBearer middleware doesn't throw during initialization
-        builder.UseSetting("AzureAd:ClientId", "00000000-0000-0000-0000-000000000000");
-        builder.UseSetting("AzureAd:TenantId", "00000000-0000-0000-0000-000000000000");
-        builder.UseSetting("AzureAd:Instance", "https://login.microsoftonline.com/");
-
         builder.ConfigureServices(services =>
         {
             RemoveHostedService<CosmosVectorContainerInitializationService>(services);
 
-            // Replace domain services with NSubstitute mocks (same as CustomWebApplicationFactory)
-            // but do NOT replace authentication — use the real JWT Bearer middleware.
             ReplaceService<IPromptTemplateRepository>(services);
             ReplaceService<IPromptTemplateService>(services);
             ReplaceService<IPromptGenerationService>(services);
@@ -41,6 +33,7 @@ public class NoAuthWebApplicationFactory : WebApplicationFactory<Program>
             ReplaceService<IBabbleService>(services);
             ReplaceService<IGeneratedPromptService>(services);
             ReplaceService<ITemplateValidationService>(services);
+            ReplaceService<IUserService>(services);
             ReplaceService<IChatClient>(services);
 
             services.AddSingleton(Substitute.For<IEmbeddingGenerator<string, Embedding<float>>>());

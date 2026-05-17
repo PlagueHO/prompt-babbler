@@ -1,0 +1,12 @@
+<Project Sdk="MSTest.Sdk/4.2.2">
+  <PropertyGroup>
+    <RootNamespace>PromptBabbler.ApiClient.UnitTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\ApiClient\PromptBabbler.ApiClient.csproj" />
+  </ItemGroup>
+</Project>

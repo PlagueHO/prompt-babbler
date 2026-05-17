@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using PromptBabbler.Domain.Interfaces;
+using PromptBabbler.Infrastructure.Services;
 
 namespace PromptBabbler.Api.IntegrationTests.Infrastructure;
 
@@ -16,8 +18,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting(
+            "ConnectionStrings:cosmos",
+            "AccountEndpoint=https://localhost:8081/;AccountKey=AQIDBAUGBwgJCgsMDQ4PEA==;");
+
         builder.ConfigureServices(services =>
         {
+            RemoveHostedService<CosmosVectorContainerInitializationService>(services);
+
             // Replace default authentication with test auth that always succeeds
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
@@ -35,10 +43,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             ReplaceService<IPromptTemplateService>(services);
             ReplaceService<IPromptGenerationService>(services);
             ReplaceService<IRealtimeTranscriptionService>(services);
+            ReplaceService<IFileTranscriptionService>(services);
             ReplaceService<IBabbleService>(services);
             ReplaceService<IGeneratedPromptService>(services);
             ReplaceService<ITemplateValidationService>(services);
             ReplaceService<IChatClient>(services);
+
+            services.AddSingleton(Substitute.For<IEmbeddingGenerator<string, Embedding<float>>>());
         });
     }
 
@@ -53,5 +64,18 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         // Add mock
         services.AddSingleton(Substitute.For<T>());
+    }
+
+    private static void RemoveHostedService<THostedService>(IServiceCollection services)
+        where THostedService : class, IHostedService
+    {
+        var descriptors = services
+            .Where(d => d.ServiceType == typeof(IHostedService) && d.ImplementationType == typeof(THostedService))
+            .ToList();
+
+        foreach (var descriptor in descriptors)
+        {
+            services.Remove(descriptor);
+        }
     }
 }

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
-using PromptBabbler.McpServer.Client;
+using PromptBabbler.ApiClient;
 
 namespace PromptBabbler.McpServer.Agents;
 

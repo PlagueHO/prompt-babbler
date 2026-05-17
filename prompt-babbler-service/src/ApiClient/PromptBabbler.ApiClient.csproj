@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PromptBabbler.ApiClient</RootNamespace>
+    <AssemblyName>PromptBabbler.ApiClient</AssemblyName>
+  </PropertyGroup>
+</Project>

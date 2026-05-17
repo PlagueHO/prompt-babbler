@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PromptBabbler.McpServer.Client.Models;
+namespace PromptBabbler.ApiClient.Models;
 
 public sealed record PromptExampleDto
 {

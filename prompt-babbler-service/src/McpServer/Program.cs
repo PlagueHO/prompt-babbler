@@ -2,11 +2,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using ModelContextProtocol.AspNetCore.Authentication;
 using ModelContextProtocol.Authentication;
+using PromptBabbler.ApiClient;
 using PromptBabbler.McpServer;
 using PromptBabbler.McpServer.Agents;
-using PromptBabbler.McpServer.Client;
 using PromptBabbler.McpServer.Configuration;
 using PromptBabbler.McpServer.HealthChecks;
+using McpServerClient = PromptBabbler.McpServer.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -49,7 +50,7 @@ if (!string.IsNullOrEmpty(azureAdClientId))
         });
 
     builder.Services.AddAuthorization();
-    builder.Services.AddSingleton(new ApiAuthOptions(string.Empty, azureAdClientId, apiScope));
+    builder.Services.AddSingleton(new McpServerClient.ApiAuthOptions(string.Empty, azureAdClientId, apiScope));
 }
 else
 {
@@ -60,14 +61,14 @@ else
             .Build();
     });
 
-    builder.Services.AddSingleton(new ApiAuthOptions(accessCode, string.Empty, string.Empty));
+    builder.Services.AddSingleton(new McpServerClient.ApiAuthOptions(accessCode, string.Empty, string.Empty));
 }
 
-builder.Services.AddTransient<ApiAuthDelegatingHandler>();
+builder.Services.AddTransient<McpServerClient.ApiAuthDelegatingHandler>();
 builder.Services.AddHttpClient<IPromptBabblerApiClient, PromptBabblerApiClient>(client =>
 {
     client.BaseAddress = new Uri("https+http://api");
-}).AddHttpMessageHandler<ApiAuthDelegatingHandler>();
+}).AddHttpMessageHandler<McpServerClient.ApiAuthDelegatingHandler>();
 
 builder.Services.AddSingleton<IAgenticFoundryClientFactory, AgenticFoundryClientFactory>();
 builder.Services.AddScoped<IPromptBabblerAgentRunner, PromptBabblerFoundryAgentRunner>();

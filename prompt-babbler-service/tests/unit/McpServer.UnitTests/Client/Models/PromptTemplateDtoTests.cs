@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
-using PromptBabbler.McpServer.Client.Models;
+using PromptBabbler.ApiClient.Models;
 
 namespace PromptBabbler.McpServer.UnitTests.Client.Models;
 
