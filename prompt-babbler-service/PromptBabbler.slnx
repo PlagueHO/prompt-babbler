@@ -15,7 +15,7 @@
     <Project Path="tests/unit/Domain.UnitTests/PromptBabbler.Domain.UnitTests.csproj" />
     <Project Path="tests/unit/Infrastructure.UnitTests/PromptBabbler.Infrastructure.UnitTests.csproj" />
     <Project Path="tests/unit/McpServer.UnitTests/PromptBabbler.McpServer.UnitTests.csproj" />
-    <Project Path="tests/unit/Tools.Cli.UnitTests/PromptBabbler.Tools.Cli.UnitTests.csproj" />
+    <Project Path="tests/unit/Tools/Cli.UnitTests/PromptBabbler.Tools.Cli.UnitTests.csproj" />
   </Folder>
   <Folder Name="/tests/integration/">
     <Project Path="tests/integration/Api.IntegrationTests/PromptBabbler.Api.IntegrationTests.csproj" />

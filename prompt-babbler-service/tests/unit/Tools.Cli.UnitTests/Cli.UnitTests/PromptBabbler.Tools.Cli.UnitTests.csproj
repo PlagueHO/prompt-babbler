@@ -7,6 +7,6 @@
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Tools\Cli\PromptBabbler.Tools.Cli.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Tools\Cli\PromptBabbler.Tools.Cli.csproj" />
   </ItemGroup>
 </Project>
