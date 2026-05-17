@@ -13,7 +13,7 @@
     <PackageReference Include="ModelContextProtocol.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ApiClient\PromptBabbler.ApiClient.csproj" />
+    <ProjectReference Include="..\Client\Api\PromptBabbler.ApiClient.csproj" />
     <ProjectReference Include="..\Orchestration\ServiceDefaults\PromptBabbler.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>

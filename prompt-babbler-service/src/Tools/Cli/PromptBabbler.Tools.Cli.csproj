@@ -8,6 +8,6 @@
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ApiClient\PromptBabbler.ApiClient.csproj" />
+    <ProjectReference Include="..\..\Client\Api\PromptBabbler.ApiClient.csproj" />
   </ItemGroup>
 </Project>

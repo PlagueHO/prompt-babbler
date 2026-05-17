@@ -7,6 +7,6 @@
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\ApiClient\PromptBabbler.ApiClient.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Client\Api\PromptBabbler.ApiClient.csproj" />
   </ItemGroup>
 </Project>
