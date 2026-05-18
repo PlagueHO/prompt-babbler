@@ -2,6 +2,7 @@ import { NavLink } from 'react-router';
 import { Home, Mic, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/layout/UserMenu';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { SearchBar } from '@/components/search/SearchBar';
 
 const navItems = [
@@ -49,8 +50,11 @@ export function Header() {
           <SearchBar />
         </div>
 
-        {/* Right: User Menu */}
-        <UserMenu />
+        {/* Right: Theme + User Menu */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <UserMenu />
+        </div>
       </div>
     </header>
   );
