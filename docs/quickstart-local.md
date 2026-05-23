@@ -197,8 +197,8 @@ Override the chat model via environment variables in `prompt-babbler-service/src
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MicrosoftFoundry__chatModelName` | `gpt-4.1` | Chat/LLM model |
-| `MicrosoftFoundry__chatModelVersion` | `2025-04-14` | Chat model version |
+| `MicrosoftFoundry__chatModelName` | `gpt-5.3-chat` | Chat/LLM model |
+| `MicrosoftFoundry__chatModelVersion` | `2026-03-03` | Chat model version |
 
 Ensure your subscription has available quota for the configured models in the target region.
 

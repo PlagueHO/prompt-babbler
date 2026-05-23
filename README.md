@@ -38,7 +38,7 @@ Prompt Babbler turns rough speech into polished, structured prompts ready to use
 
 ## Quick Start
 
-For full setup instructions including prerequisite installation, see [docs/QUICKSTART-LOCAL.md](docs/QUICKSTART-LOCAL.md). To deploy to Azure, see [docs/QUICKSTART-AZURE.md](docs/QUICKSTART-AZURE.md).
+For full setup instructions including prerequisite installation, see [docs/quickstart-local.md](docs/quickstart-local.md). To deploy to Azure, see [docs/quickstart-azure.md](docs/quickstart-azure.md).
 
 ### Prerequisites to run Locally
 
@@ -68,7 +68,7 @@ Aspire handles all dependency installation, builds, and orchestration automatica
 
 Prompt Babbler includes an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that exposes your babbles, prompt templates, and prompt generation to any MCP-compatible AI client. Connect GitHub Copilot, Claude, or another agent and let it search your voice notes or generate prompts on your behalf — without leaving the chat interface.
 
-The MCP endpoint when running locally is `http://localhost:5242`. See [docs/MCP-SERVER.md](docs/MCP-SERVER.md) for the full tool reference, resource catalog, and authentication options.
+The MCP endpoint when running locally is `http://localhost:5242`. See [docs/mcp-server.md](docs/mcp-server.md) for the full tool reference, resource catalog, and authentication options.
 
 ### VS Code (GitHub Copilot Agent Mode)
 
@@ -105,17 +105,23 @@ gh copilot mcp add prompt-babbler --transport http http://localhost:5242
 
 | Document | Description |
 |----------|-------------|
-| [Architecture](docs/ARCHITECTURE.md) | Tech stack, project structure, API endpoints, data model, infrastructure |
-| [Local Development](docs/QUICKSTART-LOCAL.md) | Run locally with .NET Aspire |
-| [Deploy to Azure](docs/QUICKSTART-AZURE.md) | Deploy to Azure with Azure Developer CLI |
-| [API Reference](docs/API.md) | Full API reference with request/response schemas |
-| [MCP Server](docs/MCP-SERVER.md) | MCP tools, resources, prompts, and client configuration |
-| [CI/CD Setup](docs/CICD.md) | GitHub Actions pipeline configuration |
+| [Architecture](docs/architecture.md) | Tech stack, project structure, API endpoints, data model, infrastructure |
+| [Local Development](docs/quickstart-local.md) | Run locally with .NET Aspire |
+| [Deploy to Azure](docs/quickstart-azure.md) | Deploy to Azure with Azure Developer CLI |
+| [API Reference](docs/api.md) | Full API reference with request/response schemas |
+| [MCP Server](docs/mcp-server.md) | MCP tools, resources, prompts, and client configuration |
+| [CI/CD Setup](docs/cicd.md) | GitHub Actions pipeline configuration |
 | [Infrastructure](infra/README.md) | Azure Bicep infrastructure details |
 
 ## License
 
 MIT
+
+## Contributing
+
+Contributions are welcome. Please open an issue to discuss proposed changes before submitting a pull request.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md), and [SUPPORT.md](SUPPORT.md) for the project community guidelines.
 
 <!-- Badge reference links -->
 [ci-shield]: https://img.shields.io/github/actions/workflow/status/PlagueHO/prompt-babbler/continuous-integration.yml?branch=main&label=CI

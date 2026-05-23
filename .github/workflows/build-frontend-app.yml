@@ -83,7 +83,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: frontend-code-coverage-cobertura
-          path: prompt-babbler-app/coverage/coverage-final.json
+          path: prompt-babbler-app/coverage/cobertura-coverage.xml
           retention-days: 7
 
       - name: Upload Build Artifact

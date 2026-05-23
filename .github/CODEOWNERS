@@ -1,0 +1,15 @@
+# Default owner for all files
+* @PlagueHO
+
+# Frontend
+/prompt-babbler-app/ @PlagueHO
+
+# Backend and service
+/prompt-babbler-service/ @PlagueHO
+
+# Infrastructure and workflows
+/infra/ @PlagueHO
+/.github/workflows/ @PlagueHO
+
+# Documentation
+/docs/ @PlagueHO

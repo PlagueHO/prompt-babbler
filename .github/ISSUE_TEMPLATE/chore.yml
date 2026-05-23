@@ -10,7 +10,7 @@ body:
     id: module_version
     attributes:
       label: Prompt Babbler Version
-      description: What version of the Prompt Babbler are you using? (use `Get-Module -Name Prompt Babbler`)
+      description: What version of Prompt Babbler are you using? (for example, check the latest release tag or your deployed app version)
       placeholder: e.g. 4.0.0
     validations:
       required: false
