@@ -49,6 +49,11 @@ on:
         description: "Optional custom domain hostname of the deployed Azure Static Web App"
         required: false
 
+permissions:
+  contents: read
+  checks: write
+  id-token: write
+
 jobs:
   smoke-test:
     name: Smoke Test
@@ -157,12 +162,23 @@ jobs:
       - name: Run Smoke Tests
         shell: pwsh
         run: |
+          $customFrontendHost = '${{ secrets.AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN }}'
+          $customFrontendBaseUrl = ''
+          if (-not [string]::IsNullOrWhiteSpace($customFrontendHost)) {
+            $customFrontendBaseUrl = "https://$customFrontendHost"
+          }
+
+          $accessCode = '${{ secrets.ACCESS_CODE }}'
+          if ([string]::IsNullOrWhiteSpace($accessCode)) {
+            $accessCode = $null
+          }
+
           $container = New-PesterContainer -Path 'tests/smoke/Smoke.Tests.ps1' -Data @{
-            ApiBaseUrl         = 'https://${{ inputs.AZURE_CONTAINER_APP_FQDN }}'
-            McpServerBaseUrl   = 'https://${{ inputs.AZURE_MCP_SERVER_CONTAINER_APP_FQDN }}'
-            FrontendBaseUrl    = 'https://${{ inputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}'
-            CustomFrontendBaseUrl = '${{ secrets.AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN }}' ? 'https://${{ secrets.AZURE_STATIC_WEB_APP_CUSTOM_DOMAIN }}' : ''
-            AccessCode         = '${{ secrets.ACCESS_CODE }}'
+            ApiBaseUrl            = 'https://${{ inputs.AZURE_CONTAINER_APP_FQDN }}'
+            McpServerBaseUrl      = 'https://${{ inputs.AZURE_MCP_SERVER_CONTAINER_APP_FQDN }}'
+            FrontendBaseUrl       = 'https://${{ inputs.AZURE_STATIC_WEB_APP_DEFAULT_HOSTNAME }}'
+            CustomFrontendBaseUrl = $customFrontendBaseUrl
+            AccessCode            = $accessCode
           }
 
           $config = New-PesterConfiguration

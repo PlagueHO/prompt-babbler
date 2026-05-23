@@ -7,6 +7,7 @@ on:
     tags:
       - v*
     paths:
+      - .github/workflows/**
       - infra/**
       - prompt-babbler-service/**
       - prompt-babbler-app/**
@@ -14,11 +15,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
-  checks: write
-  pull-requests: write
-  packages: write
 
 jobs:
   set-build-variables:
@@ -29,9 +26,9 @@ jobs:
     name: Lint and Publish Bicep
     uses: ./.github/workflows/lint-and-publish-bicep.yml
 
-  lint-build-test-and-publish-backend-service:
-    name: Lint, Build, Test and Publish Backend Service
-    uses: ./.github/workflows/build-and-publish-backend-service.yml
+  build-backend-service:
+    name: Build Backend Service
+    uses: ./.github/workflows/build-backend-service.yml
     permissions:
       contents: read
       checks: write
@@ -39,120 +36,43 @@ jobs:
     with:
       build_configuration: 'Release'
 
-  build-and-publish-frontend-app:
-    name: Build and Publish Frontend App
-    uses: ./.github/workflows/build-and-publish-frontend-app.yml
+  build-frontend-app:
+    name: Build Frontend App
+    uses: ./.github/workflows/build-frontend-app.yml
     permissions:
       contents: read
       checks: write
       pull-requests: write
 
-  build-and-push-api-container:
-    name: Build and Push API Container Image
+  publish-backend-service:
+    name: Publish Backend Service
     needs:
       - set-build-variables
-      - lint-build-test-and-publish-backend-service
-    runs-on: ubuntu-latest
+      - build-backend-service
+    uses: ./.github/workflows/publish-backend-service.yml
     permissions:
       contents: read
       packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Extract container metadata
-        id: metadata
-        uses: docker/metadata-action@v6
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/prompt-babbler-api
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=sha-${{ github.sha }}
-            type=ref,event=tag
-
-      - name: Build and push API container image
-        uses: docker/build-push-action@v7
-        with:
-          context: ./prompt-babbler-service
-          file: ./prompt-babbler-service/src/Api/Dockerfile
-          push: true
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=Prompt Babbler API Service
-            org.opencontainers.image.version=${{ github.sha }}
-
-  build-and-push-mcp-server-container:
-    name: Build and Push MCP Server Container Image
-    needs:
-      - set-build-variables
-      - lint-build-test-and-publish-backend-service
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Extract container metadata
-        id: metadata
-        uses: docker/metadata-action@v6
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/prompt-babbler-mcp-server
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=sha-${{ github.sha }}
-            type=ref,event=tag
-
-      - name: Build and push MCP server container image
-        uses: docker/build-push-action@v7
-        with:
-          context: ./prompt-babbler-service
-          file: ./prompt-babbler-service/src/McpServer/Dockerfile
-          push: true
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=Prompt Babbler MCP Server
-            org.opencontainers.image.version=${{ github.sha }}
 
   e2e-test:
     name: E2E Test
     needs:
       - set-build-variables
       - lint-and-publish-bicep
-      - lint-build-test-and-publish-backend-service
-      - build-and-push-api-container
-      - build-and-push-mcp-server-container
+      - build-backend-service
+      - publish-backend-service
     uses: ./.github/workflows/e2e-test.yml
+    permissions:
+      id-token: write
+      contents: read
+      checks: write
     with:
       ENVIRONMENT: test
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
       AZURE_ENV_NAME: ${{ format('pbblr-{0}', github.run_id) }}
-      CONTAINER_IMAGE_API: ghcr.io/${{ github.repository_owner }}/prompt-babbler-api:sha-${{ github.sha }}
-      CONTAINER_IMAGE_MCP_SERVER: ghcr.io/${{ github.repository_owner }}/prompt-babbler-mcp-server:sha-${{ github.sha }}
+      CONTAINER_IMAGE_API: ${{ needs.publish-backend-service.outputs['api-container-image'] }}
+      CONTAINER_IMAGE_MCP_SERVER: ${{ needs.publish-backend-service.outputs['mcp-server-container-image'] }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -169,8 +89,7 @@ jobs:
     needs:
       - set-build-variables
       - e2e-test
-      - build-and-push-api-container
-      - build-and-push-mcp-server-container
+      - publish-backend-service
     uses: ./.github/workflows/deploy-production.yml
     permissions:
       id-token: write
@@ -179,8 +98,8 @@ jobs:
     with:
       BUILD_VERSION: ${{ needs.set-build-variables.outputs.BUILD_VERSION }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
-      CONTAINER_IMAGE_API: ghcr.io/${{ github.repository_owner }}/prompt-babbler-api:${{ github.ref_name }}
-      CONTAINER_IMAGE_MCP_SERVER: ghcr.io/${{ github.repository_owner }}/prompt-babbler-mcp-server:${{ github.ref_name }}
+      CONTAINER_IMAGE_API: ${{ needs.publish-backend-service.outputs['api-container-image'] }}
+      CONTAINER_IMAGE_MCP_SERVER: ${{ needs.publish-backend-service.outputs['mcp-server-container-image'] }}
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

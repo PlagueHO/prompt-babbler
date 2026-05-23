@@ -4,9 +4,23 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - .github/workflows/**
+      - infra/**
+      - prompt-babbler-service/**
+      - prompt-babbler-app/**
+      - docs/**
+      - '*.md'
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/**
+      - infra/**
+      - prompt-babbler-service/**
+      - prompt-babbler-app/**
+      - docs/**
+      - '*.md'
 
   workflow_dispatch:
 
@@ -26,17 +40,17 @@ jobs:
     permissions:
       contents: read
 
-  lint-build-test-and-publish-backend-service:
-    name: Lint, Build, Test and Publish Backend Service
-    uses: ./.github/workflows/build-and-publish-backend-service.yml
+  build-backend-service:
+    name: Build Backend Service
+    uses: ./.github/workflows/build-backend-service.yml
     permissions:
       contents: read
       checks: write
       pull-requests: write
 
-  build-and-publish-frontend-app:
-    name: Build and Publish Frontend App
-    uses: ./.github/workflows/build-and-publish-frontend-app.yml
+  build-frontend-app:
+    name: Build Frontend App
+    uses: ./.github/workflows/build-frontend-app.yml
     permissions:
       contents: read
       checks: write
