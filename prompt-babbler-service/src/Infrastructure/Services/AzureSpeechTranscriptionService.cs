@@ -131,9 +131,7 @@ public sealed class AzureSpeechTranscriptionService(
         };
 
         // Fire-and-forget continuous recognition start; we await in the session lifecycle.
-        logger.LogInformation(
-            "Starting continuous recognition (region={Region}, language={Language})",
-            region, sessionConfig.SpeechRecognitionLanguage);
+        logger.LogInformation("Starting continuous recognition");
         await recognizer.StartContinuousRecognitionAsync();
 
         var session = new TranscriptionSession(
