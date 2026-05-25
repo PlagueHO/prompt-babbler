@@ -68,7 +68,7 @@ The user identity remains `_anonymous` — this mode protects access to a single
 
 > **Security note:** Access Code mode is a lightweight access gate, not a high-security authentication mechanism. For production multi-user deployments, use Entra ID mode.
 
-For backend logging and data handling requirements related to access code and transcription flows, see [Security Patterns](security/security-patterns.md).
+For backend logging and data handling requirements related to access code and transcription flows, see [Security Patterns](../security/security-patterns.md).
 
 ### Configure for local development
 

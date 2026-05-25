@@ -15,3 +15,11 @@ hero:
       text: Quick Start (Azure)
       link: /quickstart-azure
 ---
+
+## Design and Reference
+
+* [Architecture](/design/architecture)
+* [API Reference](/design/api)
+* [Authentication](/design/authentication)
+* [MCP Server](/design/mcp-server)
+* [Testing Guide](/design/testing)

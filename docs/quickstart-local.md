@@ -248,6 +248,6 @@ Open `Ctrl+Shift+P` → **Tasks: Run Task** for common workflows:
 ## Next steps
 
 * [Deploy to Azure](quickstart-azure.md) with the Azure Developer CLI
-* See the [CI/CD Setup Guide](cicd.md) for GitHub Actions pipeline configuration
+* See the [CI/CD Setup Guide](design/cicd.md) for GitHub Actions pipeline configuration
 * Browse the specs/ folder for feature specifications and design documents
 * See [infra/README.md](https://github.com/PlagueHO/prompt-babbler/blob/main/infra/README.md) for Azure deployment architecture

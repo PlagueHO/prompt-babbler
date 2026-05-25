@@ -53,7 +53,7 @@ prompt-babbler/
 │   ├── quickstart-local.md     # Local development guide
 │   ├── quickstart-azure.md     # Azure deployment guide
 │   ├── api.md                  # Full API reference
-│   └── cicd.md                 # CI/CD pipeline setup
+│   └── design/cicd.md          # CI/CD pipeline setup
 ├── .github/workflows/          # CI/CD pipelines (12 workflows)
 └── specs/                      # Feature specifications
 ```

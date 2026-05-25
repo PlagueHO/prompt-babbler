@@ -18,8 +18,8 @@ export default defineConfig({
       { text: 'User Guide', link: '/user-guide' },
       { text: 'Quickstart (Local)', link: '/quickstart-local' },
       { text: 'Quickstart (Azure)', link: '/quickstart-azure' },
-      { text: 'Architecture', link: '/architecture' },
-      { text: 'API', link: '/api' },
+      { text: 'Architecture', link: '/design/architecture' },
+      { text: 'API', link: '/design/api' },
       { text: 'Security', link: '/security/security-patterns' },
     ],
 
@@ -45,13 +45,13 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
-          { text: 'Architecture', link: '/architecture' },
-          { text: 'API Reference', link: '/api' },
-          { text: 'Authentication', link: '/authentication' },
+          { text: 'Architecture', link: '/design/architecture' },
+          { text: 'API Reference', link: '/design/api' },
+          { text: 'Authentication', link: '/design/authentication' },
           { text: 'Security Patterns', link: '/security/security-patterns' },
-          { text: 'CI/CD', link: '/cicd' },
-          { text: 'MCP Server', link: '/mcp-server' },
-          { text: 'Testing', link: '/testing' },
+          { text: 'CI/CD', link: '/design/cicd' },
+          { text: 'MCP Server', link: '/design/mcp-server' },
+          { text: 'Testing', link: '/design/testing' },
         ],
       }
     ],

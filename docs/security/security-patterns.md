@@ -41,6 +41,6 @@ These controls are enforced to reduce regression risk:
 
 ## Related Documentation
 
-* [Authentication](../authentication.md)
-* [Architecture](../architecture.md)
-* [API Reference](../api.md)
+* [Authentication](../design/authentication.md)
+* [Architecture](../design/architecture.md)
+* [API Reference](../design/api.md)
