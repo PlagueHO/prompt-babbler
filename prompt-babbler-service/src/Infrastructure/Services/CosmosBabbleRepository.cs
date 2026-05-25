@@ -141,7 +141,7 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             new PartitionKey(babble.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Created babble {BabbleId} for user {UserId}", babble.Id, babble.UserId);
+        _logger.LogInformation("Created babble record in Cosmos DB");
 
         return response.Resource;
     }
@@ -153,7 +153,7 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             new PartitionKey(babble.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Upserted babble {BabbleId} for user {UserId}", babble.Id, babble.UserId);
+        _logger.LogInformation("Upserted babble record in Cosmos DB");
 
         return response.Resource;
     }
@@ -166,7 +166,7 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             new PartitionKey(babble.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Updated babble {BabbleId} for user {UserId}", babble.Id, babble.UserId);
+        _logger.LogInformation("Updated babble record in Cosmos DB");
 
         return response.Resource;
     }
@@ -191,7 +191,7 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             new PartitionKey(userId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Set pin {IsPinned} on babble {BabbleId} for user {UserId}", isPinned, babbleId, userId);
+        _logger.LogInformation("Updated babble pin state in Cosmos DB");
 
         return response.Resource;
     }
@@ -209,7 +209,7 @@ public sealed class CosmosBabbleRepository : IBabbleRepository
             new PartitionKey(userId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Deleted babble {BabbleId} for user {UserId}", babbleId, userId);
+        _logger.LogInformation("Deleted babble record from Cosmos DB");
     }
 
     public async Task<IReadOnlyList<BabbleSearchResult>> SearchByVectorAsync(

@@ -183,7 +183,7 @@ public sealed class ExportJobProcessor : IExportJobProcessor
             };
 
             await _jobRepository.UpdateAsync(currentJob, cancellationToken);
-            _logger.LogInformation("Completed export job {JobId} for user {UserId}", job.Id, job.UserId);
+            _logger.LogInformation("Completed export job");
         }
         catch (Exception ex)
         {
@@ -196,7 +196,7 @@ public sealed class ExportJobProcessor : IExportJobProcessor
             };
 
             await _jobRepository.UpdateAsync(currentJob, cancellationToken);
-            _logger.LogError(ex, "Export job {JobId} failed for user {UserId}", job.Id, job.UserId);
+            _logger.LogError(ex, "Export job failed");
         }
     }
 

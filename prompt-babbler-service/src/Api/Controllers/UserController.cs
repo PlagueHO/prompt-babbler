@@ -34,7 +34,7 @@ public sealed class UserController : ControllerBase
         var email = User.FindFirst("preferred_username")?.Value;
 
         var profile = await _userService.GetOrCreateAsync(userId, displayName, email, cancellationToken);
-        _logger.LogInformation("Retrieved user profile for user {UserId}", userId);
+        _logger.LogInformation("Retrieved user profile");
 
         return Ok(ToResponse(profile));
     }
@@ -57,7 +57,7 @@ public sealed class UserController : ControllerBase
         };
 
         var profile = await _userService.UpdateSettingsAsync(userId, settings, cancellationToken);
-        _logger.LogInformation("Updated settings for user {UserId}", userId);
+        _logger.LogInformation("Updated user settings");
 
         return Ok(ToResponse(profile));
     }

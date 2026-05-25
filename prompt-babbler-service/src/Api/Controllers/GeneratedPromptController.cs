@@ -102,7 +102,7 @@ public sealed class GeneratedPromptController : ControllerBase
         try
         {
             var created = await _promptService.CreateAsync(userId, prompt, cancellationToken);
-            _logger.LogInformation("Created generated prompt {PromptId} for babble {BabbleId}", created.Id, created.BabbleId);
+            _logger.LogInformation("Created generated prompt");
 
             return CreatedAtAction(nameof(GetPrompt), new { babbleId, id = created.Id }, ToResponse(created));
         }
@@ -123,7 +123,7 @@ public sealed class GeneratedPromptController : ControllerBase
         try
         {
             await _promptService.DeleteAsync(userId, babbleId, id, cancellationToken);
-            _logger.LogInformation("Deleted generated prompt {PromptId} for babble {BabbleId}", id, babbleId);
+            _logger.LogInformation("Deleted generated prompt");
 
             return NoContent();
         }

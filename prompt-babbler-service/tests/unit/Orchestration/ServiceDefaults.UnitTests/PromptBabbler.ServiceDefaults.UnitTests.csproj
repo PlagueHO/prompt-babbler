@@ -1,0 +1,12 @@
+<Project Sdk="MSTest.Sdk/4.2.3">
+  <PropertyGroup>
+    <RootNamespace>PromptBabbler.ServiceDefaults.UnitTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Orchestration\ServiceDefaults\PromptBabbler.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

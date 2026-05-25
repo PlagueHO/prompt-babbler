@@ -38,7 +38,7 @@ public sealed class TranscriptionWebSocketController(
             return;
         }
 
-        logger.LogInformation("WebSocket transcription request received (language={Language})", language ?? "(default)");
+        logger.LogInformation("WebSocket transcription request received");
 
         using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
         logger.LogInformation("WebSocket accepted, starting transcription session");
@@ -134,8 +134,10 @@ public sealed class TranscriptionWebSocketController(
 
                     eventCount++;
                     logger.LogDebug(
-                        "Sending transcription event #{Count}: isFinal={IsFinal}, text=\"{Text}\"",
-                        eventCount, evt.IsFinal, evt.Text.Length > 60 ? evt.Text[..60] + "…" : evt.Text);
+                        "Sending transcription event #{Count}: isFinal={IsFinal}, textLength={TextLength}",
+                        eventCount,
+                        evt.IsFinal,
+                        evt.Text.Length);
 
                     var json = JsonSerializer.Serialize(new TranscriptionMessage
                     {

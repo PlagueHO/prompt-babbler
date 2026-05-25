@@ -122,12 +122,12 @@ public sealed class BabbleController : ControllerBase
         {
             // Client disconnected (e.g. AbortController fired a new debounced search).
             // Not an error — log at debug and return 499 Client Closed Request.
-            _logger.LogDebug("Search request cancelled for user {UserId}", userId);
+            _logger.LogDebug("Search request cancelled");
             return StatusCode(499);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Vector search failed for user {UserId}", userId);
+            _logger.LogError(ex, "Vector search failed");
             return StatusCode(502, new ProblemDetails
             {
                 Title = "Azure OpenAI Error",
@@ -178,12 +178,12 @@ public sealed class BabbleController : ControllerBase
         if (hasClientProvidedId)
         {
             var upserted = await _babbleService.UpsertAsync(babble, cancellationToken);
-            _logger.LogInformation("Upserted babble {BabbleId} for user {UserId}", upserted.Id, upserted.UserId);
+            _logger.LogInformation("Upserted babble");
             return Ok(ToResponse(upserted));
         }
 
         var created = await _babbleService.CreateAsync(babble, cancellationToken);
-        _logger.LogInformation("Created babble {BabbleId} for user {UserId}", created.Id, created.UserId);
+        _logger.LogInformation("Created babble");
 
         return CreatedAtAction(nameof(GetBabble), new { id = created.Id }, ToResponse(created));
     }
@@ -216,7 +216,7 @@ public sealed class BabbleController : ControllerBase
         };
 
         var result = await _babbleService.UpdateAsync(userId, updated, cancellationToken);
-        _logger.LogInformation("Updated babble {BabbleId} for user {UserId}", result.Id, result.UserId);
+        _logger.LogInformation("Updated babble");
 
         return Ok(ToResponse(result));
     }
@@ -232,7 +232,7 @@ public sealed class BabbleController : ControllerBase
         try
         {
             var result = await _babbleService.SetPinAsync(userId, id, request.IsPinned, cancellationToken);
-            _logger.LogInformation("Set pin {IsPinned} on babble {BabbleId} for user {UserId}", request.IsPinned, id, userId);
+            _logger.LogInformation("Updated babble pin state");
 
             return Ok(ToResponse(result));
         }
@@ -253,7 +253,7 @@ public sealed class BabbleController : ControllerBase
         }
 
         await _babbleService.DeleteAsync(userId, id, cancellationToken);
-        _logger.LogInformation("Deleted babble {BabbleId} for user {UserId}", id, userId);
+        _logger.LogInformation("Deleted babble");
 
         return NoContent();
     }
@@ -333,7 +333,7 @@ public sealed class BabbleController : ControllerBase
             };
 
             var created = await _generatedPromptService.CreateAsync(userId, generatedPrompt, cancellationToken);
-            _logger.LogInformation("Auto-persisted generated prompt {PromptId} for babble {BabbleId}", created.Id, created.BabbleId);
+            _logger.LogInformation("Auto-persisted generated prompt");
 
             var promptIdData = JsonSerializer.Serialize(new { promptId = created.Id });
             await Response.WriteAsync($"data: {promptIdData}\n\n", cancellationToken);
@@ -344,7 +344,7 @@ public sealed class BabbleController : ControllerBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, "Prompt generation failed for babble {BabbleId}", id);
+            _logger.LogError(ex, "Prompt generation failed for babble");
             if (!Response.HasStarted)
             {
                 HttpContext.Response.StatusCode = 502;
@@ -381,13 +381,13 @@ public sealed class BabbleController : ControllerBase
             };
 
             var result = await _babbleService.UpdateAsync(userId, updated, cancellationToken);
-            _logger.LogInformation("Generated title for babble {BabbleId}: {Title}", result.Id, result.Title);
+            _logger.LogInformation("Generated heading for babble");
 
             return Ok(ToResponse(result));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, "Title generation failed for babble {BabbleId}", id);
+            _logger.LogError(ex, "Heading generation failed for babble");
             return StatusCode(502, new ProblemDetails
             {
                 Title = "Azure OpenAI Error",
@@ -471,7 +471,7 @@ public sealed class BabbleController : ControllerBase
         };
 
         var created = await _babbleService.CreateAsync(babble, cancellationToken);
-        _logger.LogInformation("Created babble {BabbleId} from uploaded audio for user {UserId}", created.Id, created.UserId);
+        _logger.LogInformation("Created babble from uploaded audio");
 
         return CreatedAtAction(nameof(GetBabble), new { id = created.Id }, ToResponse(created));
     }

@@ -116,7 +116,7 @@ public sealed class ImportJobProcessor : IImportJobProcessor
             };
 
             await _jobRepository.UpdateAsync(currentJob, cancellationToken);
-            _logger.LogInformation("Completed import job {JobId} for user {UserId}", job.Id, job.UserId);
+            _logger.LogInformation("Completed import job");
         }
         catch (Exception ex)
         {
@@ -129,7 +129,7 @@ public sealed class ImportJobProcessor : IImportJobProcessor
             };
 
             await _jobRepository.UpdateAsync(currentJob, cancellationToken);
-            _logger.LogError(ex, "Import job {JobId} failed for user {UserId}", job.Id, job.UserId);
+            _logger.LogError(ex, "Import job failed");
         }
         finally
         {

@@ -70,7 +70,7 @@ public sealed class ImportController : ControllerBase
             return BadRequest(ex.Message);
         }
 
-        _logger.LogInformation("Queued import job {JobId} for user {UserId}", jobId, userId);
+        _logger.LogInformation("Queued import job");
         return Accepted(new { jobId });
     }
 

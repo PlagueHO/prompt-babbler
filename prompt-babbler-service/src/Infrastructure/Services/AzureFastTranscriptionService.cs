@@ -17,11 +17,11 @@ public sealed class AzureFastTranscriptionService(
     {
         var locale = language ?? "en-US";
 
-        logger.LogInformation("Starting fast transcription for locale {Locale}", locale);
+        logger.LogInformation("Starting fast transcription");
 
         var transcribedText = await transcriptionClient.TranscribeAsync(audioStream, locale, cancellationToken);
 
-        logger.LogInformation("Fast transcription completed: {CharCount} characters", transcribedText.Length);
+        logger.LogInformation("Fast transcription completed");
 
         return transcribedText;
     }

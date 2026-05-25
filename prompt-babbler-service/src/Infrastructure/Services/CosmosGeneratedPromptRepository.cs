@@ -114,7 +114,7 @@ public sealed class CosmosGeneratedPromptRepository : IGeneratedPromptRepository
             new PartitionKey(prompt.BabbleId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Created generated prompt {PromptId} for babble {BabbleId}", prompt.Id, prompt.BabbleId);
+        _logger.LogInformation("Created generated prompt record in Cosmos DB");
 
         return response.Resource;
     }
@@ -132,7 +132,7 @@ public sealed class CosmosGeneratedPromptRepository : IGeneratedPromptRepository
             new PartitionKey(babbleId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Deleted generated prompt {PromptId} for babble {BabbleId}", promptId, babbleId);
+        _logger.LogInformation("Deleted generated prompt record from Cosmos DB");
     }
 
     public async Task DeleteByBabbleAsync(string babbleId, CancellationToken cancellationToken = default)
@@ -159,6 +159,6 @@ public sealed class CosmosGeneratedPromptRepository : IGeneratedPromptRepository
             }
         }
 
-        _logger.LogInformation("Deleted all generated prompts for babble {BabbleId}", babbleId);
+        _logger.LogInformation("Deleted all generated prompt records for babble");
     }
 }

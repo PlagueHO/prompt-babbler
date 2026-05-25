@@ -141,7 +141,7 @@ public sealed class PromptTemplateController : ControllerBase
         }
 
         var created = await _templateService.CreateAsync(template, cancellationToken);
-        _logger.LogInformation("Created user template {TemplateId}: {TemplateName}", created.Id, created.Name);
+        _logger.LogInformation("Created user template");
 
         return CreatedAtAction(nameof(GetTemplate), new { id = created.Id }, ToResponse(created));
     }
@@ -197,7 +197,7 @@ public sealed class PromptTemplateController : ControllerBase
         }
 
         var result = await _templateService.UpdateAsync(updated, cancellationToken);
-        _logger.LogInformation("Updated user template {TemplateId}: {TemplateName}", result.Id, result.Name);
+        _logger.LogInformation("Updated user template");
 
         return Ok(ToResponse(result));
     }
@@ -221,7 +221,7 @@ public sealed class PromptTemplateController : ControllerBase
         }
 
         await _templateService.DeleteAsync(existing.UserId, id, cancellationToken);
-        _logger.LogInformation("Deleted user template {TemplateId}", id);
+        _logger.LogInformation("Deleted user template");
 
         return NoContent();
     }

@@ -35,7 +35,7 @@ public sealed class BuiltInTemplateSeedingService : IHostedService
         foreach (var template in GetBuiltInTemplates())
         {
             await UpsertWithRetryAsync(template, cancellationToken);
-            _logger.LogInformation("Seeded built-in template: {TemplateName}", template.Name);
+            _logger.LogInformation("Seeded built-in template");
         }
 
         _logger.LogInformation("Built-in prompt template seeding complete.");

@@ -44,7 +44,7 @@ public sealed class CosmosUserRepository : IUserRepository
             new PartitionKey(profile.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Upserted user profile for user {UserId}", profile.UserId);
+        _logger.LogInformation("Upserted user profile");
 
         return response.Resource;
     }

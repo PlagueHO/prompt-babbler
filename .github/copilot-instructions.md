@@ -16,6 +16,9 @@ Prompt Babbler is a React 19 + Vite (TypeScript) SPA paired with a .NET 10 ASP.N
 - Use `FixedTimeEquals` (constant-time comparison) for access-code or secret validation — never use `==` or `string.Equals`.
 - Validate all external input at the controller boundary; reject early with `BadRequest` before calling services.
 - Never commit secrets or connection strings; use Aspire configuration or `appsettings.Development.json`.
+- For speech/transcription flows, log metadata only (`textLength`, counters, durations, offsets). Never log raw values like `e.Result.Text`, `evt.Text`, or placeholders such as `{Text}`.
+- For access code checks, log only booleans and request metadata (for example `hasHeader`, `hasQueryValue`, `method`). Never log the provided code or query value.
+- Central OpenTelemetry sanitization is configured in `src/Orchestration/ServiceDefaults/Logging`. Keep it enabled and treat it as defense-in-depth, not a replacement for safe call-site logging.
 
 ## ASP.NET Core Patterns
 

@@ -56,7 +56,7 @@ public sealed class ExportController : ControllerBase
             return BadRequest(ex.Message);
         }
 
-        _logger.LogInformation("Queued export job {JobId} for user {UserId}", jobId, userId);
+        _logger.LogInformation("Queued export job");
         return Accepted(new { jobId });
     }
 

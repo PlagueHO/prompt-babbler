@@ -60,7 +60,11 @@ public sealed class AzureSpeechTranscriptionService(
         {
             if (!string.IsNullOrEmpty(e.Result.Text))
             {
-                logger.LogDebug("Speech recognizing (partial): \"{Text}\"", e.Result.Text.Length > 60 ? e.Result.Text[..60] + "…" : e.Result.Text);
+                logger.LogDebug(
+                    "Speech recognizing (partial) with textLength={TextLength}, offsetTicks={OffsetTicks}, durationMs={DurationMs}",
+                    e.Result.Text.Length,
+                    e.Result.OffsetInTicks,
+                    e.Result.Duration.TotalMilliseconds);
                 channel.Writer.TryWrite(new TranscriptionEvent
                 {
                     Text = e.Result.Text,
@@ -76,7 +80,11 @@ public sealed class AzureSpeechTranscriptionService(
             if (e.Result.Reason == ResultReason.RecognizedSpeech &&
                 !string.IsNullOrEmpty(e.Result.Text))
             {
-                logger.LogInformation("Speech recognized (final): \"{Text}\"", e.Result.Text.Length > 80 ? e.Result.Text[..80] + "…" : e.Result.Text);
+                logger.LogInformation(
+                    "Speech recognized (final) with textLength={TextLength}, offsetTicks={OffsetTicks}, durationMs={DurationMs}",
+                    e.Result.Text.Length,
+                    e.Result.OffsetInTicks,
+                    e.Result.Duration.TotalMilliseconds);
                 channel.Writer.TryWrite(new TranscriptionEvent
                 {
                     Text = e.Result.Text,

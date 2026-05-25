@@ -54,8 +54,8 @@ public sealed partial class TemplateValidationService : ITemplateValidationServi
         if (localErrors.Count > 0)
         {
             _logger.LogWarning(
-                "Template '{TemplateName}' failed local content safety validation with {ErrorCount} error(s)",
-                template.Name, localErrors.Count);
+                "Template failed local content safety validation with {ErrorCount} error(s)",
+                localErrors.Count);
             return TemplateValidationResult.Failure(localErrors);
         }
 
@@ -64,8 +64,8 @@ public sealed partial class TemplateValidationService : ITemplateValidationServi
         if (foundryErrors.Count > 0)
         {
             _logger.LogWarning(
-                "Template '{TemplateName}' failed Foundry validation with {ErrorCount} error(s)",
-                template.Name, foundryErrors.Count);
+                "Template failed Foundry validation with {ErrorCount} error(s)",
+                foundryErrors.Count);
             return TemplateValidationResult.Failure(foundryErrors);
         }
 
@@ -134,7 +134,7 @@ public sealed partial class TemplateValidationService : ITemplateValidationServi
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(ex, "Foundry validation failed for template '{TemplateName}'", template.Name);
+            _logger.LogWarning(ex, "Foundry validation failed for template");
             errors.Add($"Content safety validation failed: {ex.Message}");
         }
 

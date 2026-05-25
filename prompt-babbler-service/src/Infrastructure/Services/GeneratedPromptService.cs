@@ -58,7 +58,7 @@ public sealed class GeneratedPromptService : IGeneratedPromptService
         var babble = await _babbleRepository.GetByIdAsync(userId, babbleId, cancellationToken);
         if (babble is null)
         {
-            _logger.LogWarning("Babble {BabbleId} not found for user {UserId}", babbleId, userId);
+            _logger.LogWarning("Babble not found for user during prompt operation");
             throw new InvalidOperationException($"Babble '{babbleId}' not found for user '{userId}'.");
         }
     }

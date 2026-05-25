@@ -51,7 +51,7 @@ public sealed class UserService : IUserService
             UpdatedAt = now,
         };
 
-        _logger.LogInformation("Creating default user profile for user {UserId}", userId);
+        _logger.LogInformation("Creating default user profile");
         return await _userRepository.UpsertAsync(profile, cancellationToken);
     }
 
@@ -75,7 +75,7 @@ public sealed class UserService : IUserService
                 UpdatedAt = now,
             };
 
-            _logger.LogInformation("Auto-creating user profile during settings update for user {UserId}", userId);
+            _logger.LogInformation("Auto-creating user profile during settings update");
             return await _userRepository.UpsertAsync(profile, cancellationToken);
         }
 
@@ -85,7 +85,7 @@ public sealed class UserService : IUserService
             UpdatedAt = DateTimeOffset.UtcNow,
         };
 
-        _logger.LogInformation("Updated settings for user {UserId}", userId);
+        _logger.LogInformation("Updated user settings");
         return await _userRepository.UpsertAsync(updated, cancellationToken);
     }
 
@@ -112,7 +112,7 @@ public sealed class UserService : IUserService
                 UpdatedAt = now,
             };
 
-            _logger.LogInformation("Auto-creating user profile during profile update for user {UserId}", userId);
+            _logger.LogInformation("Auto-creating user profile during profile update");
             return await _userRepository.UpsertAsync(profile, cancellationToken);
         }
 
@@ -123,7 +123,7 @@ public sealed class UserService : IUserService
             UpdatedAt = DateTimeOffset.UtcNow,
         };
 
-        _logger.LogInformation("Updated profile for user {UserId}", userId);
+        _logger.LogInformation("Updated user profile");
         return await _userRepository.UpsertAsync(updated, cancellationToken);
     }
 }

@@ -84,3 +84,4 @@ bicep lint ./infra/main.bicep
 | Commits | Conventional Commits format |
 | **Test categories** | **Every MSTest class must have `[TestCategory("Unit")]` or `[TestCategory("Integration")]`** |
 | **Sealed classes** | **All C# classes and records must be `sealed` unless designed for inheritance** |
+| **Logging security** | **Never log raw transcription or access-code values. Log metadata only, and keep central log sanitization enabled.** |

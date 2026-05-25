@@ -143,7 +143,7 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
             new PartitionKey(template.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Created prompt template {TemplateId} for user {UserId}", template.Id, template.UserId);
+        _logger.LogInformation("Created prompt template in Cosmos DB");
 
         return response.Resource;
     }
@@ -161,7 +161,7 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
             new PartitionKey(template.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Updated prompt template {TemplateId} for user {UserId}", template.Id, template.UserId);
+        _logger.LogInformation("Updated prompt template in Cosmos DB");
 
         return response.Resource;
     }
@@ -185,7 +185,7 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
             new PartitionKey(userId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Deleted prompt template {TemplateId} for user {UserId}", templateId, userId);
+        _logger.LogInformation("Deleted prompt template from Cosmos DB");
     }
 
     public async Task UpsertAsync(PromptTemplate template, CancellationToken cancellationToken = default)
@@ -195,7 +195,7 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
             new PartitionKey(template.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogDebug("Upserted prompt template {TemplateId} for user {UserId}", template.Id, template.UserId);
+        _logger.LogDebug("Upserted prompt template in Cosmos DB");
     }
 
     private async Task<IReadOnlyList<PromptTemplate>> QueryByPartitionKeyAsync(string userId, CancellationToken cancellationToken)

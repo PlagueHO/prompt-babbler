@@ -27,7 +27,7 @@ public sealed class CosmosImportExportJobRepository : IImportExportJobRepository
             new PartitionKey(job.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Created {JobType} job {JobId} for user {UserId}", job.JobType, job.Id, job.UserId);
+        _logger.LogInformation("Created import/export job record");
         return response.Resource;
     }
 
@@ -55,7 +55,7 @@ public sealed class CosmosImportExportJobRepository : IImportExportJobRepository
             new PartitionKey(job.UserId),
             cancellationToken: cancellationToken);
 
-        _logger.LogDebug("Updated job {JobId} for user {UserId} to status {Status}", job.Id, job.UserId, job.Status);
+        _logger.LogDebug("Updated import/export job status to {Status}", job.Status);
         return response.Resource;
     }
 

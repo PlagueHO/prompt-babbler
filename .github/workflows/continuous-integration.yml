@@ -34,6 +34,72 @@ jobs:
     name: Lint Markdown
     uses: ./.github/workflows/lint-markdown.yml
 
+  validate-log-safety:
+    name: Validate Log Safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Verify logs do not include raw sensitive content
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          allowlist_file=".github/log-safety-allowlist.txt"
+
+          collect_matches() {
+            local query="$1"
+            if command -v rg >/dev/null 2>&1; then
+              rg -n --pcre2 "$query" prompt-babbler-service/src/Api prompt-babbler-service/src/Infrastructure || true
+              return
+            fi
+
+            git grep -nP "$query" -- prompt-babbler-service/src/Api prompt-babbler-service/src/Infrastructure || true
+          }
+
+          apply_allowlist() {
+            local matches="$1"
+            if [ -z "$matches" ] || [ ! -f "$allowlist_file" ]; then
+              printf '%s' "$matches"
+              return
+            fi
+
+            local filtered="$matches"
+            while IFS= read -r pattern; do
+              if [ -z "$pattern" ] || [[ "$pattern" =~ ^[[:space:]]*# ]]; then
+                continue
+              fi
+
+              filtered="$(printf '%s\n' "$filtered" | grep -Ev "$pattern" || true)"
+            done < "$allowlist_file"
+
+            printf '%s' "$filtered"
+          }
+
+          fail_on_matches() {
+            local message="$1"
+            local matches="$2"
+            if [ -n "$matches" ]; then
+              echo "$message"
+              echo "$matches"
+              exit 1
+            fi
+          }
+
+          template_matches="$(collect_matches 'Log(?:Trace|Debug|Information|Warning|Error|Critical)\([^\n]*\{(?:Text|Transcript|Transcription|AccessCode|Access_Code)\}')"
+          payload_matches="$(collect_matches 'Log(?:Trace|Debug|Information|Warning|Error|Critical)\([^\n]*(?:Result\.Text(?!\.Length)|evt\.Text(?!\.Length)|providedCode)')"
+
+          fail_on_matches \
+            "Unsafe log template placeholder detected. Do not log raw transcription text or access code values." \
+            "$(apply_allowlist "$template_matches")"
+
+          fail_on_matches \
+            "Unsafe log payload detected. Log metadata (for example text length) instead of raw values." \
+            "$(apply_allowlist "$payload_matches")"
+
+          echo "Log safety checks passed."
+
   lint-and-publish-bicep:
     name: Lint and Publish Bicep
     uses: ./.github/workflows/lint-and-publish-bicep.yml

@@ -20,6 +20,7 @@ export default defineConfig({
       { text: 'Quickstart (Azure)', link: '/quickstart-azure' },
       { text: 'Architecture', link: '/architecture' },
       { text: 'API', link: '/api' },
+      { text: 'Security', link: '/security/security-patterns' },
     ],
 
     sidebar: [
@@ -47,6 +48,7 @@ export default defineConfig({
           { text: 'Architecture', link: '/architecture' },
           { text: 'API Reference', link: '/api' },
           { text: 'Authentication', link: '/authentication' },
+          { text: 'Security Patterns', link: '/security/security-patterns' },
           { text: 'CI/CD', link: '/cicd' },
           { text: 'MCP Server', link: '/mcp-server' },
           { text: 'Testing', link: '/testing' },

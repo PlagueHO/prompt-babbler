@@ -42,12 +42,12 @@ public sealed class PromptTemplateService : IPromptTemplateService
         if (forceRefresh)
         {
             _cache.Remove(cacheKey);
-            _logger.LogDebug("Force refresh: cleared cache for user {UserId}", effectiveUserId);
+            _logger.LogDebug("Force refresh: cleared template cache");
         }
 
         if (_cache.TryGetValue(cacheKey, out IReadOnlyList<PromptTemplate>? cached) && cached is not null)
         {
-            _logger.LogDebug("Returning cached templates for user {UserId} ({Count} templates)", effectiveUserId, cached.Count);
+            _logger.LogDebug("Returning cached templates ({Count} templates)", cached.Count);
             return cached;
         }
 
@@ -63,7 +63,7 @@ public sealed class PromptTemplateService : IPromptTemplateService
             SlidingExpiration = _cacheDuration,
         });
 
-        _logger.LogDebug("Cached {Count} templates for user {UserId}", merged.Count, effectiveUserId);
+        _logger.LogDebug("Cached {Count} templates", merged.Count);
 
         return merged;
     }
@@ -134,7 +134,7 @@ public sealed class PromptTemplateService : IPromptTemplateService
     private void InvalidateCache(string userId)
     {
         _cache.Remove(GetCacheKey(userId));
-        _logger.LogDebug("Invalidated template cache for user {UserId}", userId);
+        _logger.LogDebug("Invalidated template cache");
     }
 
     private static string GetCacheKey(string userId) => $"templates:{userId}";

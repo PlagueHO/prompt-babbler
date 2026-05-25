@@ -7,8 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using PromptBabbler.ServiceDefaults.Logging;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -35,6 +37,7 @@ public static class Extensions
         {
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
+            logging.AddProcessor(new SanitizingLogRecordProcessor());
         });
 
         builder.Services.AddOpenTelemetry()

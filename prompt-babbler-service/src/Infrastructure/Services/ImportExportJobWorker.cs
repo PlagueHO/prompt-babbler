@@ -38,7 +38,7 @@ public sealed class ImportExportJobWorker : BackgroundService
 
                 if (job is null)
                 {
-                    _logger.LogWarning("Queued job {JobId} for user {UserId} was not found.", queueItem.JobId, queueItem.UserId);
+                    _logger.LogWarning("Queued import/export job was not found");
                     continue;
                 }
 
@@ -55,7 +55,7 @@ public sealed class ImportExportJobWorker : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Import/export job {JobId} failed for user {UserId}", job.Id, job.UserId);
+                    _logger.LogError(ex, "Import/export job failed");
                     var failed = job with
                     {
                         Status = JobStatus.Failed,

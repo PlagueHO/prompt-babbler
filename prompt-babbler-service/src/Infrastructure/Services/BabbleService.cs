@@ -84,7 +84,7 @@ public sealed class BabbleService : IBabbleService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to generate embedding for babble {BabbleId}. Saving without updated vector.", babble.Id);
+            _logger.LogWarning(ex, "Failed to generate embedding; saving without updated vector");
         }
 
         return await _babbleRepository.UpdateAsync(babbleToSave, cancellationToken);
@@ -99,7 +99,7 @@ public sealed class BabbleService : IBabbleService
     {
         // Cascade delete: remove all generated prompts for this babble first
         await _generatedPromptRepository.DeleteByBabbleAsync(babbleId, cancellationToken);
-        _logger.LogInformation("Cascade deleted generated prompts for babble {BabbleId}", babbleId);
+        _logger.LogInformation("Cascade deleted generated prompts for babble");
 
         await _babbleRepository.DeleteAsync(userId, babbleId, cancellationToken);
     }
@@ -144,7 +144,7 @@ public sealed class BabbleService : IBabbleService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to generate embedding for babble {BabbleId}. {WarningSuffix}", babble.Id, warningSuffix);
+            _logger.LogWarning(ex, "Failed to generate embedding while processing babble");
             return babble;
         }
     }
