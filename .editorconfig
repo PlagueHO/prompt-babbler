@@ -1,20 +1,21 @@
 root = true
 
-[*.{ts,tsx,js,jsx,json,jsonc,yml,yaml,md,css,scss,bicep,bicepparam}]
+[*]
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
+
+[*.{ts,tsx,js,jsx,json,yml,yaml,md}]
 indent_style = space
 indent_size = 2
 
-[*.cs]
+[*.{cs,csproj,sln,slnx,props,targets,ps1,psm1,bicep,bicepparam}]
 indent_style = space
 indent_size = 4
 
-[*.ps1]
-indent_style = space
-indent_size = 4
+[*.{sln,slnx,ps1,bat}]
+end_of_line = crlf
 
 [*.md]
 trim_trailing_whitespace = false
