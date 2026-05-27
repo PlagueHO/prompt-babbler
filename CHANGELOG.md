@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-05-27
+
+### Added
+
+- Redesign the app header theme toggle
+- Add dedicated CI workflows for backend and frontend validation
+
+### Changed
+
+- Simplify and standardize middleware logging messages for clearer diagnostics
+- Expand the project documentation with CI/CD, MCP server, and testing guidance
+- Refresh the Code of Conduct and clean up redundant code structure
+
+### Security
+
+- Add CodeQL analysis workflow configuration
+
+### Dependencies
+
+- Bump frontend Vite, React type definitions, testing, ESLint, React Hook Form, and OpenTelemetry packages
+- Bump `Microsoft.Azure.Cosmos` from 3.59.0 to 3.60.0
+- Bump `Microsoft.Agents.AI` from 1.5.0 to 1.6.2
+- Bump the Aspire package group
+- Bump `Microsoft.CognitiveServices.Speech` from 1.49.1 to 1.50.0
+- Bump `Microsoft.Extensions.AI.OpenAI` from 10.5.2 to 10.6.0
+- Bump `Microsoft.AspNetCore.Authentication.JwtBearer` from 10.0.7 to 10.0.8
+- Bump `System.Security.Cryptography.Xml` from 10.0.7 to 10.0.8
+- Bump `JsonSchema.Net` from 9.2.0 to 9.2.1
+- Bump `coverlet.collector` and related test dependencies
+- Bump `actions/checkout` from 4 to 6
+
 ## [1.6.0] - 2026-05-18
 
 ### Added
