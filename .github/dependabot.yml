@@ -6,8 +6,9 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
     commit-message:
       prefix: "ci"
     labels:
@@ -22,8 +23,9 @@ updates:
   - package-ecosystem: nuget
     directory: /prompt-babbler-service
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
     commit-message:
       prefix: "deps(nuget)"
     labels:
@@ -51,22 +53,14 @@ updates:
   - package-ecosystem: npm
     directory: /prompt-babbler-app
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
     commit-message:
       prefix: "deps(npm)"
     labels:
       - dependencies
       - npm
-    ignore:
-      # Transitive deps from shadcn CLI -> @modelcontextprotocol/sdk.
-      # These will update naturally when shadcn is updated directly.
-      - dependency-name: "hono"
-      - dependency-name: "@hono/node-server"
-      # Transitive dep from tailwindcss/vite; updated via tailwind group below.
-      - dependency-name: "postcss"
-      # Transitive dep from @opentelemetry/* packages; updated via otel updates.
-      - dependency-name: "protobufjs"
     groups:
       react:
         patterns:
@@ -99,10 +93,58 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
     commit-message:
       prefix: "deps(npm)"
     labels:
       - dependencies
       - npm
+
+  # npm/pnpm (docs site)
+  - package-ecosystem: npm
+    directory: /docs
+    schedule:
+      interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "deps(npm)"
+    labels:
+      - dependencies
+      - npm
+
+  # Docker images (.NET backend)
+  - package-ecosystem: docker
+    directory: /prompt-babbler-service/src/Api
+    schedule:
+      interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "deps(docker)"
+    labels:
+      - dependencies
+      - docker
+    groups:
+      docker-images:
+        patterns:
+          - "*"
+
+  # Docker images (MCP server)
+  - package-ecosystem: docker
+    directory: /prompt-babbler-service/src/McpServer
+    schedule:
+      interval: daily
+    versioning-strategy: increase
+    open-pull-requests-limit: 20
+    commit-message:
+      prefix: "deps(docker)"
+    labels:
+      - dependencies
+      - docker
+    groups:
+      docker-images:
+        patterns:
+          - "*"

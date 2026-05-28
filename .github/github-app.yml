@@ -1,0 +1,57 @@
+instructions: Use `aspire run` to start the application. Use aspire MCP server tools to select AppHost and open `frontend` resource.
+scripts:
+- name: 'app: dev'
+  command: pnpm --dir prompt-babbler-app dev
+- name: 'app: install'
+  command: pnpm --dir prompt-babbler-app install
+- name: 'app: build'
+  command: pnpm --dir prompt-babbler-app build
+- name: 'app: lint'
+  command: pnpm --dir prompt-babbler-app lint
+- name: 'app: lint (fix)'
+  command: pnpm --dir prompt-babbler-app lint --fix
+- name: 'app: test'
+  command: pnpm --dir prompt-babbler-app test
+- name: 'app: test (watch)'
+  command: pnpm --dir prompt-babbler-app test:watch
+- name: 'app: test (ui)'
+  command: pnpm --dir prompt-babbler-app test:ui
+- name: 'app: test (accessibility)'
+  command: pnpm --dir prompt-babbler-app test -- -t accessibility
+- name: 'aspire: run'
+  command: aspire run
+- name: 'service: build'
+  command: dotnet build prompt-babbler-service\PromptBabbler.slnx
+- name: 'service: test'
+  command: dotnet test --solution prompt-babbler-service\PromptBabbler.slnx --no-build
+- name: 'service: test (watch)'
+  command: dotnet watch test --solution prompt-babbler-service\PromptBabbler.slnx
+- name: 'service: clean'
+  command: dotnet clean prompt-babbler-service\PromptBabbler.slnx
+- name: 'service: restore'
+  command: dotnet restore prompt-babbler-service\PromptBabbler.slnx
+- name: 'service: format'
+  command: dotnet format prompt-babbler-service\PromptBabbler.slnx
+- name: 'service: format (verify)'
+  command: dotnet format prompt-babbler-service\PromptBabbler.slnx --verify-no-changes
+- name: 'service: test (unit)'
+  command: pwsh -NoProfile -Command "dotnet test --solution PromptBabbler.slnx --filter TestCategory=Unit --configuration Release --no-restore --results-directory ./TestResults --coverage --coverage-output-format cobertura --report-trx; if ($LASTEXITCODE -eq 8) { exit 0 } else { exit $LASTEXITCODE }"
+- name: 'service: test (integration)'
+  command: dotnet test --solution prompt-babbler-service\PromptBabbler.slnx --filter TestCategory=Integration --configuration Release --no-restore --results-directory ./TestResults
+- name: 'service: test (integration - Api)'
+  command: dotnet test --project prompt-babbler-service\tests\integration\Api.IntegrationTests\PromptBabbler.Api.IntegrationTests.csproj --filter TestCategory=Integration --configuration Release --no-restore --results-directory ./TestResults
+- name: 'service: test (integration - Infrastructure)'
+  command: dotnet test --project prompt-babbler-service\tests\integration\Infrastructure.IntegrationTests\PromptBabbler.Infrastructure.IntegrationTests.csproj --filter TestCategory=Integration --configuration Release --no-restore --results-directory ./TestResults
+- name: 'service: test (integration - Orchestration)'
+  command: dotnet test --project prompt-babbler-service\tests\integration\Orchestration.IntegrationTests\PromptBabbler.Orchestration.IntegrationTests.csproj --filter TestCategory=Integration --configuration Release --no-restore --results-directory ./TestResults
+- name: 'service: code coverage (report)'
+  command: reportgenerator -reports:prompt-babbler-service\TestResults\**\*.cobertura.xml -targetdir:prompt-babbler-service\TestResults\CoverageReport "-reporttypes:Html;MarkdownSummaryGithub;" -assemblyfilters:+PromptBabbler.*
+- name: 'infra: build (bicep)'
+  command: pwsh -NoProfile -Command "Get-ChildItem -Path infra -Recurse -Filter '*.bicep' | ForEach-Object { Write-Host \"Building $($_.FullName)...\"; az bicep build --file $($_.FullName) }"
+- name: 'markdown: lint'
+  command: pnpm lint:md
+- name: 'markdown: lint (fix)'
+  command: pnpm lint:md:fix
+automation:
+  auto_issue_session: true
+  remote_control: true
