@@ -29,6 +29,53 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return undefined;
+          }
+
+          if (
+            id.includes('/react/') ||
+            id.includes('/react-dom/') ||
+            id.includes('/react-router/')
+          ) {
+            return 'react';
+          }
+
+          if (id.includes('/@azure/msal-browser/') || id.includes('/@azure/msal-react/')) {
+            return 'auth';
+          }
+
+          if (id.includes('/@opentelemetry/')) {
+            return 'telemetry';
+          }
+
+          if (
+            id.includes('/react-hook-form/') ||
+            id.includes('/@hookform/resolvers/') ||
+            id.includes('/zod/')
+          ) {
+            return 'forms';
+          }
+
+          if (
+            id.includes('/radix-ui/') ||
+            id.includes('/@radix-ui/') ||
+            id.includes('/lucide-react/') ||
+            id.includes('/cmdk/') ||
+            id.includes('/sonner/')
+          ) {
+            return 'ui';
+          }
+
+          return 'vendor';
+        },
+      },
+    },
+  },
   define: {
     __API_BASE_URL__: JSON.stringify(apiBaseUrl),
     __MSAL_CLIENT_ID__: JSON.stringify(msalClientId),
