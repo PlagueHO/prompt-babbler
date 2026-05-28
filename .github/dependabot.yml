@@ -42,6 +42,11 @@ updates:
       - "dependencies"
       - "devcontainer"
     rebase-strategy: "auto"
+    # Dependabot groups all devcontainer-related dependency updates into one PR.
+    groups:
+      devcontainer-dependencies:
+        patterns:
+          - "*"
 
   # Docker dependencies for containerization
   - package-ecosystem: "docker"
