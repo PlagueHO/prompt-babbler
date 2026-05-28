@@ -28,7 +28,7 @@
     // GitHub CLI
     "ghcr.io/devcontainers/features/github-cli:1": {},
     // PowerShell — used by workspace tasks
-    "ghcr.io/devcontainers/features/powershell:1": {}
+    "ghcr.io/devcontainers/features/powershell:2": {}
   },
 
   // ── Codespaces / machine settings ─────────────────────────────────
