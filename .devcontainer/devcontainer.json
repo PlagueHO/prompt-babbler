@@ -14,11 +14,11 @@
       "installUsingApt": false
     },
     // Node.js 22 LTS — required for the frontend app
-    "ghcr.io/devcontainers/features/node:1": {
+    "ghcr.io/devcontainers/features/node:2": {
       "version": "22"
     },
     // Docker-in-Docker — required for .NET Aspire orchestration
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+    "ghcr.io/devcontainers/features/docker-in-docker:3": {
       "dockerDashComposeVersion": "v2"
     },
     // Azure CLI
@@ -28,7 +28,7 @@
     // GitHub CLI
     "ghcr.io/devcontainers/features/github-cli:1": {},
     // PowerShell — used by workspace tasks
-    "ghcr.io/devcontainers/features/powershell:1": {}
+    "ghcr.io/devcontainers/features/powershell:2": {}
   },
 
   // ── Codespaces / machine settings ─────────────────────────────────
