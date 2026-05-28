@@ -1,3 +1,5 @@
 allowBuilds:
   msw: false
   protobufjs: false
+minimumReleaseAgeExclude:
+  - shadcn@4.8.2
