@@ -1,43 +1,138 @@
 # yaml-language-server: $schema=https://json.schemastore.org/dependabot-2.0.json
-version: 2
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for more information:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# https://containers.dev/guide/dependabot
 
+version: 2
 updates:
-  # GitHub Actions
-  - package-ecosystem: github-actions
-    directory: /
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: daily
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
     commit-message:
-      prefix: "ci"
+      prefix: "deps"
     labels:
-      - dependencies
-      - github-actions
+      - "dependencies"
+      - "github-actions"
+      - "ci-cd"
+    rebase-strategy: "auto"
     groups:
-      github-actions:
+      actions-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # NuGet (.NET backend)
-  - package-ecosystem: nuget
-    directory: /prompt-babbler-service
+  # DevContainer features and configuration
+  - package-ecosystem: "devcontainers"
+    directory: "/"
     schedule:
-      interval: daily
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
     commit-message:
-      prefix: "deps(nuget)"
+      prefix: "deps"
     labels:
-      - dependencies
-      - nuget
+      - "dependencies"
+      - "devcontainer"
+    rebase-strategy: "auto"
+
+  # Docker dependencies for containerization
+  - package-ecosystem: "docker"
+    directory: "/.devcontainer"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "docker"
+    rebase-strategy: "auto"
+
+  # Docker dependencies for containerization of API service
+  - package-ecosystem: "docker"
+    directory: "/prompt-babbler-service/src/Api"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "docker"
+    rebase-strategy: "auto"
+
+  # Docker dependencies for containerization of MCP server
+  - package-ecosystem: "docker"
+    directory: "/prompt-babbler-service/src/McpServer"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "docker"
+    rebase-strategy: "auto"
+
+  # .NET SDK and MSBuild SDK versions (global.json)
+  - package-ecosystem: "dotnet-sdk"
+    directory: "/prompt-babbler-service"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "dotnet-sdk"
+      - ".net"
+    rebase-strategy: "auto"
+
+  # .NET 10+ dependencies (backend services)
+  - package-ecosystem: "nuget"
+    directory: "/prompt-babbler-service"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "nuget"
+      - ".net"
+    rebase-strategy: "auto"
     groups:
-      aspire:
+      aspire-packages:
         patterns:
           - "Aspire.*"
+        update-types:
+          - "minor"
+          - "patch"
+      microsoft-packages:
+        patterns:
+          - "Microsoft.*"
+        update-types:
+          - "minor"
+          - "patch"
       opentelemetry:
         patterns:
           - "OpenTelemetry.*"
+        update-types:
+          - "minor"
+          - "patch"
       testing:
         patterns:
           - "Microsoft.AspNetCore.Mvc.Testing"
@@ -45,106 +140,130 @@ updates:
           - "FluentAssertions"
           - "NSubstitute"
           - "coverlet.*"
+        update-types:
+          - "minor"
+          - "patch"
       azure:
         patterns:
           - "Azure.*"
+        update-types:
+          - "minor"
+          - "patch"
+    allow:
+      - dependency-type: "all"
 
-  # npm/pnpm (React frontend)
-  - package-ecosystem: npm
-    directory: /prompt-babbler-app
+  # NPM dependencies for repository tooling
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: daily
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
     commit-message:
-      prefix: "deps(npm)"
+      prefix: "deps"
     labels:
-      - dependencies
-      - npm
+      - "dependencies"
+      - "npm"
+      - "tooling"
+    rebase-strategy: "auto"
+    allow:
+      - dependency-type: "all"
+
+  # NPM dependencies for docs site
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "docs"
+    rebase-strategy: "auto"
+    allow:
+      - dependency-type: "all"
+
+  # NPM dependencies for React app
+  - package-ecosystem: "npm"
+    directory: "/prompt-babbler-app"
+    schedule:
+      interval: "weekly"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "react"
+      - "frontend"
+    rebase-strategy: "auto"
     groups:
-      react:
+      react-ecosystem:
         patterns:
           - "react"
           - "react-dom"
           - "@types/react"
           - "@types/react-dom"
-      testing:
+        update-types:
+          - "minor"
+          - "patch"
+      testing-libraries:
         patterns:
           - "vitest"
           - "@testing-library/*"
           - "@vitest/*"
           - "jsdom"
-      tailwind:
+        update-types:
+          - "minor"
+          - "patch"
+      vite-build:
         patterns:
-          - "tailwindcss"
+          - "vite"
+          - "@vitejs/*"
           - "@tailwindcss/*"
+          - "tailwindcss"
+        update-types:
+          - "minor"
+          - "patch"
       eslint:
         patterns:
           - "eslint"
           - "eslint-*"
           - "@eslint/*"
           - "typescript-eslint"
-      vite:
+        update-types:
+          - "minor"
+          - "patch"
+      typescript-types:
         patterns:
-          - "vite"
-          - "@vitejs/*"
-
-  # npm/pnpm (root - markdown linting, etc.)
-  - package-ecosystem: npm
-    directory: /
-    schedule:
-      interval: daily
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
-    commit-message:
-      prefix: "deps(npm)"
-    labels:
-      - dependencies
-      - npm
-
-  # npm/pnpm (docs site)
-  - package-ecosystem: npm
-    directory: /docs
-    schedule:
-      interval: daily
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
-    commit-message:
-      prefix: "deps(npm)"
-    labels:
-      - dependencies
-      - npm
-
-  # Docker images (.NET backend)
-  - package-ecosystem: docker
-    directory: /prompt-babbler-service/src/Api
-    schedule:
-      interval: daily
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
-    commit-message:
-      prefix: "deps(docker)"
-    labels:
-      - dependencies
-      - docker
-    groups:
-      docker-images:
+          - "typescript"
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+      ui-utilities:
         patterns:
-          - "*"
+          - "date-fns"
+          - "clsx"
+          - "class-variance-authority"
+          - "tailwind-merge"
+        update-types:
+          - "minor"
+          - "patch"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      # Ignore major React updates until validated for this app
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
 
-  # Docker images (MCP server)
-  - package-ecosystem: docker
-    directory: /prompt-babbler-service/src/McpServer
-    schedule:
-      interval: daily
-    versioning-strategy: increase
-    open-pull-requests-limit: 20
-    commit-message:
-      prefix: "deps(docker)"
-    labels:
-      - dependencies
-      - docker
-    groups:
-      docker-images:
-        patterns:
-          - "*"
+  # Azure Bicep modules (infrastructure as code)
+  # Note: Dependabot doesn't natively support Bicep registries
+  # This is a placeholder for future support or custom tooling
+  # For now, use manual checks via update-avm-modules skill
