@@ -54,6 +54,15 @@ pnpm lint:md
 bicep lint ./infra/main.bicep
 ```
 
+## Modifying a Frontend Component — Checklist
+
+1. Implement the change in `src/components/` or `src/hooks/`
+1. Update or add shared types in `src/types/index.ts` if needed
+1. Add or update tests in `tests/` mirroring the `src/` structure
+1. Run `pnpm lint` and `pnpm test` until both pass
+1. Use `aspire run` to verify visually when the change is UI-facing
+1. Commit with a conventional commit message
+
 ## Modifying an API Endpoint — Checklist
 
 1. Add or update the domain model in `Domain/Models/`
