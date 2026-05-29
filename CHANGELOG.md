@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-05-29
+
+### Changed
+
+- Update Dependabot configuration for devcontainers and ecosystems
+- Add GitHub PR template and automation scripts
+- Enhance manual chunking in Vite build configuration
+- Update pnpm workspace configuration
+
+### Fixed
+
+- Fix missing newlines at end of file across multiple files
+
+### Dependencies
+
+- Bump `Microsoft.Agents.AI` and 7 other backend packages
+- Bump dotnet SDK in prompt-babbler-service
+- Bump `lucide-react` from 1.16.0 to 1.17.0
+- Bump devcontainer features: powershell (1.5.1 → 2.0.2), node (1.7.1 → 2.0.0), docker-in-docker
+
 ## [1.7.0] - 2026-05-27
 
 ### Added
