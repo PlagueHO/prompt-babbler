@@ -47,14 +47,14 @@ function BabbleBubbleCard({ babble, onTogglePin }: BabbleBubbleCardProps) {
       <Link to={`/babble/${babble.id}`} className="block">
         <Card
           className={cn(
-            'transition-colors hover:bg-accent/50',
+            'h-48 overflow-hidden transition-colors hover:bg-accent/50',
             babble.isPinned && 'border-primary/30 bg-primary/5',
           )}
         >
           <CardHeader className="pr-10">
-            <CardTitle className="text-base">{babble.title}</CardTitle>
+            <CardTitle className="line-clamp-1 text-base">{babble.title}</CardTitle>
             <div className="flex items-center gap-2 mt-1">
-              <TagList tags={babble.tags} className="flex-1" />
+              <TagList tags={babble.tags} className="flex-1 flex-nowrap overflow-hidden" />
               <CardDescription className="shrink-0">{dateStr}</CardDescription>
             </div>
           </CardHeader>
