@@ -61,7 +61,7 @@ builder.Services.AddControllers()
     });
 
 var tenantId = builder.Configuration["Azure:TenantId"];
-var aiFoundryConnStr = builder.Configuration.GetConnectionString("ai-foundry") ?? "";
+var aiFoundryConnStr = builder.Configuration.GetConnectionString("foundryProject") ?? "";
 var isAiConfigured = !string.IsNullOrWhiteSpace(aiFoundryConnStr);
 TokenCredential runtimeTokenCredential = builder.Environment.IsDevelopment()
     ? (!string.IsNullOrEmpty(tenantId)
@@ -80,7 +80,7 @@ if (isAiConfigured)
     // Azure AI Foundry supports. The older Azure.AI.Inference SDK only sends
     // api-version=2024-05-01-preview which Foundry has deprecated ("API version not supported").
     //
-    // The "ai-foundry" connection string points to the project endpoint
+    // The "foundryProject" connection string points to the project endpoint
     // (https://{resource}.services.ai.azure.com/api/projects/{name}), but
     // AzureOpenAIClient needs the account-level endpoint. Strip the /api/projects/... path.
     var aiEndpoint = "";
@@ -113,12 +113,12 @@ if (isAiConfigured)
     }
     else
     {
-        startupLogger.LogWarning("Unable to parse ai-foundry endpoint '{Endpoint}'. AI features will be unavailable.", aiEndpoint);
+        startupLogger.LogWarning("Unable to parse foundryProject endpoint '{Endpoint}'. AI features will be unavailable.", aiEndpoint);
     }
 }
 else
 {
-    startupLogger.LogWarning("ConnectionStrings:ai-foundry is not configured. AI features (prompt generation, title generation) will be unavailable.");
+    startupLogger.LogWarning("ConnectionStrings:foundryProject is not configured. AI features (prompt generation, title generation) will be unavailable.");
 }
 
 // Register TokenCredential for Azure Speech Service and any other Azure SDK clients.
@@ -158,7 +158,7 @@ builder.Services.AddInfrastructure(
 // Health checks for dependency monitoring
 builder.Services.AddHealthChecks()
     .AddCheck<CosmosDbHealthCheck>("cosmosdb", tags: ["ready"])
-    .AddCheck<AiFoundryHealthCheck>("ai-foundry", tags: ["ready"]);
+    .AddCheck<AiFoundryHealthCheck>("foundryProject", tags: ["ready"]);
 
 // Managed identity health check only runs in deployed environments
 if (!builder.Environment.IsDevelopment())

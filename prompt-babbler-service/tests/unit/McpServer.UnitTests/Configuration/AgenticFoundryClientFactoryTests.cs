@@ -25,8 +25,8 @@ public sealed class AgenticFoundryClientFactoryTests
             {
                 var factory = CreateFactory(new Dictionary<string, string?>
                 {
-                    ["Agentic:FoundryProjectEndpoint"] = ConfiguredEndpoint,
-                    ["ConnectionStrings:ai-foundry"] = $"Endpoint={ConnectionStringEndpoint};Credential=ignored",
+                    ["Agentic:foundryProjectEndpoint"] = ConfiguredEndpoint,
+                    ["ConnectionStrings:foundryProject"] = $"Endpoint={ConnectionStringEndpoint};Credential=ignored",
                 });
 
                 factory.ResolveProjectEndpoint().Should().Be(ConfiguredEndpoint);
@@ -43,7 +43,7 @@ public sealed class AgenticFoundryClientFactoryTests
             {
                 var factory = CreateFactory(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:ai-foundry"] = $"Endpoint={ConnectionStringEndpoint};Credential=ignored",
+                    ["ConnectionStrings:foundryProject"] = $"Endpoint={ConnectionStringEndpoint};Credential=ignored",
                 });
 
                 factory.ResolveProjectEndpoint().Should().Be(EnvironmentEndpoint);
@@ -60,7 +60,7 @@ public sealed class AgenticFoundryClientFactoryTests
             {
                 var factory = CreateFactory(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:ai-foundry"] = $"Endpoint={ConnectionStringEndpoint};Credential=ignored",
+                    ["ConnectionStrings:foundryProject"] = $"Endpoint={ConnectionStringEndpoint};Credential=ignored",
                 });
 
                 factory.ResolveProjectEndpoint().Should().Be(ConnectionStringEndpoint);
@@ -77,7 +77,7 @@ public sealed class AgenticFoundryClientFactoryTests
             {
                 var factory = CreateFactory(new Dictionary<string, string?>
                 {
-                    ["ConnectionStrings:ai-foundry"] = BareConnectionStringEndpoint,
+                    ["ConnectionStrings:foundryProject"] = BareConnectionStringEndpoint,
                 });
 
                 factory.ResolveProjectEndpoint().Should().Be(BareConnectionStringEndpoint);

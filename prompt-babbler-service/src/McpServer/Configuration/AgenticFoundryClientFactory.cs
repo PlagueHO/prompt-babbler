@@ -10,11 +10,11 @@ public sealed class AgenticFoundryClientFactory(
     IHostEnvironment hostEnvironment) : IAgenticFoundryClientFactory
 {
     private const string MissingEndpointMessage =
-        "Agentic Foundry project endpoint is not configured. Configure Agentic:FoundryProjectEndpoint, AZURE_AI_PROJECT_ENDPOINT, or ConnectionStrings:ai-foundry.";
+        "Agentic Foundry project endpoint is not configured. Configure Agentic:foundryProjectEndpoint, AZURE_AI_PROJECT_ENDPOINT, or ConnectionStrings:foundryProject.";
 
     public string? ResolveProjectEndpoint()
     {
-        var configuredEndpoint = configuration["Agentic:FoundryProjectEndpoint"];
+        var configuredEndpoint = configuration["Agentic:foundryProjectEndpoint"];
         if (!string.IsNullOrWhiteSpace(configuredEndpoint))
         {
             return configuredEndpoint.Trim().TrimEnd('/');
@@ -26,7 +26,7 @@ public sealed class AgenticFoundryClientFactory(
             return environmentEndpoint.Trim().TrimEnd('/');
         }
 
-        var aiFoundryConnectionString = configuration.GetConnectionString("ai-foundry") ?? string.Empty;
+        var aiFoundryConnectionString = configuration.GetConnectionString("foundryProject") ?? string.Empty;
         foreach (var part in aiFoundryConnectionString.Split(';', StringSplitOptions.RemoveEmptyEntries))
         {
             var trimmed = part.Trim();

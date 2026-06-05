@@ -184,7 +184,7 @@ public sealed class AzureSpeechTranscriptionService(
         {
             throw new InvalidOperationException(
                 "AI Services endpoint is required for Speech Service authentication. " +
-                "Ensure the AI Foundry connection string (ConnectionStrings:ai-foundry) is configured.");
+                "Ensure the AI Foundry connection string (ConnectionStrings:foundryProject) is configured.");
         }
 
         // Get a fresh AAD token from DefaultAzureCredential for the Cognitive Services scope.

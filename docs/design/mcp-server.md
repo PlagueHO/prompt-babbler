@@ -239,12 +239,12 @@ Updates an existing user-defined template. Accepts the same parameters as `creat
 Runs a Reason → Act → Observe loop using Microsoft Agent Framework backed by Azure AI Foundry. The agent autonomously decides which babble and template operations to call, reasons over the results, and returns a final answer together with a trace of the steps it took.
 
 > [!NOTE]
-> This tool requires a Foundry project connection. When running via `aspire run`, the `ai-foundry` connection string is injected automatically. When running standalone, set `Agentic:FoundryProjectEndpoint` to your Azure AI Foundry project endpoint URL.
+> This tool requires a Foundry project connection. When running via `aspire run`, the `foundryProject` connection string is injected automatically. When running standalone, set `Agentic:foundryProjectEndpoint` to your Azure AI Foundry project endpoint URL.
 
 **Prerequisites:**
 
 * An Azure AI Foundry project with a deployed chat model (configured via `MicrosoftFoundry:chatModelName`).
-* The `ai-foundry` Aspire connection string **or** `Agentic:FoundryProjectEndpoint` set in configuration.
+* The `foundryProject` Aspire connection string **or** `Agentic:foundryProjectEndpoint` set in configuration.
 * Managed Identity or DefaultAzureCredential access to the Foundry project.
 
 | Parameter | Type | Required | Description |
@@ -360,6 +360,6 @@ dotnet user-secrets set "AccessControl:AccessCode" "your-local-access-code"
 | `AzureAd:TenantId` | Entra ID tenant ID | When `ClientId` is set |
 | `AzureAd:Instance` | Entra ID authority base URL (default: `https://login.microsoftonline.com/`) | No |
 | `AzureAd:ApiScope` | Scope used when acquiring OBO tokens for the downstream API | When `ClientId` is set |
-| `Agentic:FoundryProjectEndpoint` | Azure AI Foundry project endpoint URL — used when the `ai-foundry` Aspire connection string is not available (standalone runs) | When using `ask_prompt_babbler` outside Aspire |
+| `Agentic:foundryProjectEndpoint` | Azure AI Foundry project endpoint URL — used when the `foundryProject` Aspire connection string is not available (standalone runs) | When using `ask_prompt_babbler` outside Aspire |
 
 When neither `AccessControl:AccessCode` nor `AzureAd:ClientId` is set, the server runs in **anonymous mode** with no authentication.

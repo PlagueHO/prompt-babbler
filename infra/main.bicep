@@ -112,7 +112,7 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
 
 // --------- NETWORKING RESOURCES ---------
 // Virtual Network with subnets for Container Apps Environment and Private Endpoints
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.8.1' = {
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.9.0' = {
   name: 'virtual-network-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -201,7 +201,7 @@ module openAiPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' =
 }
 
 // --------- MONITORING RESOURCES ---------
-module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.15.0' = {
+module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.15.1' = {
   name: 'log-analytics-workspace-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -214,7 +214,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
   }
 }
 
-module applicationInsights 'br/public:avm/res/insights/component:0.7.1' = {
+module applicationInsights 'br/public:avm/res/insights/component:0.7.2' = {
   name: 'application-insights-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -339,7 +339,7 @@ module foundryRoleAssignments './core/security/role_foundry.bicep' = {
 
 // NOTE: The foundry private endpoint is deployed AFTER the foundryRoleAssignments module
 // completes to avoid a race condition where the account is still in "Accepted" state.
-module foundryPrivateEndpoint 'br/public:avm/res/network/private-endpoint:0.12.0' = {
+module foundryPrivateEndpoint 'br/public:avm/res/network/private-endpoint:0.12.1' = {
   name: 'foundry-private-endpoint-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -484,7 +484,7 @@ module babblesVectorContainer './cosmos-babbles-vector-container.bicep' = {
 }
 
 // --------- CONTAINER APPS ENVIRONMENT ---------
-module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.2' = {
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.3' = {
   name: 'container-apps-environment-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -567,7 +567,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
             value: 'Endpoint=${foundryService.outputs.endpoint}'
           }
           {
-            name: 'ConnectionStrings__ai-foundry'
+            name: 'ConnectionStrings__foundryProject'
             value: 'Endpoint=${foundryProjectEndpoint}'
           }
           {
@@ -742,7 +742,7 @@ module principalCosmosDbRoles './core/security/role_cosmosdb.bicep' = if (!empty
 }
 
 // --------- STATIC WEB APP (FRONTEND) ---------
-module staticWebApp 'br/public:avm/res/web/static-site:0.9.4' = {
+module staticWebApp 'br/public:avm/res/web/static-site:0.9.5' = {
   name: 'static-web-app-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [

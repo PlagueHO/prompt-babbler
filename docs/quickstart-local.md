@@ -92,9 +92,9 @@ git clone https://github.com/PlagueHO/prompt-babbler.git
 cd prompt-babbler
 ```
 
-## 2. Configure Azure credentials
+## 2. Set required Azure user secrets for local provisioning
 
-Aspire provisions a Microsoft Foundry resource automatically on first run. You need to authenticate and provide your subscription details via [dotnet user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) so they stay out of source control.
+Aspire provisions a Microsoft Foundry resource automatically on first run. Authenticate and provide subscription settings via [dotnet user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) so values stay out of source control.
 
 ```bash
 # Sign in to Azure CLI (use your tenant ID)
@@ -104,17 +104,23 @@ az login --tenant <your-tenant-id>
 az account show --query "{name:name, id:id, tenantId:tenantId}" -o table
 ```
 
-```bash
-cd prompt-babbler-service
+Set required AppHost user secrets:
 
-# Store Azure settings in user secrets (one-time setup)
-dotnet user-secrets set "Azure:SubscriptionId" "<your-subscription-id>" \
-  --project src/Orchestration/AppHost
-dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>" \
-  --project src/Orchestration/AppHost
+```bash
+cd prompt-babbler-service/src/Orchestration/AppHost
+dotnet user-secrets set "Azure:SubscriptionId" "<your-subscription-id>"
+dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>"
+dotnet user-secrets set "Azure:Location" "<azure-region>"
 ```
 
-> **Tip:** Find your subscription and tenant IDs with `az account show`. The Azure region and other non-sensitive settings are already configured in `launchSettings.json`.
+> [!TIP]
+> Get your subscription and tenant IDs with `az account show`. Region is already configured via AppHost launch settings. Common region values include `eastus2`, `australiaeast`, and `swedencentral`.
+
+Ensure both keys are set:
+
+* `Azure:SubscriptionId`
+* `Azure:TenantId`
+* `Azure:Location`
 
 ## 3. Run the app
 

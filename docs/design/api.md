@@ -534,7 +534,7 @@ The API reads the following configuration values:
 | Key | Description |
 |---|---|
 | `Speech:Region` | Azure Speech Service region. |
-| `ConnectionStrings:ai-foundry` | Azure OpenAI / AI Foundry connection string. |
+| `ConnectionStrings:foundryProject` | Azure OpenAI / AI Foundry connection string. |
 | `ConnectionStrings:cosmos` | Azure Cosmos DB connection string. |
 | `Azure:TenantId` | *(Optional)* Scopes `DefaultAzureCredential` to a specific tenant for local development. |
 | `PromptTemplates:CacheDurationMinutes` | Template cache TTL in minutes (default: `5`). |

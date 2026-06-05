@@ -5,9 +5,9 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Azure AI Foundry resources — host for account-level endpoints and project for model routing.
 // Azure:SubscriptionId and Azure:TenantId are REQUIRED — set via dotnet user-secrets (see QUICKSTART-LOCAL.md).
 // Azure:Location and Azure:CredentialSource are set in launchSettings.json.
-// See: https://aspire.dev/integrations/cloud/azure/azure-ai-foundry/azure-ai-foundry-host/
+// See: https://aspire.dev/integrations/cloud/azure/azure-foundryProject/azure-foundryProject-host/
 var foundry = builder.AddFoundry("foundry");
-var foundryProject = foundry.AddProject("ai-foundry");
+var foundryProject = foundry.AddProject("foundryProject");
 
 // Model deployment configuration — read from MicrosoftFoundry config section with sensible defaults.
 // These are NOT Aspire parameters — just configuration values for the deployment names.
