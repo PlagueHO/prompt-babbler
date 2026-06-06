@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-06-06
+
+### Changed
+
+- Update connection strings and package versions
+- Refresh BabbleBubbles styles and add `nuget.config`
+- Update the frontend component modification checklist
+
+### Dependencies
+
+- Bump `vite`
+- Bump the React ecosystem package group in the frontend
+- Bump the frontend testing libraries package group
+- Bump the Aspire package group
+- Bump the frontend ESLint package group
+- Bump the Microsoft package group
+- Bump `react-router` from 7.15.1 to 7.16.0 in the frontend
+- Bump the frontend testing package group
+
 ## [1.7.1] - 2026-05-29
 
 ### Changed
