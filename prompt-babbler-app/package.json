@@ -13,7 +13,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@azure/msal-browser": "^5.11.0",
+    "@azure/msal-browser": "^5.12.0",
     "@azure/msal-react": "^5.4.2",
     "@hookform/resolvers": "^5.4.0",
     "@opentelemetry/api": "^1.9.1",
