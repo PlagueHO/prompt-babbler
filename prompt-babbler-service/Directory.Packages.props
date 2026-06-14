@@ -48,6 +48,8 @@
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.9" />
     <!-- Transitive pin: patch GHSA-9mv3-2cwr-p262 (pulled in by Microsoft.AspNetCore.Mvc.Testing). -->
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="10.0.7" />
+    <!-- Transitive pin: patch GHSA-hv8m-jj95-wg3x (pulled in via Aspire Hosting dependency graph). -->
+    <PackageVersion Include="MessagePack" Version="2.5.301" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
   </ItemGroup>
 </Project>
