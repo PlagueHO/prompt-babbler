@@ -16,7 +16,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.1" />
     <!-- Azure / AI -->
-    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.4.3" />
+    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.4.5" />
     <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.4.3" />
     <PackageVersion Include="Azure.AI.Projects" Version="2.0.1" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
