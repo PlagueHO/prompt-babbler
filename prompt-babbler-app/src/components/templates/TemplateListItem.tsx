@@ -37,13 +37,13 @@ export function TemplateListItem({ template, onSelect }: TemplateListItemProps) 
           {template.isBuiltIn && <Badge variant="secondary">Built-in</Badge>}
         </div>
       </td>
-      <td className="w-full py-2 pr-4">
+      <td className="hidden w-full py-2 pr-4 sm:table-cell">
         <p className="line-clamp-2 text-xs text-muted-foreground">{template.description}</p>
       </td>
-      <td className="py-2 pr-4 whitespace-nowrap">
+      <td className="hidden py-2 pr-4 whitespace-nowrap sm:table-cell">
         <TagList tags={template.tags} />
       </td>
-      <td className="py-2 pr-2 whitespace-nowrap text-xs text-muted-foreground">
+      <td className="hidden py-2 pr-2 whitespace-nowrap text-xs text-muted-foreground sm:table-cell">
         {updatedAt}
       </td>
     </tr>

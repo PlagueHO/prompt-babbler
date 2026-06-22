@@ -266,19 +266,21 @@ export function RecordPage() {
           />
         )}
 
-        <div className="flex items-center gap-4 rounded-lg border px-4 py-3">
-          <RecordButton
-            isRecording={isRecording}
-            onStart={handleStart}
-            onStop={handleStop}
-          />
-          <RecordingIndicator
-            isRecording={isRecording}
-            duration={duration}
-            hasTranscription={!!(transcribedText || existingBabble?.text)}
-          />
+        <div className="flex flex-col gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="flex items-center gap-4">
+            <RecordButton
+              isRecording={isRecording}
+              onStart={handleStart}
+              onStop={handleStop}
+            />
+            <RecordingIndicator
+              isRecording={isRecording}
+              duration={duration}
+              hasTranscription={!!(transcribedText || existingBabble?.text)}
+            />
+          </div>
           {!isAppendMode && !isRecording && (
-            <>
+            <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">or</span>
               <Button
                 disabled={isUploading}
@@ -298,7 +300,7 @@ export function RecordPage() {
                 className="hidden"
                 onChange={(e) => void handleFileSelect(e)}
               />
-            </>
+            </div>
           )}
           <WaveformVisualizer
             analyserRef={analyserRef}
@@ -320,7 +322,7 @@ export function RecordPage() {
           <p className="text-sm text-destructive">{transcriptionError}</p>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             onClick={() => void handleSave()}
             disabled={!transcribedText.trim() || !transcriptionDone || isSaving}

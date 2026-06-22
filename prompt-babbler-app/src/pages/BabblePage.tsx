@@ -218,7 +218,7 @@ export function BabblePage() {
   return (
     <AuthGuard message="Sign in with your organizational account to view babbles.">
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             {isEditingTitle ? (
@@ -288,7 +288,7 @@ export function BabblePage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:shrink-0">
           <Button asChild size="sm">
             <Link to={`/record/${babble.id}`}>
               <Mic className="size-4" />
