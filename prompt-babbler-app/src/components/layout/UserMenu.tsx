@@ -58,7 +58,7 @@ function AuthenticatedUserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
+        <Button variant="ghost" size="sm" className="gap-2" aria-label={displayName || 'User menu'}>
           <span className="flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
             {getInitials(displayName)}
           </span>
@@ -103,6 +103,7 @@ function AnonymousUserMenu() {
           size="sm"
           className="gap-2 opacity-60"
           title="Entra ID SSO is not enabled. Running in anonymous single-user mode."
+          aria-label="Anonymous user menu"
         >
           <CircleUser className="size-5" />
           <span className="hidden text-sm sm:inline">Anonymous</span>

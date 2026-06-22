@@ -24,7 +24,7 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(
-              'inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              'inline-flex items-center gap-2 rounded-md px-3 py-3 sm:py-2 text-sm font-medium transition-colors',
               isActive
                 ? 'bg-accent text-accent-foreground'
                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
@@ -76,7 +76,7 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          className="sm:hidden"
+          className="h-11 w-11 sm:hidden"
           onClick={() => setMobileMenuOpen((open) => !open)}
           aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileMenuOpen}

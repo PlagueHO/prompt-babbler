@@ -288,7 +288,7 @@ export function BabblePage() {
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:shrink-0">
           <Button asChild size="sm">
             <Link to={`/record/${babble.id}`}>
               <Mic className="size-4" />
