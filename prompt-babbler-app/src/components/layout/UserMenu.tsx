@@ -62,7 +62,7 @@ function AuthenticatedUserMenu() {
           <span className="flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
             {getInitials(displayName)}
           </span>
-          <span className="max-w-[120px] truncate text-sm">{displayName}</span>
+          <span className="hidden max-w-[120px] truncate text-sm sm:inline">{displayName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -105,7 +105,7 @@ function AnonymousUserMenu() {
           title="Entra ID SSO is not enabled. Running in anonymous single-user mode."
         >
           <CircleUser className="size-5" />
-          <span className="text-sm">Anonymous</span>
+          <span className="hidden text-sm sm:inline">Anonymous</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

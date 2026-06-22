@@ -32,10 +32,10 @@ export function BabbleListItem({ babble, onTogglePin }: BabbleListItemProps) {
           {babble.title}
         </Link>
       </td>
-      <td className="w-full py-2 pr-4">
+      <td className="hidden w-full py-2 pr-4 sm:table-cell">
         <TagList tags={babble.tags} />
       </td>
-      <td className="py-2 pr-2 whitespace-nowrap text-xs text-muted-foreground">
+      <td className="hidden py-2 pr-2 whitespace-nowrap text-xs text-muted-foreground sm:table-cell">
         {dateStr}
       </td>
       <td className="py-2 pr-2">
