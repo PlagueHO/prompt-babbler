@@ -22,7 +22,7 @@ jobs:
     name: Lint Backend Service
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
@@ -52,7 +52,7 @@ jobs:
         working-directory: prompt-babbler-service
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
@@ -142,7 +142,7 @@ jobs:
     needs: build-test-backend-service
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
@@ -182,7 +182,7 @@ jobs:
     needs: build-test-backend-service
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
