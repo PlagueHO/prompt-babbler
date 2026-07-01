@@ -18,7 +18,7 @@
       "version": "22"
     },
     // Docker-in-Docker — required for .NET Aspire orchestration
-    "ghcr.io/devcontainers/features/docker-in-docker:3": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {
       "dockerDashComposeVersion": "v2"
     },
     // Azure CLI
