@@ -672,7 +672,7 @@ resource cognitiveService_roleAssignments 'Microsoft.Authorization/roleAssignmen
   }
 ]
 
-module secretsExport 'modules/keyVaultExport.bicep' = if (secretsExportConfiguration != null) {
+module secretsExport 'modules/key-vault-export.bicep' = if (secretsExportConfiguration != null) {
   name: '${uniqueString(deployment().name, location)}-secrets-kv'
   scope: az.resourceGroup(
     split(secretsExportConfiguration.?keyVaultResourceId!, '/')[2],
