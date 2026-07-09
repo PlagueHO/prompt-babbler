@@ -21,8 +21,8 @@ importers:
         specifier: ^1.9.1
         version: 1.9.1
       '@opentelemetry/context-zone':
-        specifier: ^2.7.1
-        version: 2.7.1(@opentelemetry/api@1.9.1)
+        specifier: ^2.9.0
+        version: 2.9.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/exporter-metrics-otlp-http':
         specifier: ^0.218.0
         version: 0.218.0(@opentelemetry/api@1.9.1)
@@ -638,15 +638,15 @@ packages:
     resolution: {integrity: sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==}
     engines: {node: '>=8.0.0'}
 
-  '@opentelemetry/context-zone-peer-dep@2.7.1':
-    resolution: {integrity: sha512-QPLvl82Ds+W9Tjz0s4b8UDUK9YkCb3pvaur4JQdgHe+eph6Ii20NbiC+wsdnBtG17DTPhmZcFvWMcQXZFBgeVw==}
+  '@opentelemetry/context-zone-peer-dep@2.9.0':
+    resolution: {integrity: sha512-xECINyl1UHLNbaF1my3K5AqJGyox1ysLidplInAb/XTfBxc2CLDRuS4rUxiJs8irW/PkEDujdc/IPUqkJFnrzg==}
     engines: {node: ^18.19.0 || >=20.6.0}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
       zone.js: ^0.10.2 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^0.14.0 || ^0.15.0 || ^0.16.0
 
-  '@opentelemetry/context-zone@2.7.1':
-    resolution: {integrity: sha512-B42kO3zIMVbJ+wj5nlSkDvLF8cJY+7wDKLomHp10GL00nvUnhY67UQ/soZQgKR4dvPf8zTKbcONDsOiJLyRuXw==}
+  '@opentelemetry/context-zone@2.9.0':
+    resolution: {integrity: sha512-dUH2j6/jh5hgsAFvEqx+9MIjdi8OzBK1u8K6qsb2HE2R1AiR+u00GWCxbDts30JggTX4rwA8YNLO2xF5LC6EFg==}
     engines: {node: ^18.19.0 || >=20.6.0}
 
   '@opentelemetry/core@2.7.1':
@@ -1938,8 +1938,8 @@ packages:
   '@types/node@25.9.3':
     resolution: {integrity: sha512-603BddQMv3pUcr4U2dhujk83N2tTDVr/34wII2B6bJy6g+8WD6yUb11jszNs0gdi4PesVWl7ABt8nYMVpnLUcg==}
 
-  '@types/node@25.9.4':
-    resolution: {integrity: sha512-dszCsrKb5U7ZsVZBWiHFklTloVl0mSEnWH/iZXfZUlI4rzCUnsvGmgqfuVRHL54ugE7/wRuxEIXRa2iMZ+BG6g==}
+  '@types/node@25.9.5':
+    resolution: {integrity: sha512-OScDchr2fwuUmWdf4kZ9h7PcJiYDVInhJizG/biAq3cAvqwYktuy/TYGGdZNMtNTFUP7rnb0NU4TUdm82kt4Rg==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -3765,8 +3765,15 @@ packages:
   tldts-core@7.4.2:
     resolution: {integrity: sha512-nwEyF4vl4RSJjwSjBUmOSxc3BFPoIFdlRthJ6e+5v9P3bHNsoD06UjuqMUspqp7vsEZ1beaHi1km+optiE17yA==}
 
+  tldts-core@7.4.7:
+    resolution: {integrity: sha512-rNlAI8fKn/JckBMUSbNL/ES2kmDiurWaE49l+ikwEc9A6lFR7gMx9AhgQMQKBK4H5w4pKLH64JzZfB99uRsGNQ==}
+
   tldts@7.4.2:
     resolution: {integrity: sha512-kCwffuaH8ntKtygnWe1b4BJKWiCUH30n5KfoTr6IchcXOwR7chAOFJxFrH3vjANafUYrIA4a7SDL+nn7SiR4Sw==}
+    hasBin: true
+
+  tldts@7.4.7:
+    resolution: {integrity: sha512-56L0/9HELHSsG1bFCzay8UoLxzRL7kpFf7Wl5q/kSYwiSJGACvro61xnKzPNM+SadxllzdtXsKDSXE7HPeqIAw==}
     hasBin: true
 
   to-regex-range@5.0.1:
@@ -3779,6 +3786,10 @@ packages:
 
   tough-cookie@6.0.1:
     resolution: {integrity: sha512-LktZQb3IeoUWB9lqR5EWTHgW/VTITCXg4D21M+lvybRVdylLrRMnqaIONLVb5mav8vM19m44HIcGq4qASeu2Qw==}
+    engines: {node: '>=16'}
+
+  tough-cookie@6.0.2:
+    resolution: {integrity: sha512-exgYmnmL/sJpR3upZfXG5PoatXQii55xAiXGXzY+sROLZ/Y+SLcp9PgJNI9Vz37HpQ74WvDcLT8eqm+kV3FzrA==}
     engines: {node: '>=16'}
 
   tr46@6.0.0:
@@ -3808,8 +3819,8 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
-  type-fest@5.7.0:
-    resolution: {integrity: sha512-1URUxUqfHFM1c+zfSPsa3gnkO7Aq21qyH75SIduNYz4SzY964rn1X2vCMQaHSHhktiw+0kPa2iyb6PUpXqB6Vg==}
+  type-fest@5.8.0:
+    resolution: {integrity: sha512-YGYEVz3Fm5iy/AybuA0oyNFq7H4CgQNfRp/qfe8nurE1kuCeNm3/vfm9X4Mtl+qLyaKJUh5xrFZwogr41SMjYA==}
     engines: {node: '>=20'}
 
   type-is@2.1.0:
@@ -4611,14 +4622,14 @@ snapshots:
 
   '@opentelemetry/api@1.9.1': {}
 
-  '@opentelemetry/context-zone-peer-dep@2.7.1(@opentelemetry/api@1.9.1)(zone.js@0.16.2)':
+  '@opentelemetry/context-zone-peer-dep@2.9.0(@opentelemetry/api@1.9.1)(zone.js@0.16.2)':
     dependencies:
       '@opentelemetry/api': 1.9.1
       zone.js: 0.16.2
 
-  '@opentelemetry/context-zone@2.7.1(@opentelemetry/api@1.9.1)':
+  '@opentelemetry/context-zone@2.9.0(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@opentelemetry/context-zone-peer-dep': 2.7.1(@opentelemetry/api@1.9.1)(zone.js@0.16.2)
+      '@opentelemetry/context-zone-peer-dep': 2.9.0(@opentelemetry/api@1.9.1)(zone.js@0.16.2)
       zone.js: 0.16.2
     transitivePeerDependencies:
       - '@opentelemetry/api'
@@ -5904,7 +5915,7 @@ snapshots:
     dependencies:
       undici-types: 7.24.6
 
-  '@types/node@25.9.4':
+  '@types/node@25.9.5':
     dependencies:
       undici-types: 7.24.6
     optional: true
@@ -5919,7 +5930,7 @@ snapshots:
 
   '@types/set-cookie-parser@2.4.10':
     dependencies:
-      '@types/node': 25.9.4
+      '@types/node': 25.9.5
     optional: true
 
   '@types/stack-utils@2.0.3': {}
@@ -7186,8 +7197,8 @@ snapshots:
       rettime: 0.11.11
       statuses: 2.0.2
       strict-event-emitter: 0.5.1
-      tough-cookie: 6.0.1
-      type-fest: 5.7.0
+      tough-cookie: 6.0.2
+      type-fest: 5.8.0
       until-async: 3.0.2
       yargs: 17.7.3
     optionalDependencies:
@@ -7804,9 +7815,17 @@ snapshots:
 
   tldts-core@7.4.2: {}
 
+  tldts-core@7.4.7:
+    optional: true
+
   tldts@7.4.2:
     dependencies:
       tldts-core: 7.4.2
+
+  tldts@7.4.7:
+    dependencies:
+      tldts-core: 7.4.7
+    optional: true
 
   to-regex-range@5.0.1:
     dependencies:
@@ -7817,6 +7836,11 @@ snapshots:
   tough-cookie@6.0.1:
     dependencies:
       tldts: 7.4.2
+
+  tough-cookie@6.0.2:
+    dependencies:
+      tldts: 7.4.7
+    optional: true
 
   tr46@6.0.0:
     dependencies:
@@ -7845,7 +7869,7 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-fest@5.7.0:
+  type-fest@5.8.0:
     dependencies:
       tagged-tag: 1.0.0
     optional: true
