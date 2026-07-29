@@ -84,8 +84,8 @@ importers:
         specifier: ^7.77.0
         version: 7.77.0(react@19.2.7)
       react-router:
-        specifier: ^8.2.0
-        version: 8.2.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^8.3.0
+        version: 8.3.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1956,6 +1956,9 @@ packages:
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
 
+  '@types/node@26.1.2':
+    resolution: {integrity: sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg==}
+
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
@@ -3518,8 +3521,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-router@8.2.0:
-    resolution: {integrity: sha512-uP1LgGNHyilL1u+ZkecQk74DJOKOb6q4NLNYLRJcD/fjoogftNb5/Rj/07o/QBFsY/5MbAKPm1peTCQuVPv9cQ==}
+  react-router@8.3.0:
+    resolution: {integrity: sha512-qyPMvW83jGIct3yiieisxdk9M745anqhpIMKN5m1t6yBMfgVPpt77aHOqs5fUlEJRMCGffg9BaQLH9oPVOL7xQ==}
     engines: {node: '>=22.22.0'}
     peerDependencies:
       react: '>=19.2.7'
@@ -5951,6 +5954,11 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/node@26.1.2':
+    dependencies:
+      undici-types: 8.3.0
+    optional: true
+
   '@types/react-dom@19.2.3(@types/react@19.2.17)':
     dependencies:
       '@types/react': 19.2.17
@@ -5961,7 +5969,7 @@ snapshots:
 
   '@types/set-cookie-parser@2.4.10':
     dependencies:
-      '@types/node': 26.1.1
+      '@types/node': 26.1.2
     optional: true
 
   '@types/stack-utils@2.0.3': {}
@@ -7543,7 +7551,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.17
 
-  react-router@8.2.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  react-router@8.3.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       cookie-es: 3.1.1
       react: 19.2.7
