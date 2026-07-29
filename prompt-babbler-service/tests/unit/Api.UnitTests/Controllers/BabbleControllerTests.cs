@@ -132,7 +132,7 @@ public sealed class BabbleControllerTests
         };
 
         _babbleService.CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<Babble>());
+            .Returns(ci => ci.Arg<Babble>()!);
 
         var result = await _controller.CreateBabble(request, CancellationToken.None);
 
@@ -151,13 +151,13 @@ public sealed class BabbleControllerTests
         };
 
         _babbleService.UpsertAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<Babble>());
+            .Returns(ci => ci.Arg<Babble>()!);
 
         var result = await _controller.CreateBabble(request, CancellationToken.None);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
         ok.StatusCode.Should().Be(200);
-        await _babbleService.Received(1).UpsertAsync(Arg.Is<Babble>(b => b.Id == request.Id), Arg.Any<CancellationToken>());
+        await _babbleService.Received(1).UpsertAsync(Arg.Is<Babble>(b => b != null && b.Id == request.Id), Arg.Any<CancellationToken>());
         await _babbleService.DidNotReceive().CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>());
     }
 
@@ -243,7 +243,7 @@ public sealed class BabbleControllerTests
         _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(existing);
         _babbleService.UpdateAsync(TestUserId, Arg.Any<Babble>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<Babble>());
+            .Returns(ci => ci.Arg<Babble>()!);
 
         var request = new UpdateBabbleRequest
         {
@@ -396,7 +396,7 @@ public sealed class BabbleControllerTests
         _generatedPromptService.CreateAsync(TestUserId, Arg.Any<GeneratedPrompt>(), Arg.Any<CancellationToken>())
             .Returns(ci =>
             {
-                var p = ci.Arg<GeneratedPrompt>();
+                var p = ci.Arg<GeneratedPrompt>()!;
                 return p;
             });
 
@@ -455,7 +455,7 @@ public sealed class BabbleControllerTests
         _promptGenerationService.GenerateTitleAsync(babble.Text, Arg.Any<CancellationToken>())
             .Returns("Sort Function Request");
         _babbleService.UpdateAsync(TestUserId, Arg.Any<Babble>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<Babble>());
+            .Returns(ci => ci.Arg<Babble>()!);
 
         var result = await _controller.GenerateTitle("test-id", CancellationToken.None);
 
@@ -516,7 +516,7 @@ public sealed class BabbleControllerTests
     public async Task CreateBabble_ValidTags_Returns201()
     {
         _babbleService.CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<Babble>());
+            .Returns(ci => ci.Arg<Babble>()!);
 
         var request = new CreateBabbleRequest
         {
@@ -555,7 +555,7 @@ public sealed class BabbleControllerTests
         _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(existing);
         _babbleService.UpdateAsync(TestUserId, Arg.Any<Babble>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<Babble>());
+            .Returns(ci => ci.Arg<Babble>()!);
 
         var request = new UpdateBabbleRequest
         {

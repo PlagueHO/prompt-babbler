@@ -129,7 +129,7 @@ public sealed class GeneratedPromptControllerTests
         };
 
         _promptService.CreateAsync(TestUserId, Arg.Any<GeneratedPrompt>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<GeneratedPrompt>());
+            .Returns(ci => ci.Arg<GeneratedPrompt>()!);
 
         var result = await _controller.CreatePrompt(TestBabbleId, request, CancellationToken.None);
 

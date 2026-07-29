@@ -29,7 +29,7 @@ public sealed class ExportServiceTests
             _promptTemplateRepository);
 
         _jobRepository.CreateAsync(Arg.Any<ImportExportJob>(), Arg.Any<CancellationToken>())
-            .Returns(call => call.Arg<ImportExportJob>());
+            .Returns(call => call.Arg<ImportExportJob>()!);
     }
 
     [TestMethod]
@@ -68,7 +68,7 @@ public sealed class ExportServiceTests
 
         ImportExportJob? createdJob = null;
         _jobRepository.CreateAsync(Arg.Do<ImportExportJob>(job => createdJob = job), Arg.Any<CancellationToken>())
-            .Returns(call => call.Arg<ImportExportJob>());
+            .Returns(call => call.Arg<ImportExportJob>()!);
 
         var selection = new ExportSelection
         {
@@ -89,7 +89,7 @@ public sealed class ExportServiceTests
         createdJob.ExportSelection.IncludeSemanticVectors.Should().BeFalse();
 
         await _jobQueue.Received(1).EnqueueAsync(
-            Arg.Is<ImportExportJobQueueItem>(item => item.JobId == jobId && item.UserId == "user-1"),
+            Arg.Is<ImportExportJobQueueItem>(item => item != null && item.JobId == jobId && item.UserId == "user-1"),
             Arg.Any<CancellationToken>());
     }
 }

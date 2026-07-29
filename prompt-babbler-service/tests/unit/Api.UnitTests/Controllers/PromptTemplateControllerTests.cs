@@ -243,7 +243,7 @@ public sealed class PromptTemplateControllerTests
         };
 
         _templateService.CreateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<PromptTemplate>());
+            .Returns(ci => ci.Arg<PromptTemplate>()!);
 
         var result = await _controller.CreateTemplate(request, CancellationToken.None);
 
@@ -335,7 +335,7 @@ public sealed class PromptTemplateControllerTests
         _templateService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(existing);
         _templateService.UpdateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<PromptTemplate>());
+            .Returns(ci => ci.Arg<PromptTemplate>()!);
 
         var request = new UpdatePromptTemplateRequest
         {

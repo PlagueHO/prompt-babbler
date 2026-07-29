@@ -48,7 +48,7 @@ public sealed class GeneratedPromptControllerTests
 
         var promptService = factory.Services.GetRequiredService<IGeneratedPromptService>();
         promptService.CreateAsync(Arg.Any<string>(), Arg.Any<GeneratedPrompt>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<GeneratedPrompt>());
+            .Returns(ci => ci.Arg<GeneratedPrompt>()!);
 
         var request = new { templateId = "template-1", templateName = "Test Template", promptText = "Generated prompt text." };
         var response = await client.PostAsJsonAsync("/api/babbles/test-babble-id/prompts", request);
