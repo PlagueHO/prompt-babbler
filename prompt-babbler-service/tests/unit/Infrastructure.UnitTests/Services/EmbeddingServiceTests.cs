@@ -80,7 +80,7 @@ public sealed class EmbeddingServiceTests
 
         result.ToArray().Should().Equal(testVector);
         await _embeddingGenerator.Received(1).GenerateAsync(
-            Arg.Is<IEnumerable<string>>(texts => texts.Single().Length == 32_000),
+            Arg.Is<IEnumerable<string>>(texts => texts != null && texts.Single().Length == 32_000),
             Arg.Any<EmbeddingGenerationOptions?>(),
             Arg.Any<CancellationToken>());
         _logger.Received(1).Log(
@@ -109,7 +109,7 @@ public sealed class EmbeddingServiceTests
 
         result.ToArray().Should().Equal(testVector);
         await _embeddingGenerator.Received(1).GenerateAsync(
-            Arg.Is<IEnumerable<string>>(texts => texts.Single().Length == 32_000),
+            Arg.Is<IEnumerable<string>>(texts => texts != null && texts.Single().Length == 32_000),
             Arg.Any<EmbeddingGenerationOptions?>(),
             Arg.Any<CancellationToken>());
         _logger.DidNotReceive().Log(

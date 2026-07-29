@@ -56,7 +56,7 @@ public sealed class PromptTemplateControllerTests
 
         var templateService = factory.Services.GetRequiredService<IPromptTemplateService>();
         templateService.CreateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<PromptTemplate>());
+            .Returns(ci => ci.Arg<PromptTemplate>()!);
 
         var validationService = factory.Services.GetRequiredService<ITemplateValidationService>();
         validationService.ValidateTemplateAsync(Arg.Any<PromptTemplate>(), Arg.Any<CancellationToken>())

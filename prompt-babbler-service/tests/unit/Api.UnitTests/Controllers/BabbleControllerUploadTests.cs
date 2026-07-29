@@ -151,7 +151,7 @@ public sealed class BabbleControllerUploadTests
             .CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
             .Returns(ci =>
             {
-                var babble = ci.Arg<Babble>();
+                var babble = ci.Arg<Babble>()!;
                 // Title should be at most 50 chars + "..." (53 total) or ≤50
                 babble.Title.Length.Should().BeLessThanOrEqualTo(53);
                 return babble;
@@ -232,7 +232,7 @@ public sealed class BabbleControllerUploadTests
             .CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
             .Returns(ci =>
             {
-                var babble = ci.Arg<Babble>();
+                var babble = ci.Arg<Babble>()!;
                 babble.Title.Should().Be(providedTitle);
                 return babble;
             });

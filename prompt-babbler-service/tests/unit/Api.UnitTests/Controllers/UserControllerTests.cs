@@ -84,7 +84,7 @@ public sealed class UserControllerTests
         var now = DateTimeOffset.UtcNow;
         _userService.UpdateSettingsAsync(
                 TestUserId,
-                Arg.Is<UserSettings>(x => x.Theme == "dark" && x.SpeechLanguage == "en-US"),
+                Arg.Is<UserSettings>(x => x != null && x.Theme == "dark" && x.SpeechLanguage == "en-US"),
                 Arg.Any<CancellationToken>())
             .Returns(new UserProfile
             {
@@ -115,7 +115,7 @@ public sealed class UserControllerTests
 
         await _userService.Received(1).UpdateSettingsAsync(
             TestUserId,
-            Arg.Is<UserSettings>(x => x.Theme == "dark" && x.SpeechLanguage == "en-US"),
+            Arg.Is<UserSettings>(x => x != null && x.Theme == "dark" && x.SpeechLanguage == "en-US"),
             Arg.Any<CancellationToken>());
     }
 

@@ -56,7 +56,7 @@ public sealed class UserServiceTests
         _userRepository.GetByIdAsync("new-user", Arg.Any<CancellationToken>())
             .Returns((UserProfile?)null);
         _userRepository.UpsertAsync(Arg.Any<UserProfile>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<UserProfile>());
+            .Returns(callInfo => callInfo.Arg<UserProfile>()!);
 
         var result = await _service.GetOrCreateAsync("new-user", "New User", "new@example.com");
 
@@ -74,7 +74,7 @@ public sealed class UserServiceTests
         _userRepository.GetByIdAsync("test-user-id", Arg.Any<CancellationToken>())
             .Returns(existing);
         _userRepository.UpsertAsync(Arg.Any<UserProfile>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<UserProfile>());
+            .Returns(callInfo => callInfo.Arg<UserProfile>()!);
 
         var result = await _service.GetOrCreateAsync("test-user-id", "New Name", "new@example.com");
 
@@ -91,7 +91,7 @@ public sealed class UserServiceTests
         _userRepository.GetByIdAsync("test-user-id", Arg.Any<CancellationToken>())
             .Returns(existing);
         _userRepository.UpsertAsync(Arg.Any<UserProfile>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<UserProfile>());
+            .Returns(callInfo => callInfo.Arg<UserProfile>()!);
 
         var newSettings = new UserSettings { Theme = "dark", SpeechLanguage = "en" };
         var result = await _service.UpdateSettingsAsync("test-user-id", newSettings);
@@ -106,7 +106,7 @@ public sealed class UserServiceTests
         _userRepository.GetByIdAsync("new-user", Arg.Any<CancellationToken>())
             .Returns((UserProfile?)null);
         _userRepository.UpsertAsync(Arg.Any<UserProfile>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<UserProfile>());
+            .Returns(callInfo => callInfo.Arg<UserProfile>()!);
 
         var settings = new UserSettings { Theme = "light", SpeechLanguage = "fr" };
         var result = await _service.UpdateSettingsAsync("new-user", settings);
@@ -125,7 +125,7 @@ public sealed class UserServiceTests
         _userRepository.GetByIdAsync("test-user-id", Arg.Any<CancellationToken>())
             .Returns(existing);
         _userRepository.UpsertAsync(Arg.Any<UserProfile>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<UserProfile>());
+            .Returns(callInfo => callInfo.Arg<UserProfile>()!);
 
         var result = await _service.UpdateProfileAsync("test-user-id", "Updated Name", "updated@example.com");
 
@@ -139,7 +139,7 @@ public sealed class UserServiceTests
         _userRepository.GetByIdAsync("new-user", Arg.Any<CancellationToken>())
             .Returns((UserProfile?)null);
         _userRepository.UpsertAsync(Arg.Any<UserProfile>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<UserProfile>());
+            .Returns(callInfo => callInfo.Arg<UserProfile>()!);
 
         var result = await _service.UpdateProfileAsync("new-user", "New User", "new@example.com");
 

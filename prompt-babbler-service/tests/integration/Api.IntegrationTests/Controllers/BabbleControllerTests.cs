@@ -48,7 +48,7 @@ public sealed class BabbleControllerTests
 
         var babbleService = factory.Services.GetRequiredService<IBabbleService>();
         babbleService.CreateAsync(Arg.Any<Babble>(), Arg.Any<CancellationToken>())
-            .Returns(ci => ci.Arg<Babble>());
+            .Returns(ci => ci.Arg<Babble>()!);
 
         var request = new { title = "Test Babble", text = "This is a test babble." };
         var response = await client.PostAsJsonAsync("/api/babbles", request);
