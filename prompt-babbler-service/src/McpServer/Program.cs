@@ -17,7 +17,7 @@ var azureAdClientId = builder.Configuration["AzureAd:ClientId"] ?? string.Empty;
 
 builder.Services.AddMcpServer(options =>
 {
-    options.ServerInfo = new() { Name = "PromptBabbler.McpServer", Version = "1.0.0" };
+    options.ServerInfo = new() { Name = "Prompt Babbler MCP Server", Version = "1.0.0" };
     options.ServerInstructions = "Prompt Babbler MCP server. Provides tools for managing babbles (voice transcriptions), prompt templates, and AI-generated prompts. Use search_babbles to find relevant voice notes, generate_prompt to create AI prompts from babbles, and the template tools to manage prompt templates.";
 })
     .WithHttpTransport(options => options.Stateless = true)
@@ -92,3 +92,5 @@ app.MapDefaultEndpoints();
 app.MapMcp();
 
 await app.RunAsync();
+
+public sealed partial class Program { }

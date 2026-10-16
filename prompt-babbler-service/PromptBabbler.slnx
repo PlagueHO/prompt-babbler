@@ -22,6 +22,7 @@
     <Project Path="tests/integration/Api.IntegrationTests/PromptBabbler.Api.IntegrationTests.csproj" />
     <Project Path="tests/integration/Infrastructure.IntegrationTests/PromptBabbler.Infrastructure.IntegrationTests.csproj" />
     <Project Path="tests/integration/IntegrationTests.Shared/PromptBabbler.IntegrationTests.Shared.csproj" />
+    <Project Path="tests/integration/McpServer.IntegrationTests/PromptBabbler.McpServer.IntegrationTests.csproj" />
     <Project Path="tests/integration/Orchestration.IntegrationTests/PromptBabbler.Orchestration.IntegrationTests.csproj" />
   </Folder>
 </Solution>

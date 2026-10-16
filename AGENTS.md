@@ -6,6 +6,8 @@
 
 See `.github/copilot-instructions.md` for code style and patterns.
 
+Write new or updated instructions in this file in ASD-STE100 style. Use short sentences, active voice, and one instruction per sentence.
+
 ## Layout
 
 ```text
@@ -53,6 +55,15 @@ pnpm lint:md
 # --- Infrastructure ---
 bicep lint ./infra/main.bicep
 ```
+
+## Toolchain setup
+
+- Read `global.json` before you run .NET commands. Use the SDK version that it specifies.
+- Check installed SDKs with `dotnet --list-sdks`.
+- In a development container, check its configuration first. It should include the required SDKs and tools.
+- If a required SDK, framework, or tool is missing, install it before you continue. Use the operating system's package manager, such as `winget` on Windows or `apt` on Debian or Ubuntu. Use a supported package source for the required version.
+- Run the failed command again after installation.
+- Do not ignore an installation or validation error. If installation fails, try another supported method. If you cannot install the tool, report the blocker and the commands you could not run.
 
 ## Modifying a Frontend Component — Checklist
 

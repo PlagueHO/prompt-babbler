@@ -5,9 +5,20 @@ description: Coding conventions for GitHub Copilot in the Prompt Babbler reposit
 
 See [AGENTS.md](../AGENTS.md) for directory layout, commands, and CI pipeline.
 
+Write new or updated instructions in this file in ASD-STE100 style. Use short sentences, active voice, and one instruction per sentence.
+
 ## Purpose
 
 Prompt Babbler is a React 19 + Vite (TypeScript) SPA paired with a .NET 10 ASP.NET Core backend orchestrated by .NET Aspire. Users record voice input that is transcribed and stored as "babbles"; Foundry Models generate prompts from those babbles using configurable templates. Data is persisted in Cosmos DB; Microsoft Entra ID handles authentication with an optional access-code bypass.
+
+## Toolchain setup
+
+- Read `global.json` before you run .NET commands. Use the SDK version that it specifies.
+- Check installed SDKs with `dotnet --list-sdks`.
+- In a development container, check its configuration first. It should include the required SDKs and tools.
+- If a required SDK, framework, or tool is missing, install it before you continue. Use the operating system's package manager, such as `winget` on Windows or `apt` on Debian or Ubuntu. Use a supported package source for the required version.
+- Run the failed command again after installation.
+- Do not ignore an installation or validation error. If installation fails, try another supported method. If you cannot install the tool, report the blocker and the commands you could not run.
 
 ## Security
 
