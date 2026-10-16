@@ -9,10 +9,10 @@ namespace PromptBabbler.Infrastructure.Services;
 // Workaround: The Aspire Cosmos DB hosting integration's AddContainer() API does not support
 // configuring vector embedding policies or vector indexes on containers. This means the
 // local emulator creates the 'babbles' container with a default indexing policy, which does
-// not include the quantizedFlat vector index required for VectorDistance() queries.
+// not include the DiskANN vector index supported by the vNext emulator.
 //
-// This hosted service runs only in Development and recreates the 'babbles' container with
-// the correct vector search configuration if it is missing.
+// This Development-only service creates the vector-enabled container or recreates an
+// incompatible empty container. Existing documents are never deleted automatically.
 //
 // Upstream Aspire issue: https://github.com/microsoft/aspire/issues/14384
 // Tracking issue:        https://github.com/PlagueHO/prompt-babbler/issues/122
@@ -76,23 +76,44 @@ public sealed class CosmosVectorContainerInitializationService(
             // Container does not exist yet — will be created below.
         }
 
-        if (existingProperties is not null &&
-            existingProperties.VectorEmbeddingPolicy?.Embeddings is { Count: > 0 })
+        if (existingProperties is not null && HasCompatibleVectorPolicy(existingProperties))
         {
+            if (existingProperties.VectorEmbeddingPolicy is null)
+            {
+                logger.LogWarning(
+                    "Container '{Container}' has the expected DiskANN index and partition key, but the vNext emulator " +
+                    "did not return embedding policy metadata. Embedding dimensions, data type, and distance function cannot be verified from this response.",
+                    CosmosBabbleRepository.ContainerName);
+            }
+
             logger.LogInformation(
-                "Container '{Container}' already has a vector embedding policy configured. Skipping initialization.",
+                "Container '{Container}' already has the required DiskANN vector index. Skipping initialization.",
                 CosmosBabbleRepository.ContainerName);
             return;
         }
 
         if (existingProperties is not null)
         {
+            if (await ContainsDocumentsAsync(container, cancellationToken))
+            {
+                const string recoveryMessage =
+                    "Local Cosmos DB container 'prompt-babbler/babbles' contains documents and has an incompatible vector policy. " +
+                    "No documents were deleted. Stop application writers, back up and verify the documents through the local " +
+                    "emulator's Data Explorer, then explicitly delete only this local container if you accept the data loss. " +
+                    "Restart the app to create the DiskANN container and restore the backup. " +
+                    "See docs/quickstart-local.md#recover-an-incompatible-local-babbles-container. " +
+                    "The vNext emulator does not apply in-place container policy updates.";
+                logger.LogError("{RecoveryMessage}", recoveryMessage);
+                throw new InvalidOperationException(recoveryMessage);
+            }
+
             logger.LogWarning(
-                "Container '{Container}' exists without a vector embedding policy. " +
-                "Deleting and recreating with vector search configuration for local development. " +
+                "Container '{Container}' has an incompatible vector policy and is empty. " +
+                "Recreating with DiskANN vector search configuration for local development. " +
                 "Workaround for: https://github.com/microsoft/aspire/issues/14384",
                 CosmosBabbleRepository.ContainerName);
 
+            cancellationToken.ThrowIfCancellationRequested();
             await container.DeleteContainerAsync(cancellationToken: cancellationToken);
         }
         else
@@ -106,10 +127,40 @@ public sealed class CosmosVectorContainerInitializationService(
         await database.CreateContainerAsync(properties, cancellationToken: cancellationToken);
 
         logger.LogInformation(
-            "Container '{Container}' created with quantizedFlat vector index on '{Path}' ({Dimensions}d).",
+            "Container '{Container}' created with DiskANN vector index on '{Path}' ({Dimensions}d).",
             CosmosBabbleRepository.ContainerName,
             VectorPath,
             VectorDimensions);
+    }
+
+    private static bool HasCompatibleVectorPolicy(ContainerProperties properties) =>
+        properties.PartitionKeyPath == "/userId" &&
+        properties.IndexingPolicy.VectorIndexes is { Count: 1 } indexes &&
+        indexes[0].Path == VectorPath &&
+        indexes[0].Type == VectorIndexType.DiskANN &&
+        // vNext EN20261008 omits vectorEmbeddingPolicy on reads, even after accepting it on create.
+        (properties.VectorEmbeddingPolicy is null ||
+         (properties.VectorEmbeddingPolicy.Embeddings is { Count: 1 } embeddings &&
+          embeddings[0].Path == VectorPath &&
+          embeddings[0].Dimensions == VectorDimensions &&
+          embeddings[0].DataType == VectorDataType.Float32 &&
+          embeddings[0].DistanceFunction == DistanceFunction.Cosine));
+
+    private static async Task<bool> ContainsDocumentsAsync(Container container, CancellationToken cancellationToken)
+    {
+        using var iterator = container.GetItemQueryIterator<int>(
+            new QueryDefinition("SELECT TOP 1 VALUE 1 FROM c"));
+
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync(cancellationToken);
+            if (response.Count > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static ContainerProperties BuildVectorContainerProperties()
@@ -139,7 +190,7 @@ public sealed class CosmosVectorContainerInitializationService(
         properties.IndexingPolicy.VectorIndexes.Add(new VectorIndexPath
         {
             Path = VectorPath,
-            Type = VectorIndexType.QuantizedFlat,
+            Type = VectorIndexType.DiskANN,
         });
 
         return properties;
