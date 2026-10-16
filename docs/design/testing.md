@@ -226,6 +226,16 @@ Infrastructure integration uses Aspire AppHost fixture lifecycle:
 
 * [AppHostFixture.cs](https://github.com/PlagueHO/prompt-babbler/blob/main/prompt-babbler-service/tests/integration/IntegrationTests.Shared/AppHostFixture.cs)
 
+The vector-container regression tests instead use a test-owned vNext emulator with random ports and no Foundry resources. They exercise the real initializer, container policy, empty-container recreation, populated-container preservation, babble persistence, and repository vector search with four synthetic 1536-dimensional vectors. Only their own test database/emulator is cleaned up.
+
+From `prompt-babbler-service`, run this focused suite with Docker Desktop running and the SDK required by `global.json` installed:
+
+```powershell
+dotnet test --project tests\integration\Infrastructure.IntegrationTests\PromptBabbler.Infrastructure.IntegrationTests.csproj --filter "FullyQualifiedName~CosmosVectorContainerInitializationServiceTests"
+```
+
+These are real-emulator functional checks, not production performance or RU benchmarks. Full application acceptance additionally requires `aspire run --isolated`, configured Foundry chat/embedding models, and the application's normal authentication prerequisites. Verify babble persistence and custom-template save, page reload, list, picker, and prompt generation in the live frontend; mocked API tests do not establish those outcomes.
+
 ### Dependencies needed
 
 * .NET SDK 10

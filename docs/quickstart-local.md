@@ -130,6 +130,8 @@ Make sure Docker Desktop is running, then from the repository root:
 aspire run
 ```
 
+In a worktree, use `aspire run --isolated` to isolate ports and local Aspire state from other instances. Isolated mode also isolates user secrets; ensure the required Azure settings are available to that instance without committing or printing secrets.
+
 Aspire handles all dependency installation (NuGet restore, pnpm install), builds, and service orchestration automatically. On first run it will:
 
 1. Restore .NET packages and build the backend
@@ -157,6 +159,29 @@ The local developer experience includes seeded sample babbles automatically.
 * Sample data covers multiple use cases, including coding, writing, planning, research, image prompting, incident analysis, and recipes.
 
 If you change `samples/babbles/babbles.json`, the next local run upserts those records by ID.
+
+## Local Cosmos DB vector indexes
+
+The vNext emulator supports `diskANN` vector indexes, not `flat` or `quantizedFlat`. In Development, the API initializes `babbles` with a DiskANN index on `/contentVector`, using 1536-dimensional Float32 vectors, cosine distance, and the `/userId` partition key. Production indexing is unchanged.
+
+On startup, the initializer keeps compatible containers, creates missing containers, and recreates incompatible containers only after confirming they contain no documents across all partitions. If an incompatible container contains documents, startup stops with recovery instructions rather than deleting your babbles.
+
+The vNext emulator release `EN20261008` omits embedding-policy metadata when reading a container, even after accepting it during creation. The initializer checks the returned DiskANN index and partition key, validates embedding settings when returned, and logs a warning when those settings cannot be inspected. This allows compatible populated containers to survive restarts without assuming that missing response metadata means the data must be recreated.
+
+The emulator accepts collection updates without applying them, so changing an existing container's policy in place is not a recovery method. See [vNext emulator indexing support](https://learn.microsoft.com/azure/cosmos-db/emulator-linux#indexing-support).
+
+### Recover an incompatible local babbles container
+
+1. In the Aspire dashboard, identify the `cosmos` resource for the exact local AppHost/worktree and open its **Data Explorer** endpoint. Confirm this is the local emulator, not an Azure Cosmos DB account.
+1. Stop application writers, including any API, MCP, seed-importer, or external client that can modify this emulator. Keep the emulator running for backup and recovery. Automatic empty-container recreation assumes there are no concurrent writers.
+1. Back up every document from `prompt-babbler` > `babbles`, across all user partitions, using Data Explorer's query/export facilities or a Cosmos SDK client. Preserve all fields, including `id`, `userId`, and `contentVector`. The API export endpoint is not available if startup is blocked.
+1. Verify the backup is complete, readable, and restorable before proceeding. Store it outside source control; real babbles may contain personal data.
+1. Only if you accept deletion of the local container and have verified the backup, explicitly delete **only** `prompt-babbler/babbles` through that emulator's Data Explorer. Do not delete the database, other containers, Docker volumes, or another worktree's emulator.
+1. Restart this AppHost using `aspire run --isolated` (or `aspire run` for a non-isolated checkout). Aspire may create an empty default-policy container first; the API will recreate that empty container with DiskANN.
+1. Restore the backed-up documents into the compatible container, preserving IDs and partition keys. Verify counts across user partitions, retrieve saved babbles, and run semantic search before discarding the backup. If seed import ran during startup, account for its deterministic sample IDs when comparing counts.
+
+> [!IMPORTANT]
+> The initializer never migrates or deletes populated containers automatically. Functional vector-search results on a small dataset do not establish that an approximate-nearest-neighbor index was exercised. Azure Cosmos DB documents full scans below 1,000 vectors for DiskANN; emulator behavior is not proof of production performance, index-build behavior, or RU costs. The vNext emulator does not implement production RU accounting.
 
 ## Protect with an access code (optional)
 
@@ -246,6 +271,7 @@ Open `Ctrl+Shift+P` → **Tasks: Run Task** for common workflows:
 | `InsufficientQuota` | No quota for the model/SKU in the target region. Check quota in Azure Portal or use a different model. |
 | Azure provisioning hangs | Verify secrets are set: `dotnet user-secrets list --project src/Orchestration/AppHost`. |
 | Cosmos DB emulator won't start | Ensure Docker Desktop is running. Check for port conflicts. |
+| API reports an incompatible populated `babbles` vector policy | Follow [local container recovery](#recover-an-incompatible-local-babbles-container). Back up and verify documents before explicitly recreating only the affected local container. |
 | Microphone not working | Check browser permissions. Ensure no other app is using the mic. |
 | Transcription errors | Check the Aspire Dashboard for WebSocket/Speech Service errors. Verify the AIServices resource has Speech capabilities enabled and RBAC roles are assigned. |
 | `aspire run` fails | Ensure .NET 10 SDK (`dotnet --version` → `10.0.x`) and Aspire CLI (`aspire --version`) are installed. |

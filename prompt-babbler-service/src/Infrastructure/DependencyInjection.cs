@@ -61,9 +61,9 @@ public static class DependencyInjection
         services.AddSingleton<IEmbeddingService, EmbeddingService>();
 
         // Workaround: Aspire's AddContainer() does not support vector index policies, so the
-        // local emulator creates 'babbles' without the quantizedFlat vector index required for
-        // VectorDistance() queries. This service runs only in Development and recreates the
-        // container with the correct vector configuration.
+        // local emulator creates 'babbles' without the supported DiskANN vector index.
+        // This Development-only service configures missing or empty containers and refuses
+        // to recreate incompatible containers that contain documents.
         // See: https://github.com/microsoft/aspire/issues/14384
         // See: https://github.com/PlagueHO/prompt-babbler/issues/122
         services.AddHostedService<CosmosVectorContainerInitializationService>();
