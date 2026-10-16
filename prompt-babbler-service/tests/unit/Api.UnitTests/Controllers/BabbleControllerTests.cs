@@ -8,6 +8,7 @@ using NSubstitute.ExceptionExtensions;
 using PromptBabbler.Api.Controllers;
 using PromptBabbler.Api.Models.Requests;
 using PromptBabbler.Api.Models.Responses;
+using PromptBabbler.Domain.Constants;
 using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Domain.Models;
 
@@ -370,7 +371,7 @@ public sealed class BabbleControllerTests
         var babble = CreateBabble();
         _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(babble);
-        _templateService.GetByIdAsync(null, "nonexistent", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "nonexistent", Arg.Any<CancellationToken>())
             .Returns((PromptTemplate?)null);
 
         var request = new GeneratePromptRequest { TemplateId = "nonexistent" };
@@ -381,19 +382,30 @@ public sealed class BabbleControllerTests
     }
 
     [TestMethod]
-    public async Task GeneratePrompt_ValidRequest_StreamsSSEChunksAndPromptId()
+    [DataRow(TestUserId, true)]
+    [DataRow(TestUserId, false)]
+    [DataRow(UserIds.Anonymous, false)]
+    public async Task GeneratePrompt_AccessibleTemplate_StreamsSSEChunksAndPromptId(string userId, bool isBuiltIn)
     {
-        var babble = CreateBabble();
-        var template = CreateTemplate();
+        _controller.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("http://schemas.microsoft.com/identity/claims/objectidentifier", userId),
+        ], "TestAuth"));
+        var babble = CreateBabble(userId: userId);
+        var template = CreateTemplate() with
+        {
+            UserId = isBuiltIn ? "_builtin" : userId,
+            IsBuiltIn = isBuiltIn,
+        };
 
-        _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
+        _babbleService.GetByIdAsync(userId, "test-id", Arg.Any<CancellationToken>())
             .Returns(babble);
-        _templateService.GetByIdAsync(null, "template-1", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(userId, "template-1", Arg.Any<CancellationToken>())
             .Returns(template);
         _promptGenerationService.GeneratePromptStreamAsync(
             babble.Text, template, Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns(ToAsyncEnumerable("Hello ", "world"));
-        _generatedPromptService.CreateAsync(TestUserId, Arg.Any<GeneratedPrompt>(), Arg.Any<CancellationToken>())
+        _generatedPromptService.CreateAsync(userId, Arg.Any<GeneratedPrompt>(), Arg.Any<CancellationToken>())
             .Returns(ci =>
             {
                 var p = ci.Arg<GeneratedPrompt>()!;
@@ -421,7 +433,7 @@ public sealed class BabbleControllerTests
 
         _babbleService.GetByIdAsync(TestUserId, "test-id", Arg.Any<CancellationToken>())
             .Returns(babble);
-        _templateService.GetByIdAsync(null, "template-1", Arg.Any<CancellationToken>())
+        _templateService.GetByIdAsync(TestUserId, "template-1", Arg.Any<CancellationToken>())
             .Returns(template);
         _promptGenerationService.GeneratePromptStreamAsync(
             babble.Text, template, Arg.Any<string?>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>())

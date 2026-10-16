@@ -52,9 +52,7 @@ public sealed class PromptTemplateService : IPromptTemplateService
         }
 
         var builtIn = await _repository.GetBuiltInTemplatesAsync(cancellationToken);
-        var userTemplates = effectiveUserId != UserIds.Anonymous
-            ? await _repository.GetUserTemplatesAsync(effectiveUserId, cancellationToken)
-            : [];
+        var userTemplates = await _repository.GetUserTemplatesAsync(effectiveUserId, cancellationToken);
 
         var merged = builtIn.Concat(userTemplates).ToList().AsReadOnly();
 
@@ -97,14 +95,10 @@ public sealed class PromptTemplateService : IPromptTemplateService
     {
         var effectiveUserId = userId ?? UserIds.Anonymous;
 
-        // Try user partition first (if not anonymous)
-        if (effectiveUserId != UserIds.Anonymous)
+        var userTemplate = await _repository.GetByIdAsync(effectiveUserId, templateId, cancellationToken);
+        if (userTemplate is not null)
         {
-            var userTemplate = await _repository.GetByIdAsync(effectiveUserId, templateId, cancellationToken);
-            if (userTemplate is not null)
-            {
-                return userTemplate;
-            }
+            return userTemplate;
         }
 
         // Fall back to built-in partition

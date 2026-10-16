@@ -2,7 +2,6 @@ using System.Net;
 using System.Text;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
-using PromptBabbler.Domain.Constants;
 using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Domain.Models;
 
@@ -58,12 +57,7 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
         string? sortDirection = null,
         CancellationToken cancellationToken = default)
     {
-        var isAnonymous = string.Equals(userId, UserIds.Anonymous, StringComparison.Ordinal);
-        var userFilter = isAnonymous
-            ? "c.userId = @builtInUserId"
-            : "(c.userId = @builtInUserId OR c.userId = @userId)";
-
-        var queryText = new StringBuilder($"SELECT * FROM c WHERE {userFilter}");
+        var queryText = new StringBuilder("SELECT * FROM c WHERE (c.userId = @builtInUserId OR c.userId = @userId)");
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -80,12 +74,8 @@ public sealed class CosmosPromptTemplateRepository : IPromptTemplateRepository
         queryText.Append($" ORDER BY {orderByField} {orderByDirection}");
 
         var queryDefinition = new QueryDefinition(queryText.ToString())
-            .WithParameter("@builtInUserId", BuiltInUserId);
-
-        if (!isAnonymous)
-        {
-            queryDefinition = queryDefinition.WithParameter("@userId", userId);
-        }
+            .WithParameter("@builtInUserId", BuiltInUserId)
+            .WithParameter("@userId", userId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {

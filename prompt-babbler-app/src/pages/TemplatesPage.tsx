@@ -49,17 +49,21 @@ export function TemplatesPage() {
 
   const handleSave = useCallback(
     async (data: TemplateRequest) => {
-      if (isCreating) {
-        await createTemplate(data);
-        toast.success('Template created');
-      } else if (selected) {
-        await updateTemplate({
-          ...selected,
-          ...data,
-          updatedAt: new Date().toISOString(),
-        });
-        toast.success('Template updated');
+      try {
+        if (isCreating) {
+          await createTemplate(data);
+        } else if (selected) {
+          await updateTemplate({
+            ...selected,
+            ...data,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to save template');
+        return;
       }
+      toast.success(isCreating ? 'Template created' : 'Template updated');
       await refresh();
       setSelected(null);
       setIsCreating(false);

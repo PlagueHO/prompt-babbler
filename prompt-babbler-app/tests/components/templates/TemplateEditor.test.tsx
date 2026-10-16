@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TemplateEditor } from '@/components/templates/TemplateEditor';
 import type { PromptTemplate } from '@/types';
@@ -21,6 +21,52 @@ const baseTemplate: PromptTemplate = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
+
+describe('TemplateEditor saves', () => {
+  it('saves a new template with only the required fields', async () => {
+    const onSave = vi.fn();
+    const user = userEvent.setup();
+    render(<TemplateEditor template={null} onSave={onSave} onCancel={vi.fn()} />);
+
+    await user.type(screen.getByLabelText('Name'), 'Custom template');
+    await user.type(screen.getByLabelText('Description'), 'A custom template');
+    await user.type(screen.getByLabelText('Instructions'), 'Summarize the babble.');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith({
+      name: 'Custom template',
+      description: 'A custom template',
+      instructions: 'Summarize the babble.',
+      outputDescription: undefined,
+      outputTemplate: undefined,
+      examples: undefined,
+      guardrails: undefined,
+      defaultOutputFormat: 'text',
+      defaultAllowEmojis: false,
+      tags: undefined,
+    }));
+  });
+
+  it('keeps save disabled until the asynchronous save completes', async () => {
+    let completeSave = () => {};
+    const pendingSave = new Promise<void>((resolve) => { completeSave = resolve; });
+    const onSave = vi.fn(() => pendingSave);
+    const user = userEvent.setup();
+    render(<TemplateEditor template={baseTemplate} onSave={onSave} onCancel={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    const savingButton = await screen.findByRole('button', { name: 'Saving...' });
+    expect(savingButton).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    await user.click(savingButton);
+    expect(onSave).toHaveBeenCalledOnce();
+
+    await act(async () => completeSave());
+
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+});
 
 describe('TemplateEditor — Tags', () => {
   it('renders existing tags as badge chips', () => {

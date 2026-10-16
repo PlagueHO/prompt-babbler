@@ -64,6 +64,14 @@ The custom-template editor includes these fields:
 * **Allow Emojis**
 * **Tags**
 
+Only **Name**, **Description**, and **Instructions** are required. The other fields are optional.
+
+Select **Save** to validate and save your template. The button shows **Saving...** and stays disabled until the operation finishes. If saving fails, an error notification explains the failure and your entered values remain available so you can correct them and retry.
+
+After a successful save, the template appears in the Templates list when it matches your active filters. It also becomes available in the template picker when you create a prompt from a babble, including after reloading the page.
+
+In anonymous and access-code modes, custom templates belong to the shared single-user collection. When you use Microsoft Entra ID, your custom templates belong to your signed-in account.
+
 ## Template design guidance
 
 Custom templates work best when you:
