@@ -1,5 +1,17 @@
 # React + TypeScript + Vite
 
+## Build and lint tooling
+
+`pnpm build` runs TypeScript 7's native `tsc -b` compiler before Vite bundles the application. Local builds and the frontend build and deployment workflows use this same script.
+
+The compiler is installed as `@typescript/native` (an npm alias for `typescript@~7.0.2`). The `typescript` dependency aliases `@typescript/typescript6` so that `typescript-eslint` can continue using the JavaScript compiler API that TypeScript 7.0 does not provide. This compatibility package exposes `tsc6`, leaving `tsc` exclusively owned by TypeScript 7.
+
+`pnpm dev` and Vitest use Vite's own transformation pipeline, not the TypeScript compiler. TypeScript 7 accelerates build-time type-checking; it does not replace Vite, Vitest, or ESLint. For native editor support in VS Code, install the [TypeScript native extension](https://marketplace.visualstudio.com/items?itemName=TypeScriptTeam.native-preview).
+
+Package installation uses the machine's default npm registry. No repository-level registry override or supply-chain policy bypass is required.
+
+## Vite template reference
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
