@@ -72,29 +72,16 @@ When prompted, select your Azure subscription and target region. The default reg
 
 ## 4. Deploy
 
+The `azd` preprovision hook checks the subscription for the required `Microsoft.Network/AllowBringYourOwnPublicIpAddress` feature. It registers the feature when needed, waits for registration to complete, and refreshes the `Microsoft.Network` provider before provisioning starts. The hook runs for local and CI deployments. The Azure identity needs permission to register subscription features and resource providers.
+
+> [!IMPORTANT]
+> The region selected must have available quota for the `gpt-6-luna` model (GlobalStandard SKU). The Foundry model catalog lists Sweden Central, East US 2, and Australia East among its supported deployment regions. If you receive a quota error, select another supported region or request additional quota.
+
 Provision infrastructure and deploy the application:
 
 ```bash
 azd up
 ```
-
-> [!IMPORTANT]
-> The region selected must have available quota for the `gpt-6-luna` model (GlobalStandard SKU). The Foundry model catalog lists Sweden Central, East US 2, and Australia East among its supported deployment regions. If you receive a quota error, select another supported region or request additional quota.
-
-The Container Apps environment uses a virtual network. The Continuous Delivery workflow checks and registers the required `Microsoft.Network/AllowBringYourOwnPublicIpAddress` subscription feature before provisioning. For a local deployment, register the feature and refresh the network provider if needed:
-
-```bash
-az feature register --namespace Microsoft.Network --name AllowBringYourOwnPublicIpAddress
-az feature show --namespace Microsoft.Network --name AllowBringYourOwnPublicIpAddress --query properties.state --output tsv
-```
-
-Repeat the `az feature show` command until the output is `Registered`, then refresh the provider registration:
-
-```bash
-az provider register --namespace Microsoft.Network --wait
-```
-
-The signed-in Azure identity needs permission to register subscription features and resource providers.
 
 This single command will:
 
