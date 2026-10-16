@@ -57,6 +57,12 @@ infra/
 
 ## Usage
 
+The `azd` preprovision hook checks and registers the required
+`Microsoft.Network/AllowBringYourOwnPublicIpAddress` subscription feature
+before provisioning. It also refreshes the `Microsoft.Network` provider
+registration. The Azure identity needs permission to register subscription
+features and resource providers.
+
 ```bash
 # Provision Azure resources
 azd provision

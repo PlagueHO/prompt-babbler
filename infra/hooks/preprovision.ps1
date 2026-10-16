@@ -4,6 +4,56 @@
 # Requires: az CLI authenticated, Application.ReadWrite.All Graph permission.
 $ErrorActionPreference = 'Stop'
 
+$featureNamespace = 'Microsoft.Network'
+$featureName = 'AllowBringYourOwnPublicIpAddress'
+$featureState = az feature list `
+    --namespace $featureNamespace `
+    --query "[?contains(name, '$featureName')].properties.state | [0]" `
+    --output tsv
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not read $featureNamespace/$featureName registration state."
+}
+
+if ($featureState -ne 'Registered') {
+    Write-Host "Registering $featureNamespace/$featureName..."
+    az feature register `
+        --namespace $featureNamespace `
+        --name $featureName `
+        --output none
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not register $featureNamespace/$featureName. The Azure identity needs permission to register subscription features."
+    }
+
+    for ($attempt = 1; $attempt -le 120; $attempt++) {
+        $featureState = az feature show `
+            --namespace $featureNamespace `
+            --name $featureName `
+            --query properties.state `
+            --output tsv
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not check $featureNamespace/$featureName registration status."
+        }
+        if ($featureState -eq 'Registered') {
+            break
+        }
+
+        Write-Host "Feature registration state: $featureState (attempt $attempt/120)."
+        Start-Sleep -Seconds 15
+    }
+
+    if ($featureState -ne 'Registered') {
+        throw "Timed out waiting for $featureNamespace/$featureName to register."
+    }
+}
+else {
+    Write-Host "$featureNamespace/$featureName is already registered."
+}
+
+az provider register --namespace $featureNamespace --wait
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not refresh registration for $featureNamespace."
+}
+
 $enableEntraAuth = $env:ENABLE_ENTRA_AUTH
 if ($enableEntraAuth -ne 'true') {
     Write-Host "ENABLE_ENTRA_AUTH is not 'true' — skipping Entra ID app registration."

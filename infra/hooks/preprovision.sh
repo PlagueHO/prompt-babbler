@@ -3,7 +3,59 @@
 # Creates Entra ID app registrations when ENABLE_ENTRA_AUTH=true.
 # Skips if already provisioned (AZURE_AD_API_CLIENT_ID is set).
 # Requires: az CLI authenticated, Application.ReadWrite.All Graph permission.
-set -euo pipefail
+set -eu
+
+FEATURE_NAMESPACE="Microsoft.Network"
+FEATURE_NAME="AllowBringYourOwnPublicIpAddress"
+FEATURE_STATE=$(az feature list \
+  --namespace "${FEATURE_NAMESPACE}" \
+  --query "[?contains(name, '${FEATURE_NAME}')].properties.state | [0]" \
+  --output tsv) || {
+  echo "ERROR: Could not read ${FEATURE_NAMESPACE}/${FEATURE_NAME} registration state." >&2
+  exit 1
+}
+
+if [ "${FEATURE_STATE}" != "Registered" ]; then
+  echo "Registering ${FEATURE_NAMESPACE}/${FEATURE_NAME}..."
+  az feature register \
+    --namespace "${FEATURE_NAMESPACE}" \
+    --name "${FEATURE_NAME}" \
+    --output none || {
+    echo "ERROR: Could not register ${FEATURE_NAMESPACE}/${FEATURE_NAME}. The Azure identity needs permission to register subscription features." >&2
+    exit 1
+  }
+
+  ATTEMPT=1
+  while [ "${ATTEMPT}" -le 120 ]; do
+    FEATURE_STATE=$(az feature show \
+      --namespace "${FEATURE_NAMESPACE}" \
+      --name "${FEATURE_NAME}" \
+      --query properties.state \
+      --output tsv) || {
+      echo "ERROR: Could not check ${FEATURE_NAMESPACE}/${FEATURE_NAME} registration status." >&2
+      exit 1
+    }
+    if [ "${FEATURE_STATE}" = "Registered" ]; then
+      break
+    fi
+
+    echo "Feature registration state: ${FEATURE_STATE} (attempt ${ATTEMPT}/120)."
+    sleep 15
+    ATTEMPT=$((ATTEMPT + 1))
+  done
+
+  if [ "${FEATURE_STATE}" != "Registered" ]; then
+    echo "ERROR: Timed out waiting for ${FEATURE_NAMESPACE}/${FEATURE_NAME} to register." >&2
+    exit 1
+  fi
+else
+  echo "${FEATURE_NAMESPACE}/${FEATURE_NAME} is already registered."
+fi
+
+az provider register --namespace "${FEATURE_NAMESPACE}" --wait || {
+  echo "ERROR: Could not refresh registration for ${FEATURE_NAMESPACE}." >&2
+  exit 1
+}
 
 ENABLE_ENTRA_AUTH="${ENABLE_ENTRA_AUTH:-false}"
 
