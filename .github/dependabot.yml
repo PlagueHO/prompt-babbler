@@ -61,6 +61,10 @@ updates:
       - "dependencies"
       - "docker"
     rebase-strategy: "auto"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
 
   # Docker dependencies for containerization of API service
   - package-ecosystem: "docker"
@@ -75,6 +79,10 @@ updates:
       - "dependencies"
       - "docker"
     rebase-strategy: "auto"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
 
   # Docker dependencies for containerization of MCP server
   - package-ecosystem: "docker"
@@ -89,6 +97,10 @@ updates:
       - "dependencies"
       - "docker"
     rebase-strategy: "auto"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
 
   # .NET SDK and MSBuild SDK versions (global.json)
   - package-ecosystem: "dotnet-sdk"
@@ -104,6 +116,10 @@ updates:
       - "dotnet-sdk"
       - ".net"
     rebase-strategy: "auto"
+    groups:
+      dotnet-sdk-dependencies:
+        patterns:
+          - "*"
 
   # .NET 10+ dependencies (backend services)
   - package-ecosystem: "nuget"
@@ -120,37 +136,9 @@ updates:
       - ".net"
     rebase-strategy: "auto"
     groups:
-      aspire-packages:
+      nuget-dependencies:
         patterns:
-          - "Aspire.*"
-        update-types:
-          - "minor"
-          - "patch"
-      microsoft-packages:
-        patterns:
-          - "Microsoft.*"
-        update-types:
-          - "minor"
-          - "patch"
-      opentelemetry:
-        patterns:
-          - "OpenTelemetry.*"
-        update-types:
-          - "minor"
-          - "patch"
-      testing:
-        patterns:
-          - "Microsoft.AspNetCore.Mvc.Testing"
-          - "MSTest.*"
-          - "FluentAssertions"
-          - "NSubstitute"
-          - "coverlet.*"
-        update-types:
-          - "minor"
-          - "patch"
-      azure:
-        patterns:
-          - "Azure.*"
+          - "*"
         update-types:
           - "minor"
           - "patch"
@@ -171,6 +159,10 @@ updates:
       - "npm"
       - "tooling"
     rebase-strategy: "auto"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
     allow:
       - dependency-type: "all"
 
@@ -188,6 +180,10 @@ updates:
       - "npm"
       - "docs"
     rebase-strategy: "auto"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
     allow:
       - dependency-type: "all"
 
@@ -207,55 +203,9 @@ updates:
       - "frontend"
     rebase-strategy: "auto"
     groups:
-      react-ecosystem:
+      npm-dependencies:
         patterns:
-          - "react"
-          - "react-dom"
-          - "@types/react"
-          - "@types/react-dom"
-        update-types:
-          - "minor"
-          - "patch"
-      testing-libraries:
-        patterns:
-          - "vitest"
-          - "@testing-library/*"
-          - "@vitest/*"
-          - "jsdom"
-        update-types:
-          - "minor"
-          - "patch"
-      vite-build:
-        patterns:
-          - "vite"
-          - "@vitejs/*"
-          - "@tailwindcss/*"
-          - "tailwindcss"
-        update-types:
-          - "minor"
-          - "patch"
-      eslint:
-        patterns:
-          - "eslint"
-          - "eslint-*"
-          - "@eslint/*"
-          - "typescript-eslint"
-        update-types:
-          - "minor"
-          - "patch"
-      typescript-types:
-        patterns:
-          - "typescript"
-          - "@types/*"
-        update-types:
-          - "minor"
-          - "patch"
-      ui-utilities:
-        patterns:
-          - "date-fns"
-          - "clsx"
-          - "class-variance-authority"
-          - "tailwind-merge"
+          - "*"
         update-types:
           - "minor"
           - "patch"
