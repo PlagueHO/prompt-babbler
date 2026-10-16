@@ -4,9 +4,16 @@
 # Requires: az CLI authenticated, Application.ReadWrite.All Graph permission.
 $ErrorActionPreference = 'Stop'
 
+$subscriptionId = $env:AZURE_SUBSCRIPTION_ID
+$parsedSubscriptionId = [guid]::Empty
+if ([string]::IsNullOrWhiteSpace($subscriptionId) -or -not [guid]::TryParse($subscriptionId, [ref]$parsedSubscriptionId)) {
+    throw "AZURE_SUBSCRIPTION_ID must be a valid subscription ID."
+}
+
 $featureNamespace = 'Microsoft.Network'
 $featureName = 'AllowBringYourOwnPublicIpAddress'
 $featureState = az feature list `
+    --subscription $subscriptionId `
     --namespace $featureNamespace `
     --query "[?contains(name, '$featureName')].properties.state | [0]" `
     --output tsv
@@ -17,6 +24,7 @@ if ($LASTEXITCODE -ne 0) {
 if ($featureState -ne 'Registered') {
     Write-Host "Registering $featureNamespace/$featureName..."
     az feature register `
+        --subscription $subscriptionId `
         --namespace $featureNamespace `
         --name $featureName `
         --output none
@@ -26,6 +34,7 @@ if ($featureState -ne 'Registered') {
 
     for ($attempt = 1; $attempt -le 120; $attempt++) {
         $featureState = az feature show `
+            --subscription $subscriptionId `
             --namespace $featureNamespace `
             --name $featureName `
             --query properties.state `
@@ -49,7 +58,7 @@ else {
     Write-Host "$featureNamespace/$featureName is already registered."
 }
 
-az provider register --namespace $featureNamespace --wait
+az provider register --subscription $subscriptionId --namespace $featureNamespace --wait
 if ($LASTEXITCODE -ne 0) {
     throw "Could not refresh registration for $featureNamespace."
 }
