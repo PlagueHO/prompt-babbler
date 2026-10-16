@@ -29,7 +29,7 @@
       "url": "https://learn.microsoft.com/api/mcp",
       "type": "http"
     },
-    "microsoft-foundry": {
+    "foundry-mcp-remote": {
       "type": "http",
       "url": "https://mcp.ai.azure.com"
     },

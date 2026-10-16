@@ -178,6 +178,61 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Ensure Azure Network feature is registered
+        shell: bash
+        run: |
+          set -euo pipefail
+          feature_namespace='Microsoft.Network'
+          feature_name='AllowBringYourOwnPublicIpAddress'
+          if ! feature_state="$(az feature list \
+              --namespace "$feature_namespace" \
+              --query "[?contains(name, '$feature_name')].properties.state | [0]" \
+              --output tsv)"; then
+            echo "::error::Could not read $feature_namespace/$feature_name registration state. Check the Azure identity's subscription access."
+            exit 1
+          fi
+
+          if [[ "$feature_state" != 'Registered' ]]; then
+            echo "Registering $feature_namespace/$feature_name..."
+            if ! az feature register \
+                --namespace "$feature_namespace" \
+                --name "$feature_name" \
+                --output none; then
+              echo "::error::Could not register $feature_namespace/$feature_name. The Azure identity needs permission to register subscription features."
+              exit 1
+            fi
+
+            for attempt in $(seq 1 120); do
+              if ! feature_state="$(az feature show \
+                  --namespace "$feature_namespace" \
+                  --name "$feature_name" \
+                  --query properties.state \
+                  --output tsv)"; then
+                echo "::error::Could not check $feature_namespace/$feature_name registration status."
+                exit 1
+              fi
+              if [[ "$feature_state" == 'Registered' ]]; then
+                break
+              fi
+
+              echo "Feature registration state: $feature_state (attempt $attempt/120)."
+              sleep 15
+            done
+
+            if [[ "$feature_state" != 'Registered' ]]; then
+              echo "::error::Timed out waiting for $feature_namespace/$feature_name to register."
+              exit 1
+            fi
+
+          else
+            echo "$feature_namespace/$feature_name is already registered."
+          fi
+
+          if ! az provider register --namespace "$feature_namespace" --wait; then
+            echo "::error::Could not refresh registration for $feature_namespace."
+            exit 1
+          fi
+
       - name: Create Azure Developer CLI environment
         run: |
           azd env new "$AZURE_ENV_NAME" --location "$AZURE_LOCATION"

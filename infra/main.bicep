@@ -162,7 +162,7 @@ module cosmosDbPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1'
   }
 }
 
-// Private DNS Zones for Azure AI Foundry / Cognitive Services
+// Private DNS Zones for Microsoft Foundry / Cognitive Services
 module foundryPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' = {
   name: 'foundry-private-dns-zone-${resourceToken}'
   scope: resourceGroup(resourceGroupName)

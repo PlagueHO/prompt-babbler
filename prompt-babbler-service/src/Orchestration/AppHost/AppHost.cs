@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Azure AI Foundry resources — host for account-level endpoints and project for model routing.
+// Microsoft Foundry resources — host for account-level endpoints and project for model routing.
 // Azure:SubscriptionId and Azure:TenantId are REQUIRED — set via dotnet user-secrets (see QUICKSTART-LOCAL.md).
 // Azure:Location and Azure:CredentialSource are set in launchSettings.json.
 // See: https://aspire.dev/integrations/cloud/azure/azure-foundryProject/azure-foundryProject-host/
@@ -13,8 +13,8 @@ var foundryProject = foundry.AddProject("foundryProject");
 // These are NOT Aspire parameters — just configuration values for the deployment names.
 var chatDeployment = foundryProject.AddModelDeployment(
     "chat",
-    builder.Configuration["MicrosoftFoundry:chatModelName"] ?? "gpt-5.3-chat",
-    builder.Configuration["MicrosoftFoundry:chatModelVersion"] ?? "2026-03-03",
+    builder.Configuration["MicrosoftFoundry:chatModelName"] ?? "gpt-6-luna",
+    builder.Configuration["MicrosoftFoundry:chatModelVersion"] ?? "2026-09-22",
     "OpenAI")
     .WithProperties(deployment =>
     {

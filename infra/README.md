@@ -14,7 +14,7 @@ Bicep Infrastructure-as-Code (IaC) for deploying Prompt Babbler to Azure using [
 | **Azure Container Apps** (API) | `avm/res/app/container-app` | .NET backend API |
 | **Azure Container Apps** (MCP Server) | `avm/res/app/container-app` | .NET MCP Server |
 | **Azure Static Web Apps** | `avm/res/web/static-site` | React frontend |
-| **Microsoft Foundry (AI Services)** | Custom `cognitive-services/accounts` module | `gpt-5.3-chat` (prompt generation), `text-embedding-3-small` (vector embeddings), Speech API (STT) via managed identity |
+| **Microsoft Foundry (AI Services)** | Custom `cognitive-services/accounts` module | `gpt-6-luna` (prompt generation), `text-embedding-3-small` (vector embeddings), Speech API (STT) via managed identity |
 | **Azure Cosmos DB** | `avm/res/document-db/database-account` | Serverless NoSQL data store with vector search |
 | **Container Apps Environment** | `avm/res/app/managed-environment` | Managed environment for Container Apps |
 | **Azure Virtual Network** | `avm/res/network/virtual-network` | Private networking for Container Apps and private endpoints |
