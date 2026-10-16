@@ -5,9 +5,16 @@
 # Requires: az CLI authenticated, Application.ReadWrite.All Graph permission.
 set -eu
 
+AZURE_SUBSCRIPTION_ID="${AZURE_SUBSCRIPTION_ID:-}"
+if [ -z "${AZURE_SUBSCRIPTION_ID}" ]; then
+  echo "ERROR: AZURE_SUBSCRIPTION_ID is required to register subscription features." >&2
+  exit 1
+fi
+
 FEATURE_NAMESPACE="Microsoft.Network"
 FEATURE_NAME="AllowBringYourOwnPublicIpAddress"
 FEATURE_STATE=$(az feature list \
+  --subscription "${AZURE_SUBSCRIPTION_ID}" \
   --namespace "${FEATURE_NAMESPACE}" \
   --query "[?contains(name, '${FEATURE_NAME}')].properties.state | [0]" \
   --output tsv) || {
@@ -18,6 +25,7 @@ FEATURE_STATE=$(az feature list \
 if [ "${FEATURE_STATE}" != "Registered" ]; then
   echo "Registering ${FEATURE_NAMESPACE}/${FEATURE_NAME}..."
   az feature register \
+    --subscription "${AZURE_SUBSCRIPTION_ID}" \
     --namespace "${FEATURE_NAMESPACE}" \
     --name "${FEATURE_NAME}" \
     --output none || {
@@ -28,6 +36,7 @@ if [ "${FEATURE_STATE}" != "Registered" ]; then
   ATTEMPT=1
   while [ "${ATTEMPT}" -le 120 ]; do
     FEATURE_STATE=$(az feature show \
+      --subscription "${AZURE_SUBSCRIPTION_ID}" \
       --namespace "${FEATURE_NAMESPACE}" \
       --name "${FEATURE_NAME}" \
       --query properties.state \
@@ -52,7 +61,7 @@ else
   echo "${FEATURE_NAMESPACE}/${FEATURE_NAME} is already registered."
 fi
 
-az provider register --namespace "${FEATURE_NAMESPACE}" --wait || {
+az provider register --subscription "${AZURE_SUBSCRIPTION_ID}" --namespace "${FEATURE_NAMESPACE}" --wait || {
   echo "ERROR: Could not refresh registration for ${FEATURE_NAMESPACE}." >&2
   exit 1
 }
