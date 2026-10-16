@@ -77,7 +77,7 @@ if (isAiConfigured)
 {
     // Use AzureOpenAIClient from Azure.AI.OpenAI — this SDK targets the
     // /openai/deployments/{deployment}/chat/completions route which is what
-    // Azure AI Foundry supports. The older Azure.AI.Inference SDK only sends
+    // Microsoft Foundry supports. The older Azure.AI.Inference SDK only sends
     // api-version=2024-05-01-preview which Foundry has deprecated ("API version not supported").
     //
     // The "foundryProject" connection string points to the project endpoint
@@ -125,7 +125,7 @@ else
 // Uses the same runtime credential policy as the rest of the Azure SDK clients.
 builder.Services.AddSingleton<TokenCredential>(runtimeTokenCredential);
 
-// Parse the AI Services endpoint from the AI Foundry connection string for Speech Service
+// Parse the AI Services endpoint from the Microsoft Foundry connection string for Speech Service
 // STS token exchange. The Speech SDK requires a Cognitive Services token, not a raw AAD token.
 var foundryAccountConnStr = builder.Configuration.GetConnectionString("foundry")
     ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT")

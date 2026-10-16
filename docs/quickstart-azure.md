@@ -37,7 +37,7 @@ Install the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
 ### Azure subscription
 
-You need an active Azure subscription with quota for `gpt-5.3-chat` (GlobalStandard SKU) in the target region (default: **EastUS2**).
+You need an active Azure subscription with quota for `gpt-6-luna` (GlobalStandard SKU) in the target region (default: **EastUS2**).
 
 ## 1. Clone the repository
 
@@ -79,7 +79,22 @@ azd up
 ```
 
 > [!IMPORTANT]
-> The region selected must have available quota for the `gpt-5.3-chat` model (GlobalStandard SKU). If you receive a quota error, try a different region (e.g., `swedencentral` or `eastus2`).
+> The region selected must have available quota for the `gpt-6-luna` model (GlobalStandard SKU). The Foundry model catalog lists Sweden Central, East US 2, and Australia East among its supported deployment regions. If you receive a quota error, select another supported region or request additional quota.
+
+The Container Apps environment uses a virtual network. The Continuous Delivery workflow checks and registers the required `Microsoft.Network/AllowBringYourOwnPublicIpAddress` subscription feature before provisioning. For a local deployment, register the feature and refresh the network provider if needed:
+
+```bash
+az feature register --namespace Microsoft.Network --name AllowBringYourOwnPublicIpAddress
+az feature show --namespace Microsoft.Network --name AllowBringYourOwnPublicIpAddress --query properties.state --output tsv
+```
+
+Repeat the `az feature show` command until the output is `Registered`, then refresh the provider registration:
+
+```bash
+az provider register --namespace Microsoft.Network --wait
+```
+
+The signed-in Azure identity needs permission to register subscription features and resource providers.
 
 This single command will:
 
@@ -97,12 +112,12 @@ This single command will:
 | Resource Group | `rg-<env-name>` | Resource Group | Contains all Prompt Babbler resources |
 | Virtual Network | `vnet-<env-name>` | Azure Virtual Network | Network isolation with dedicated ACA (`10.0.0.0/23`) and private endpoint (`10.0.2.0/24`) subnets |
 | Private DNS Zone (Cosmos DB) | `privatelink.documents.azure.com` | Azure Private DNS Zone | Resolves private Cosmos DB DNS names within the VNet |
-| Private DNS Zone (AI Foundry) | `privatelink.cognitiveservices.azure.com` | Azure Private DNS Zone | Resolves private AI Foundry DNS names within the VNet |
+| Private DNS Zone (Microsoft Foundry) | `privatelink.cognitiveservices.azure.com` | Azure Private DNS Zone | Resolves private Microsoft Foundry DNS names within the VNet |
 | Private DNS Zone (OpenAI) | `privatelink.openai.azure.com` | Azure Private DNS Zone | Resolves private OpenAI endpoint DNS names within the VNet |
 | Log Analytics Workspace | `log-<env-name>` | Azure Monitor | Centralizes logs and metrics from all resources |
 | Application Insights | `appi-<env-name>` | Azure Application Insights | Application performance monitoring and distributed tracing |
-| AI Foundry (AIServices) | `aif-<env-name>` | Azure AI Services | LLM and embedding model deployments; Speech Service for real-time transcription |
-| Private Endpoint (AI Foundry) | `pe-<env-name>-foundry` | Azure Private Endpoint | Enables private network access to AI Foundry |
+| Microsoft Foundry (AIServices) | `aif-<env-name>` | Azure AI Services | LLM and embedding model deployments; Speech Service for real-time transcription |
+| Private Endpoint (Microsoft Foundry) | `pe-<env-name>-foundry` | Azure Private Endpoint | Enables private network access to Microsoft Foundry |
 | Cosmos DB Account | `cdb<env-name>` | Azure Cosmos DB (Serverless, NoSQL + Vector Search) | Persists babbles, generated prompts, prompt templates, and user data |
 | Private Endpoint (Cosmos DB) | `pe-<env-name>-cosmosdb` | Azure Private Endpoint | Enables private network access to Cosmos DB |
 | Container Apps Environment | `cae-<env-name>` | Azure Container Apps Environment | Shared managed environment with VNet integration and Log Analytics |
@@ -140,7 +155,7 @@ The deployment provisions these AI model deployments by default:
 
 | Deployment | Model | Version | SKU | Capacity |
 | --- | --- | --- | --- | --- |
-| `chat` | `gpt-5.3-chat` | `2026-03-03` | GlobalStandard | 50 |
+| `chat` | `gpt-6-luna` | `2026-09-22` | GlobalStandard | 50 |
 | `embedding` | `text-embedding-3-small` | `1` | GlobalStandard | 120 |
 
 Speech-to-text uses **Azure AI Speech Service** (real-time streaming), which is included in the same AIServices resource — no separate model deployment is needed.
@@ -287,10 +302,10 @@ azd down --force --purge
 | Symptom | Fix |
 | --- | --- |
 | `azd` command not found | Install Azure Developer CLI: `winget install Microsoft.Azd` (Windows) or see [install docs](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
-| Quota error during provisioning | Ensure your subscription has `gpt-5.3-chat` GlobalStandard quota in the target region. Try `swedencentral` or `eastus2`. |
+| Quota error during provisioning | Ensure your subscription has `gpt-6-luna` GlobalStandard quota in the target region. Check model availability in the Foundry catalog and request quota if needed. |
 | `azd auth login` fails | Run `az login` first, then retry `azd auth login`. Ensure your account has Contributor access to the target subscription. |
 | `InvalidAuthenticationTokenTenant` | Wrong tenant. Run `az login --tenant <tenant-id>`. |
-| Deployment times out | AI Foundry model deployments can take several minutes. Re-run `azd up` — it resumes from where it left off. |
+| Deployment times out | Microsoft Foundry model deployments can take several minutes. Re-run `azd up` — it resumes from where it left off. |
 | Deployment fails with Graph permission error | The deploying principal needs `Application.ReadWrite.All`. See [CI/CD Setup Guide](design/cicd.md). |
 | `ENABLE_ENTRA_AUTH` set but no app registrations created | Check that `AZURE_AD_API_CLIENT_ID` is not already set: `azd env get-value AZURE_AD_API_CLIENT_ID`. The hook skips if already provisioned. To force re-creation, clear it: `azd env set AZURE_AD_API_CLIENT_ID ""`. |
 | Frontend can't reach API | Check that the Container App is running in the Azure Portal. Verify environment variables are set correctly with `azd env get-values`. |

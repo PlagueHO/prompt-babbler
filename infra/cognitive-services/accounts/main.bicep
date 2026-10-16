@@ -82,7 +82,7 @@ param customSubDomainName string?
 @description('Optional. A collection of rules governing the accessibility from specific network locations.')
 param networkAcls object?
 
-@description('Optional. Specifies in AI Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
+@description('Optional. Specifies in Microsoft Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
 param networkInjections networkInjectionType?
 
 import { privateEndpointSingleServiceType } from 'br/public:avm/utl/types/avm-common-types:0.7.0'
@@ -1046,7 +1046,7 @@ type commitmentPlanType = {
 }
 
 @export()
-@description('Type for network configuration in AI Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
+@description('Type for network configuration in Microsoft Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
 type networkInjectionType = {
   @description('Required. The scenario for the network injection.')
   scenario: 'agent' | 'none'

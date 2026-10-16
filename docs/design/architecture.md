@@ -20,7 +20,7 @@ Prompt Babbler is a speech-to-prompt web application with two deployment modes:
 | AI Services | Microsoft Foundry (LLM chat + Speech STT via Aspire integration) |
 | Data | Azure Cosmos DB (serverless, NoSQL) |
 | Orchestration | .NET Aspire (Microsoft Foundry + Cosmos DB provisioning) |
-| Networking | Azure VNET with private endpoints for Cosmos DB and AI Foundry |
+| Networking | Azure VNET with private endpoints for Cosmos DB and Microsoft Foundry |
 | Infrastructure | Azure Bicep with Azure Verified Modules (AVM) |
 | Auth | Microsoft Entra ID (MSAL + JWT), single-user anonymous mode |
 | Testing | Vitest + Testing Library (frontend), MSTest SDK + FluentAssertions + NSubstitute (backend) |
@@ -128,7 +128,7 @@ When deployed to Azure via `azd up`, the following resources are provisioned (se
 | Azure Container App | .NET backend API (managed identity, port 8080) |
 | Azure Static Web App | React frontend (free tier) |
 | Azure Cosmos DB | Serverless NoSQL (4 containers) |
-| Azure AI Foundry (AIServices) | LLM (gpt-5.3-chat) + Speech Service |
+| Microsoft Foundry (AIServices) | LLM (gpt-6-luna) + Speech Service |
 | Container Apps Environment | Managed environment with VNet integration |
 | Virtual Network | Private networking with subnets and private endpoints |
 | Private DNS Zones | Private link DNS for Cosmos DB and Cognitive Services |

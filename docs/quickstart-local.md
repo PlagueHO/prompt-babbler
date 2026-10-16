@@ -220,7 +220,7 @@ The AppHost deploys one AI model by default:
 
 | Deployment | Model | Version | SKU |
 |------------|-------|---------|-----|
-| chat | gpt-5.3-chat | 2026-03-03 | GlobalStandard |
+| chat | gpt-6-luna | 2026-09-22 | GlobalStandard |
 
 Speech-to-text uses **Azure AI Speech Service** (real-time streaming), which is part of the same AIServices resource — no separate model deployment is needed.
 
@@ -228,8 +228,8 @@ Override the chat model via environment variables in `prompt-babbler-service/src
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MicrosoftFoundry__chatModelName` | `gpt-5.3-chat` | Chat/LLM model |
-| `MicrosoftFoundry__chatModelVersion` | `2026-03-03` | Chat model version |
+| `MicrosoftFoundry__chatModelName` | `gpt-6-luna` | Chat/LLM model |
+| `MicrosoftFoundry__chatModelVersion` | `2026-09-22` | Chat model version |
 
 Ensure your subscription has available quota for the configured models in the target region.
 

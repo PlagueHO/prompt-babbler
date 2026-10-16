@@ -84,7 +84,7 @@ Describe 'Backend API' {
         }
 
         # Phase 2: Wait for /health to report all dependency checks as Healthy.
-        # The detailed health response includes per-check status for Cosmos DB, managed identity, and AI Foundry.
+        # The detailed health response includes per-check status for Cosmos DB, managed identity, and Microsoft Foundry.
         $statusRetries = 20
         $statusDelay = 10
         $statusHealthy = $false
