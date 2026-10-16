@@ -290,7 +290,7 @@ public sealed class BabbleController : ControllerBase
             return;
         }
 
-        var template = await _templateService.GetByIdAsync(null, request.TemplateId, cancellationToken);
+        var template = await _templateService.GetByIdAsync(userId, request.TemplateId, cancellationToken);
         if (template is null)
         {
             HttpContext.Response.StatusCode = 404;

@@ -45,6 +45,49 @@ public sealed class CosmosPromptTemplateRepositoryTests
     // ---- GetByIdAsync ----
 
     [TestMethod]
+    [DataRow("_anonymous")]
+    [DataRow("user-1")]
+    public async Task ListTemplatesAsync_IncludesBuiltInAndOwnerPartitionsWithFiltersAndPaging(string userId)
+    {
+        var templates = new List<PromptTemplate>
+        {
+            CreateTemplate("builtin", "_builtin", isBuiltIn: true),
+            CreateTemplate("custom", userId),
+        };
+        var response = Substitute.For<FeedResponse<PromptTemplate>>();
+        response.GetEnumerator().Returns(_ => templates.GetEnumerator());
+        response.ContinuationToken.Returns("next-page");
+        var iterator = Substitute.For<FeedIterator<PromptTemplate>>();
+        iterator.HasMoreResults.Returns(true);
+        iterator.ReadNextAsync(Arg.Any<CancellationToken>()).Returns(response);
+        QueryDefinition? capturedQuery = null;
+        _container.GetItemQueryIterator<PromptTemplate>(
+                Arg.Do<QueryDefinition>(query => capturedQuery = query),
+                "previous-page",
+                Arg.Is<QueryRequestOptions>(options => options.MaxItemCount == 10))
+            .Returns(iterator);
+
+        var (items, continuationToken) = await _repository.ListTemplatesAsync(
+            userId, "previous-page", 10, " Writer ", " Creative ", "name", "asc");
+
+        items.Should().BeEquivalentTo(templates);
+        continuationToken.Should().Be("next-page");
+        capturedQuery.Should().NotBeNull();
+        capturedQuery!.QueryText.Should().Be(
+            "SELECT * FROM c WHERE (c.userId = @builtInUserId OR c.userId = @userId)" +
+            " AND CONTAINS(LOWER(c.name), @search)" +
+            " AND EXISTS(SELECT VALUE t FROM t IN c.tags WHERE LOWER(t) = @tag)" +
+            " ORDER BY c.name ASC");
+        capturedQuery.GetQueryParameters().Should().BeEquivalentTo(new (string Name, object Value)[]
+        {
+            ("@builtInUserId", "_builtin"),
+            ("@userId", userId),
+            ("@search", "writer"),
+            ("@tag", "creative"),
+        });
+    }
+
+    [TestMethod]
     public async Task GetByIdAsync_NotFound_ReturnsNull()
     {
         _container.ReadItemAsync<PromptTemplate>(

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using PromptBabbler.Domain.Constants;
 using PromptBabbler.Domain.Interfaces;
 using PromptBabbler.Domain.Models;
 using PromptBabbler.Infrastructure.Services;
@@ -127,16 +128,20 @@ public sealed class PromptTemplateServiceTests
     }
 
     [TestMethod]
-    public async Task GetTemplatesAsync_AnonymousUser_ReturnsOnlyBuiltIn()
+    [DataRow(UserIds.Anonymous)]
+    [DataRow(null)]
+    public async Task GetTemplatesAsync_AnonymousUser_ReturnsBuiltInAndCustomTemplates(string? userId)
     {
         var builtIn = CreateTemplate("b1", "_builtin", "Built-in", isBuiltIn: true);
+        var custom = CreateTemplate(userId: UserIds.Anonymous);
         _repository.GetBuiltInTemplatesAsync(Arg.Any<CancellationToken>())
             .Returns(new List<PromptTemplate> { builtIn });
+        _repository.GetUserTemplatesAsync(UserIds.Anonymous, Arg.Any<CancellationToken>())
+            .Returns(new List<PromptTemplate> { custom });
 
-        var result = await _service.GetTemplatesAsync("_anonymous");
+        var result = await _service.GetTemplatesAsync(userId);
 
-        result.Should().ContainSingle().Which.IsBuiltIn.Should().BeTrue();
-        await _repository.DidNotReceive().GetUserTemplatesAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        result.Should().BeEquivalentTo(new[] { builtIn, custom });
     }
 
     [TestMethod]
@@ -154,6 +159,32 @@ public sealed class PromptTemplateServiceTests
     }
 
     // ---- GetByIdAsync ----
+
+    [TestMethod]
+    [DataRow(UserIds.Anonymous)]
+    [DataRow(null)]
+    public async Task GetByIdAsync_AnonymousCustomTemplate_ReturnsTemplate(string? userId)
+    {
+        var template = CreateTemplate(userId: UserIds.Anonymous);
+        _repository.GetByIdAsync(UserIds.Anonymous, template.Id, Arg.Any<CancellationToken>())
+            .Returns(template);
+
+        var result = await _service.GetByIdAsync(userId, template.Id);
+
+        result.Should().Be(template);
+    }
+
+    [TestMethod]
+    public async Task GetByIdAsync_AuthenticatedUser_DoesNotExposeAnonymousTemplate()
+    {
+        var template = CreateTemplate(userId: UserIds.Anonymous);
+        _repository.GetByIdAsync(UserIds.Anonymous, template.Id, Arg.Any<CancellationToken>())
+            .Returns(template);
+
+        var result = await _service.GetByIdAsync(TestUserId, template.Id);
+
+        result.Should().BeNull();
+    }
 
     [TestMethod]
     public async Task GetByIdAsync_UserTemplate_ReturnsTemplate()
@@ -208,6 +239,30 @@ public sealed class PromptTemplateServiceTests
     }
 
     // ---- CreateAsync ----
+
+    [TestMethod]
+    [DataRow(UserIds.Anonymous)]
+    [DataRow(null)]
+    public async Task CreateAsync_AnonymousTemplate_IsListedAndRetrievedAfterCachedRead(string? userId)
+    {
+        var template = CreateTemplate(userId: UserIds.Anonymous);
+        _repository.GetBuiltInTemplatesAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<PromptTemplate>());
+        _repository.GetUserTemplatesAsync(UserIds.Anonymous, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<PromptTemplate>(), new[] { template });
+        _repository.CreateAsync(template, Arg.Any<CancellationToken>()).Returns(template);
+        _repository.GetByIdAsync(UserIds.Anonymous, template.Id, Arg.Any<CancellationToken>())
+            .Returns(template);
+
+        var before = await _service.GetTemplatesAsync(userId);
+        var created = await _service.CreateAsync(template);
+        var after = await _service.GetTemplatesAsync(userId);
+        var retrieved = await _service.GetByIdAsync(userId, created.Id);
+
+        before.Should().BeEmpty();
+        after.Should().ContainSingle().Which.Should().Be(created);
+        retrieved.Should().Be(created);
+    }
 
     [TestMethod]
     public async Task CreateAsync_DelegatesAndInvalidatesCache()

@@ -39,7 +39,7 @@ type TemplateFormData = z.infer<typeof templateSchema>;
 
 interface TemplateEditorProps {
   template: PromptTemplate | null;
-  onSave: (data: TemplateRequest) => void;
+  onSave: (data: TemplateRequest) => void | Promise<void>;
   onCancel: () => void;
   onDelete?: () => void;
 }
@@ -82,7 +82,7 @@ export function TemplateEditor({
   const defaultOutputFormat = useWatch({ control, name: 'defaultOutputFormat' });
   const defaultAllowEmojis = useWatch({ control, name: 'defaultAllowEmojis' });
 
-  const handleFormSubmit = (data: TemplateFormData) => {
+  const handleFormSubmit = async (data: TemplateFormData) => {
     const request: TemplateRequest = {
       name: data.name,
       description: data.description,
@@ -97,7 +97,7 @@ export function TemplateEditor({
       defaultAllowEmojis: data.defaultAllowEmojis,
       tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
     };
-    onSave(request);
+    await onSave(request);
   };
 
   return (
@@ -316,10 +316,10 @@ export function TemplateEditor({
         {!isBuiltIn && (
           <Button type="submit" size="sm" disabled={isSubmitting}>
             <Save className="size-4" />
-            Save
+            {isSubmitting ? 'Saving...' : 'Save'}
           </Button>
         )}
-        <Button type="button" size="sm" variant="outline" onClick={onCancel}>
+        <Button type="button" size="sm" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           <X className="size-4" />
           {isBuiltIn ? 'Close' : 'Cancel'}
         </Button>
@@ -329,6 +329,7 @@ export function TemplateEditor({
             size="sm"
             variant="destructive"
             onClick={onDelete}
+            disabled={isSubmitting}
           >
             <Trash2 className="size-4" />
             Delete
