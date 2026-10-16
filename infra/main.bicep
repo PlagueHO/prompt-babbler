@@ -101,7 +101,7 @@ var cosmosDbPrivateEndpointName = '${abbrs.networkPrivateEndpoints}${environment
 var foundryPrivateEndpointName = '${abbrs.networkPrivateEndpoints}${environmentName}-foundry'
 
 // The application resources that are deployed into the application resource group
-module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
+module rg 'br/public:avm/res/resources/resource-group:0.4.4' = {
   name: 'resource-group-deployment-${resourceToken}'
   params: {
     name: resourceGroupName
@@ -112,7 +112,7 @@ module rg 'br/public:avm/res/resources/resource-group:0.4.3' = {
 
 // --------- NETWORKING RESOURCES ---------
 // Virtual Network with subnets for Container Apps Environment and Private Endpoints
-module virtualNetwork 'br/public:avm/res/network/virtual-network:0.9.0' = {
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.10.2' = {
   name: 'virtual-network-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -201,7 +201,7 @@ module openAiPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.8.1' =
 }
 
 // --------- MONITORING RESOURCES ---------
-module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.15.1' = {
+module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0.16.1' = {
   name: 'log-analytics-workspace-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -214,7 +214,7 @@ module logAnalyticsWorkspace 'br/public:avm/res/operational-insights/workspace:0
   }
 }
 
-module applicationInsights 'br/public:avm/res/insights/component:0.7.2' = {
+module applicationInsights 'br/public:avm/res/insights/component:0.8.0' = {
   name: 'application-insights-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -375,7 +375,7 @@ module foundryPrivateEndpoint 'br/public:avm/res/network/private-endpoint:0.12.1
 }
 
 // --------- COSMOS DB (SERVERLESS) ---------
-module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' = {
+module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.21.1' = {
   name: 'cosmos-db-account-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -386,9 +386,9 @@ module cosmosDbAccount 'br/public:avm/res/document-db/database-account:0.19.0' =
     location: location
     tags: tags
     capabilitiesToAdd: [
-      'EnableServerless'
       'EnableNoSQLVectorSearch'
     ]
+    capacityMode: 'Serverless'
     enableBurstCapacity: false
     disableLocalAuthentication: false
     disableKeyBasedMetadataWriteAccess: false
@@ -484,7 +484,7 @@ module babblesVectorContainer './cosmos-babbles-vector-container.bicep' = {
 }
 
 // --------- CONTAINER APPS ENVIRONMENT ---------
-module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.13.3' = {
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.16.0' = {
   name: 'container-apps-environment-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -521,7 +521,7 @@ module aspireDashboard 'aspire-dashboard.bicep' = {
 }
 
 // --------- CONTAINER APP (API) ---------
-module containerApp 'br/public:avm/res/app/container-app:0.22.1' = {
+module containerApp 'br/public:avm/res/app/container-app:0.23.0' = {
   name: 'container-app-api-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [
@@ -660,7 +660,7 @@ module containerAppCosmosDbRoles './core/security/role_cosmosdb.bicep' = {
 }
 
 // --------- CONTAINER APP (MCP SERVER) ---------
-module mcpServerContainerApp 'br/public:avm/res/app/container-app:0.22.1' = {
+module mcpServerContainerApp 'br/public:avm/res/app/container-app:0.23.0' = {
   name: 'container-app-mcp-server-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   params: {
@@ -742,7 +742,7 @@ module principalCosmosDbRoles './core/security/role_cosmosdb.bicep' = if (!empty
 }
 
 // --------- STATIC WEB APP (FRONTEND) ---------
-module staticWebApp 'br/public:avm/res/web/static-site:0.9.5' = {
+module staticWebApp 'br/public:avm/res/web/static-site:0.9.6' = {
   name: 'static-web-app-deployment-${resourceToken}'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [

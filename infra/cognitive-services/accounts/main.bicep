@@ -524,7 +524,7 @@ resource cognitiveService_diagnosticSettings 'Microsoft.Insights/diagnosticSetti
 ]
 
 @batchSize(1)
-module cognitiveService_privateEndpoints 'br/public:avm/res/network/private-endpoint:0.12.0' = [
+module cognitiveService_privateEndpoints 'br/public:avm/res/network/private-endpoint:0.12.1' = [
   for (privateEndpoint, index) in (privateEndpoints ?? []): {
     name: take('${uniqueString(deployment().name, location)}-cognitiveService-PrivateEndpoint-${index}', 64)
     scope: az.resourceGroup(
