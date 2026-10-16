@@ -8,7 +8,7 @@ The compiler is installed as `@typescript/native` (an npm alias for `typescript@
 
 `pnpm dev` and Vitest use Vite's own transformation pipeline, not the TypeScript compiler. TypeScript 7 accelerates build-time type-checking; it does not replace Vite, Vitest, or ESLint. For native editor support in VS Code, install the [TypeScript native extension](https://marketplace.visualstudio.com/items?itemName=TypeScriptTeam.native-preview).
 
-Package installation uses the machine's default npm registry. No repository-level registry override or supply-chain policy bypass is required.
+Package installation uses the machine's default npm registry. The lockfile pins package versions and integrity hashes without hardcoding registry tarball URLs, so frozen installs do not require access to a particular corporate feed. No repository-level registry override or supply-chain policy bypass is required.
 
 ## Vite template reference
 
