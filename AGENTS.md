@@ -65,6 +65,18 @@ bicep lint ./infra/main.bicep
 - Run the failed command again after installation.
 - Do not ignore an installation or validation error. If installation fails, try another supported method. If you cannot install the tool, report the blocker and the commands you could not run.
 
+## Documentation and change records
+
+- Review documentation and release notes for each change.
+- Record notable changes in the `[Unreleased]` section of `CHANGELOG.md`.
+- Use the existing changelog format and section names.
+- Include required migration steps for breaking changes.
+- Update `README.md` and affected files in `docs/` when behavior or requirements change.
+- Update affected examples, setup commands, and configuration guidance.
+- Keep pull request release notes consistent with `CHANGELOG.md`.
+- Do not rewrite released changelog entries.
+- Change release versions only when the task requires a release.
+
 ## Modifying a Frontend Component — Checklist
 
 1. Implement the change in `src/components/` or `src/hooks/`

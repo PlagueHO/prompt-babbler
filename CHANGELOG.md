@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use `RunAsEmulator` for the Cosmos DB vNext emulator in the AppHost and vector-container integration tests.
+- Require agents to update changelog entries and related documentation.
+
+### Dependencies
+
+- Upgrade the Aspire AppHost SDK, Cosmos DB hosting integration, and testing package to 13.6.0 so `RunAsEmulator` selects the vNext emulator.
+
 ## [1.7.2] - 2026-06-06
 
 ### Changed

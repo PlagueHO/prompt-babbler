@@ -22,9 +22,7 @@ public sealed class CosmosVectorContainerInitializationServiceTests
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.PromptBabbler_AppHost>();
         // Test only Cosmos, with a session-owned container and random ports, not cloud resources.
         builder.Resources.Clear();
-#pragma warning disable ASPIRECOSMOSDB001
-        builder.AddAzureCosmosDB("cosmos-vector-tests").RunAsPreviewEmulator();
-#pragma warning restore ASPIRECOSMOSDB001
+        builder.AddAzureCosmosDB("cosmos-vector-tests").RunAsEmulator();
         s_app = await builder.BuildAsync();
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         await s_app.StartAsync(timeout.Token);
