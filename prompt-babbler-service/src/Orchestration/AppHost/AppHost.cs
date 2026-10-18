@@ -35,16 +35,14 @@ var embeddingDeployment = foundryProject.AddModelDeployment(
 
 // Azure Cosmos DB — uses the emulator for local development.
 // See: https://aspire.dev/integrations/cloud/azure/azure-cosmos-db/azure-cosmos-db-host/
-#pragma warning disable ASPIRECOSMOSDB001
 var cosmos = builder.AddAzureCosmosDB("cosmos")
-    .RunAsPreviewEmulator(emulator =>
+    .RunAsEmulator(emulator =>
     {
         emulator.WithDataExplorer();
         // Keep the emulator container alive between Aspire runs so the image is not
         // re-pulled and the pgcosmos extension does not need to cold-start every time.
         emulator.WithLifetime(ContainerLifetime.Persistent);
     });
-#pragma warning restore ASPIRECOSMOSDB001
 
 var cosmosDb = cosmos.AddCosmosDatabase("prompt-babbler");
 var promptTemplatesContainer = cosmosDb.AddContainer("prompt-templates", "/userId");

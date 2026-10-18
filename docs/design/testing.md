@@ -228,6 +228,8 @@ Infrastructure integration uses Aspire AppHost fixture lifecycle:
 
 The vector-container regression tests instead use a test-owned vNext emulator with random ports and no Foundry resources. They exercise the real initializer, container policy, empty-container recreation, populated-container preservation, babble persistence, and repository vector search with four synthetic 1536-dimensional vectors. Only their own test database/emulator is cleaned up.
 
+Use Aspire 13.6 or later for the `RunAsEmulator` configuration in the AppHost and vector-container tests. Earlier versions select the classic emulator with this API. Aspire 13.6 selects the vNext emulator with the `vnext-latest` image tag.
+
 From `prompt-babbler-service`, run this focused suite with Docker Desktop running and the SDK required by `global.json` installed:
 
 ```powershell
