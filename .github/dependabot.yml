@@ -1,50 +1,65 @@
 # yaml-language-server: $schema=https://json.schemastore.org/dependabot-2.0.json
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for more information:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-# https://containers.dev/guide/dependabot
-
+# dependabot-monthly-v1: first day of each month at 09:00 Pacific/Auckland.
+# Security updates remain event-driven and independent of this version-update schedule.
 version: 2
 updates:
   # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "github-actions"
-      - "ci-cd"
     rebase-strategy: "auto"
     groups:
-      actions-dependencies:
+      github-actions-minor-and-patch:
+        applies-to: "version-updates"
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
+      github-actions-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
 
   # DevContainer features and configuration
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
-      - "devcontainer"
+      - "devcontainers"
     rebase-strategy: "auto"
-    # Dependabot groups all devcontainer-related dependency updates into one PR.
     groups:
-      devcontainer-dependencies:
+      devcontainers-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      devcontainers-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
 
@@ -52,17 +67,29 @@ updates:
   - package-ecosystem: "docker"
     directory: "/.devcontainer"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "docker"
     rebase-strategy: "auto"
     groups:
-      docker-dependencies:
+      docker-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      docker-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
 
@@ -70,17 +97,29 @@ updates:
   - package-ecosystem: "docker"
     directory: "/prompt-babbler-service/src/Api"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "docker"
     rebase-strategy: "auto"
     groups:
-      docker-dependencies:
+      docker-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      docker-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
 
@@ -88,17 +127,29 @@ updates:
   - package-ecosystem: "docker"
     directory: "/prompt-babbler-service/src/McpServer"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "docker"
     rebase-strategy: "auto"
     groups:
-      docker-dependencies:
+      docker-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      docker-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
 
@@ -106,18 +157,29 @@ updates:
   - package-ecosystem: "dotnet-sdk"
     directory: "/prompt-babbler-service"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "dotnet-sdk"
-      - ".net"
     rebase-strategy: "auto"
     groups:
-      dotnet-sdk-dependencies:
+      dotnet-sdk-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      dotnet-sdk-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
 
@@ -125,23 +187,31 @@ updates:
   - package-ecosystem: "nuget"
     directory: "/prompt-babbler-service"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "nuget"
-      - ".net"
     rebase-strategy: "auto"
     groups:
-      nuget-dependencies:
+      nuget-minor-and-patch:
+        applies-to: "version-updates"
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
+      nuget-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
     allow:
       - dependency-type: "all"
 
@@ -149,18 +219,29 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "npm"
-      - "tooling"
     rebase-strategy: "auto"
     groups:
-      npm-dependencies:
+      npm-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      npm-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
     allow:
@@ -170,18 +251,29 @@ updates:
   - package-ecosystem: "npm"
     directory: "/docs"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "npm"
-      - "docs"
     rebase-strategy: "auto"
     groups:
-      npm-dependencies:
+      npm-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      npm-security:
+        applies-to: "security-updates"
         patterns:
           - "*"
     allow:
@@ -191,24 +283,31 @@ updates:
   - package-ecosystem: "npm"
     directory: "/prompt-babbler-app"
     schedule:
-      interval: "weekly"
-      time: "06:00"
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
+      prefix-development: "deps"
     labels:
       - "dependencies"
       - "npm"
-      - "react"
-      - "frontend"
     rebase-strategy: "auto"
     groups:
-      npm-dependencies:
+      npm-minor-and-patch:
+        applies-to: "version-updates"
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
+      npm-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
     allow:
       - dependency-type: "all"
     ignore:
@@ -218,7 +317,5 @@ updates:
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
 
-  # Azure Bicep modules (infrastructure as code)
-  # Note: Dependabot doesn't natively support Bicep registries
-  # This is a placeholder for future support or custom tooling
-  # For now, use manual checks via update-avm-modules skill
+  # Azure Bicep modules are not a supported Dependabot ecosystem.
+  # Use manual checks via the update-avm-modules skill.
