@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Align Dependabot with the `dependabot-monthly-v1` maintenance policy.
 - Use `RunAsEmulator` for the Cosmos DB vNext emulator in the AppHost and vector-container integration tests.
 - Require agents to update changelog entries and related documentation.
 
