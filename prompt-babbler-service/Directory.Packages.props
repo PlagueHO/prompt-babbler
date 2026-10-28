@@ -7,7 +7,7 @@
     <!-- Aspire -->
     <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.6.0" />
     <PackageVersion Include="Aspire.Hosting.Foundry" Version="13.3.3-preview.1.26264.13" />
-    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.4.3" />
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.6.1" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.11.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.0" />
@@ -16,8 +16,8 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.20.0" />
     <!-- Azure / AI -->
-    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.4.6" />
-    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.6.1" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.6.1" />
     <PackageVersion Include="Azure.AI.Projects" Version="2.0.1" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Azure.AI.Speech.Transcription" Version="1.0.0" />
@@ -38,12 +38,12 @@
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <!-- Testing -->
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.1" />
     <PackageVersion Include="FluentAssertions" Version="8.11.0" />
     <PackageVersion Include="JsonSchema.Net" Version="9.4.1" />
     <PackageVersion Update="MSTest.TestFramework" Version="4.3.3" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.13" />
     <!-- Transitive pins: use patched versions of .NET cryptography packages. -->
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.13" />
