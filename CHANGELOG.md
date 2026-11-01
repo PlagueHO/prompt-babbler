@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
+- Remove the installed `shadcn` CLI and its unpatched `deepmerge` dependency. Keep the existing UI components.
+- Align Vitest and its coverage package at 4.1.12, and override vulnerable `minimatch` versions with 11.0.1.
+- Upgrade the documentation site to pinned VitePress 2.0.0-alpha.21 to replace vulnerable Vite 5 dependencies. This is a prerelease.
+- Regenerate the root lockfile for Markdown tooling only. Remove stale frontend and documentation dependency graphs.
+- Override vulnerable Markdown tooling dependencies with KaTeX 0.18.2 and RE2JS 2.8.7.
 - Upgrade the Aspire AppHost SDK, Cosmos DB hosting integration, and testing package to 13.6.0 so `RunAsEmulator` selects the vNext emulator.
 
 ## [1.7.2] - 2026-06-06

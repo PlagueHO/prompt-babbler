@@ -11,6 +11,12 @@
   "devDependencies": {
     "markdownlint-cli2": "^0.24.0"
   },
+  "pnpm": {
+    "overrides": {
+      "katex@<0.18.2": "0.18.2",
+      "re2js@<2.8.7": "2.8.7"
+    }
+  },
   "description": "Prompt Babbler - Speech-to-prompt web application",
   "repository": {
     "type": "git",
