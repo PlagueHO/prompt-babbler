@@ -36,6 +36,24 @@ Major version updates remain individual pull requests. The existing `react` and 
 
 To request an update check before the next scheduled run, open **Insights > Dependency graph > Dependabot** on GitHub and select **Check for updates**. This manual check bypasses the monthly window. Normal CI and human review still apply.
 
+### Documentation site
+
+The documentation site uses pinned VitePress `2.0.0-alpha.21`. This prerelease replaces the vulnerable Vite 5 dependency graph from VitePress 1.6.4. Review the [VitePress changelog](https://github.com/vuejs/vitepress/blob/main/CHANGELOG.md) before changing the version.
+
+Use Node.js 22 and pnpm 10. Run these commands from `docs`:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pnpm preview
+```
+
+Open the preview URL with the `/prompt-babbler/` base path. Check navigation, code blocks, images, and both themes. The output remains in `docs/dist`. The existing site configuration and default-theme extension do not need migration changes.
+
+Install dependencies separately in the root, `prompt-babbler-app`, and `docs`. The root lockfile contains only the Markdown tooling dependency graph.
+
+The root manifest overrides vulnerable KaTeX and RE2JS versions with 0.18.2 and 2.8.7. Remove each override when Markdown tooling resolves a secure version without it. Run `pnpm audit` and `pnpm lint:md` after changing these overrides.
+
 ## Pull Request Expectations
 
 * Use a clear title and describe what changed and why.

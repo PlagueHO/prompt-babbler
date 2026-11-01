@@ -10,6 +10,16 @@ The compiler is installed as `@typescript/native` (an npm alias for `typescript@
 
 Package installation uses the machine's default npm registry. The lockfile pins package versions and integrity hashes without hardcoding registry tarball URLs, so frozen installs do not require access to a particular corporate feed. No repository-level registry override or supply-chain policy bypass is required.
 
+## Dependency security
+
+The installed `shadcn` CLI was removed because it brings an unpatched `deepmerge` dependency. The existing components in `src/components/ui/` and `components.json` remain in the repository. Edit these components directly. Review the CLI dependency graph before adding it again.
+
+The unused `shadcn/tailwind.css` import was also removed. The application keeps its own theme rules, Tailwind utilities, and `tw-animate-css` animations.
+
+The workspace overrides `minimatch` versions below 11.0.1 to fix [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249). Remove the override when all parent packages require a secure version. Run lint, tests, and the build after changing the override.
+
+Keep `vitest` and `@vitest/coverage-v8` on matching versions.
+
 ## Vite template reference
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
